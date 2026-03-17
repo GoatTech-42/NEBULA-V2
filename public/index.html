@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nebula V2</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✦</text></svg>">
+  <!-- Layout (structure only) -->
+  <link rel="stylesheet" href="css/layout.css">
+  <!-- Active theme injected by JS — default fallback -->
+  <link rel="stylesheet" id="theme-stylesheet" href="css/themes/og.css">
+</head>
+<body>
+
+<!-- ═══════════════════════════════
+     BACKGROUND LAYERS
+═══════════════════════════════ -->
+<div id="parallax-root" aria-hidden="true">
+  <div class="neb-layer" id="neb-1"></div>
+  <div class="neb-layer" id="neb-2"></div>
+  <div class="neb-layer" id="neb-3"></div>
+  <div id="neb-stars"></div>
+</div>
+
+<!-- ═══════════════════════════════
+     SKELETON SCREEN
+═══════════════════════════════ -->
+<div class="skeleton-screen" id="skeleton">
+  <div class="skel-sidebar">
+    <div class="skel-logo skel-pulse"></div>
+    <div class="skel-nav-item skel-pulse"></div>
+    <div class="skel-nav-item skel-pulse"></div>
+    <div class="skel-nav-item skel-pulse"></div>
+    <div class="skel-nav-item skel-pulse"></div>
+  </div>
+  <div class="skel-main">
+    <div class="skel-hero skel-pulse"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════
+     AUTH SCREEN
+═══════════════════════════════ -->
+<div id="auth-screen" class="hidden">
+  <div class="auth-inner">
+    <div class="auth-logo">NEBULA</div>
+    <div class="auth-tagline">V2 — Beyond The Stars</div>
+    <div class="auth-card">
+      <div class="auth-tabs">
+        <button class="auth-tab active" data-tab="login">Sign In</button>
+        <button class="auth-tab" data-tab="signup">Request Access</button>
+      </div>
+      <form id="auth-form" autocomplete="off">
+        <!-- Signup-only fields -->
+        <div id="auth-signup-fields" class="hidden">
+          <div class="field-group">
+            <label class="field-label" for="auth-fullname">Full Name</label>
+            <input id="auth-fullname" class="field-input" type="text" placeholder="Your real name" autocomplete="off">
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="auth-username">Username</label>
+            <input id="auth-username" class="field-input" type="text" placeholder="Letters, numbers, underscores" maxlength="20" autocomplete="off">
+          </div>
+        </div>
+        <div class="field-group">
+          <label class="field-label" for="auth-email">Email</label>
+          <input id="auth-email" class="field-input" type="email" placeholder="your@email.com" autocomplete="email">
+        </div>
+        <div class="field-group">
+          <label class="field-label" for="auth-pass">Password</label>
+          <input id="auth-pass" class="field-input" type="password" placeholder="••••••••" autocomplete="current-password">
+        </div>
+        <div id="auth-signup-fields-2" class="hidden">
+          <div class="field-group">
+            <label class="field-label" for="auth-pass-confirm">Confirm Password</label>
+            <input id="auth-pass-confirm" class="field-input" type="password" placeholder="••••••••">
+          </div>
+        </div>
+        <div class="auth-err" id="auth-err"></div>
+        <button type="submit" id="auth-btn" class="btn btn-full" style="margin-top:.6rem">ENTER</button>
+      </form>
+      <div class="auth-foot">Nebula V2 — Restricted Access</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════
+     PENDING SCREEN
+═══════════════════════════════ -->
+<div id="pending-screen" class="hidden">
+  <div class="pending-inner">
+    <div class="pending-icon">
+      <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+      </svg>
+    </div>
+    <h2>Awaiting Approval</h2>
+    <p>Your account request has been submitted and is pending moderator review. You'll gain access once approved.</p>
+    <button class="btn btn-ghost btn-sm" onclick="import('./js/firebase.js').then(m=>m.signOut(m.auth)).then(()=>location.reload())">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Sign Out
+    </button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════
+     APP SHELL
+═══════════════════════════════ -->
+<div id="app" class="hidden">
+
+  <!-- ── Sidebar ── -->
+  <nav id="sidebar">
+    <div class="sidebar-logo" data-section="home" title="Home">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      <span class="logo-text">NEBULA</span>
+      <span class="logo-pulse"></span>
+    </div>
+    <div class="sidebar-nav">
+      <button class="snav-item active" data-section="home">
+        <span class="snav-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>
+        <span class="snav-label">Home</span>
+      </button>
+      <button class="snav-item" data-section="chat">
+        <span class="snav-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></span>
+        <span class="snav-label">Chat</span>
+        <span class="snav-badge hidden" id="chat-badge">0</span>
+      </button>
+      <button class="snav-item" data-section="dms">
+        <span class="snav-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg></span>
+        <span class="snav-label">Direct Messages</span>
+        <span class="snav-badge hidden" id="dm-badge">0</span>
+      </button>
+      <button class="snav-item" data-section="games">
+        <span class="snav-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M12 12h.01M7 12h.01M17 12h.01M12 7v10"/><circle cx="12" cy="12" r="1" fill="currentColor"/></svg></span>
+        <span class="snav-label">Games</span>
+      </button>
+      <button class="snav-item" data-section="profile">
+        <span class="snav-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+        <span class="snav-label">Profile</span>
+      </button>
+      <button class="snav-item" data-section="settings">
+        <span class="snav-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></span>
+        <span class="snav-label">Settings</span>
+      </button>
+      <button class="snav-item hidden" data-section="admin" id="nav-admin">
+        <span class="snav-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span>
+        <span class="snav-label">Admin</span>
+      </button>
+    </div>
+    <div class="sidebar-profile">
+      <div class="sp-ava" id="sp-ava"></div>
+      <div class="sp-info">
+        <div class="sp-name" id="sp-name"></div>
+        <div class="sp-rank" id="sp-rank"></div>
+      </div>
+      <button class="sp-signout" id="sp-signout" title="Sign Out">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ── Main Content ── -->
+  <div id="main">
+
+    <!-- ══════ HOME ══════ -->
+    <section id="section-home" class="section active">
+      <div class="home-hero">
+        <div class="home-title">NEBULA V2</div>
+        <div id="tt-wrap">
+          <div class="tt-el vis">LOADING TOOLTIPS...</div>
+        </div>
+        <div class="home-cards">
+          <div class="home-card" data-goto="chat">
+            <div class="hcard-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div>
+            <div class="hcard-title">Chat</div>
+            <div class="hcard-sub">Channels & messages</div>
+          </div>
+          <div class="home-card" data-goto="dms">
+            <div class="hcard-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg></div>
+            <div class="hcard-title">DMs</div>
+            <div class="hcard-sub">Private conversations</div>
+          </div>
+          <div class="home-card" data-goto="games">
+            <div class="hcard-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><line x1="6" y1="12" x2="10" y2="12"/><line x1="8" y1="10" x2="8" y2="14"/><line x1="15" y1="11" x2="15" y2="11" stroke-width="3" stroke-linecap="round"/><line x1="18" y1="11" x2="18" y2="11" stroke-width="3" stroke-linecap="round"/></svg></div>
+            <div class="hcard-title">Games</div>
+            <div class="hcard-sub">The vault</div>
+          </div>
+          <div class="home-card" data-goto="settings">
+            <div class="hcard-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></div>
+            <div class="hcard-title">Settings</div>
+            <div class="hcard-sub">Themes & alerts</div>
+          </div>
+        </div>
+        <div class="home-stats">
+          <div class="stat-item">
+            <div class="stat-value" id="fps-val" style="color:var(--success)">--</div>
+            <div class="stat-label">FPS</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="visits-count" style="color:var(--accent)">--</div>
+            <div class="stat-label">Total Visits</div>
+          </div>
+          <div class="stat-item">
+            <div id="battery-wrap" style="display:flex;align-items:center;gap:.4rem;justify-content:center;"></div>
+            <div class="stat-label">Battery</div>
+          </div>
+        </div>
+        <div class="home-copy">nebula v2 — beyond the stars</div>
+      </div>
+    </section>
+
+    <!-- ══════ CHAT ══════ -->
+    <section id="section-chat" class="section">
+      <div class="chat-layout">
+        <!-- Thread Sidebar -->
+        <div class="thread-sidebar">
+          <div class="ts-header">
+            <span class="ts-title">Channels</span>
+            <button class="ts-add hidden" id="ts-add-channel" title="New Channel">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </button>
+            <button class="mobile-menu-btn" style="display:none" id="chat-mobile-menu">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+            </button>
+          </div>
+          <div class="ts-list" id="channel-list"></div>
+        </div>
+
+        <!-- Chat Area -->
+        <div class="chat-area">
+          <div class="chat-no-select" id="chat-no-select">
+            <div class="cns-icon"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div>
+            <div class="cns-title">Select a Channel</div>
+            <div class="cns-sub">Choose a channel from the left to start chatting</div>
+          </div>
+          <div class="chat-window hidden" id="chat-window">
+            <div class="chat-topbar">
+              <div class="ctb-left">
+                <span class="ctb-hash" style="color:var(--text-faint)">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg>
+                </span>
+                <span class="ctb-name" id="chat-channel-name"></span>
+                <span class="ctb-announce hidden" id="chat-announce-badge">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M18 8h1a4 4 0 010 8h-1"/><path d="M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z" fill="none" stroke="currentColor" stroke-width="2"/><line x1="6" y1="1" x2="6" y2="4" stroke="currentColor" stroke-width="2"/><line x1="10" y1="1" x2="10" y2="4" stroke="currentColor" stroke-width="2"/><line x1="14" y1="1" x2="14" y2="4" stroke="currentColor" stroke-width="2"/></svg>
+                  Announcements
+                </span>
+              </div>
+              <div class="ctb-right"></div>
+            </div>
+            <div class="messages-wrap" id="messages-wrap">
+              <div class="messages" id="messages"></div>
+            </div>
+            <button class="scroll-to-bottom" id="scroll-to-bottom-btn">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            <div class="typing-bar" id="typing-bar"></div>
+            <div class="chat-input-area">
+              <div class="chat-input-wrap">
+                <input id="chat-input" type="text" placeholder="Select a channel first" maxlength="500" disabled>
+                <span class="char-ctr" id="char-ctr">500</span>
+                <button class="send-btn" id="chat-send-btn" disabled>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Members Sidebar -->
+        <div class="members-sidebar">
+          <div class="ms-header">Members</div>
+          <div class="ms-list" id="members-list"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════ DMs ══════ -->
+    <section id="section-dms" class="section">
+      <div class="chat-layout">
+        <div class="thread-sidebar">
+          <div class="ts-header">
+            <span class="ts-title">Direct Messages</span>
+          </div>
+          <div id="dm-search-wrap" class="dm-user-search" style="position:relative">
+            <input id="dm-search-input" type="text" placeholder="Find user...">
+          </div>
+          <div class="ts-list" id="dm-list"></div>
+        </div>
+        <div class="chat-area">
+          <div class="chat-no-select" id="dm-no-select">
+            <div class="cns-icon"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg></div>
+            <div class="cns-title">Your DMs</div>
+            <div class="cns-sub">Search for a user above to start a private conversation</div>
+          </div>
+          <div class="chat-window hidden" id="dm-window">
+            <div class="chat-topbar">
+              <div class="ctb-left">
+                <span class="ctb-name" id="dm-channel-name"></span>
+              </div>
+            </div>
+            <div class="messages-wrap" id="dm-messages-wrap">
+              <div class="messages" id="dm-messages"></div>
+            </div>
+            <div class="typing-bar" id="dm-typing-bar"></div>
+            <div class="chat-input-area">
+              <div class="chat-input-wrap">
+                <input id="dm-input" type="text" placeholder="Send a message..." maxlength="500">
+                <button class="send-btn" id="dm-send-btn">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════ GAMES ══════ -->
+    <section id="section-games" class="section">
+      <div class="vault-scroll">
+        <!-- Topbar -->
+        <div class="vault-topbar">
+          <div class="vault-search-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input id="vault-search" type="text" placeholder="Search games...">
+          </div>
+          <select id="vault-sort">
+            <option value="popular">Most Popular</option>
+            <option value="name">A–Z</option>
+            <option value="id">Newest</option>
+          </select>
+          <button id="fav-filter-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+            Favorites
+          </button>
+        </div>
+        <!-- Featured Carousel -->
+        <div class="vault-featured hidden" id="feat-wrapper">
+          <div class="vault-featured-hdr">Featured Today</div>
+          <div class="carousel-viewport">
+            <div id="feat-track"></div>
+          </div>
+          <button class="carousel-btn" id="carousel-prev">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <button class="carousel-btn" id="carousel-next">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        </div>
+        <!-- Game Grid -->
+        <div id="game-grid">
+          <div class="vault-loading">Loading games...</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════ PROFILE ══════ -->
+    <section id="section-profile" class="section">
+      <div class="prof-page">
+
+        <!-- Identity card -->
+        <div class="prof-card">
+          <div class="prof-card-banner"></div>
+          <div class="prof-card-body">
+            <div class="prof-ava-wrap">
+              <div class="prof-ava" id="prof-ava" title="Click to change color"></div>
+              <button class="prof-ava-edit-btn" onclick="document.getElementById('prof-color-section')?.scrollIntoView({behavior:'smooth'})" title="Change color">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+              </button>
+            </div>
+            <div class="prof-identity">
+              <div class="prof-name" id="prof-name"></div>
+              <div class="prof-username" id="prof-username"></div>
+              <div class="prof-badges">
+                <div id="prof-rank"></div>
+                <div id="prof-joined" class="prof-joined"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Edit panels -->
+        <div class="prof-panels" id="prof-edit-section">
+          <!-- Populated by JS -->
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ══════ SETTINGS ══════ -->
+    <section id="section-settings" class="section">
+      <div class="pad">
+        <div class="pg-title">Settings</div>
+        <div class="pg-sub">Personalize your Nebula experience</div>
+        <div class="settings-tabs">
+          <button class="stab active" data-tab="themes">Themes</button>
+          <button class="stab" data-tab="alerts">Alerts</button>
+          <button class="stab" data-tab="display">Display</button>
+        </div>
+
+        <!-- THEMES -->
+        <div class="settings-panel active" id="sp-themes">
+          <div style="font-size:.75rem;color:var(--text-muted);margin-bottom:1.2rem;font-weight:600">Choose your theme. Changes apply instantly and persist.</div>
+          <div class="theme-grid">
+            <div class="theme-card" data-theme="og">
+              <div class="theme-preview" style="background:linear-gradient(135deg,#071827,#0f2b44);position:relative;overflow:hidden">
+                <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 40% 60%,rgba(79,201,234,.3),transparent 60%),radial-gradient(ellipse at 80% 20%,rgba(150,100,255,.2),transparent 60%)"></div>
+                <div style="position:absolute;bottom:14px;left:14px;font-weight:800;font-size:1rem;background:linear-gradient(135deg,#e8fbff,#66e0ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent">NEBULA</div>
+              </div>
+              <div class="theme-info"><div class="theme-name">OG</div><div class="theme-desc">The original. Classic deep blue.</div></div>
+            </div>
+            <div class="theme-card" data-theme="dark">
+              <div class="theme-preview" style="background:linear-gradient(135deg,#0a0a0a,#141414);position:relative;overflow:hidden">
+                <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 50% 50%,rgba(167,139,250,.2),transparent 60%)"></div>
+                <div style="position:absolute;bottom:14px;left:14px;font-weight:800;font-size:1rem;background:linear-gradient(135deg,#e9d5ff,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent">NEBULA</div>
+              </div>
+              <div class="theme-info"><div class="theme-name">Dark</div><div class="theme-desc">Pure black. Purple accent.</div></div>
+            </div>
+            <div class="theme-card" data-theme="light">
+              <div class="theme-preview" style="background:linear-gradient(135deg,#f0f4f8,#e8edf3);position:relative;overflow:hidden">
+                <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 50% 80%,rgba(147,197,253,.38),transparent 60%)"></div>
+                <div style="position:absolute;bottom:14px;left:14px;font-weight:800;font-size:1rem;background:linear-gradient(135deg,#1e40af,#3b82f6);-webkit-background-clip:text;-webkit-text-fill-color:transparent">NEBULA</div>
+              </div>
+              <div class="theme-info"><div class="theme-name">Light</div><div class="theme-desc">Clean white. Blue accent.</div></div>
+            </div>
+            <div class="theme-card" data-theme="aurora">
+              <div class="theme-preview" style="background:linear-gradient(135deg,#060e14,#0a1820);position:relative;overflow:hidden">
+                <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 30% 60%,rgba(0,229,160,.35),transparent 55%),radial-gradient(ellipse at 80% 20%,rgba(0,184,217,.25),transparent 55%)"></div>
+                <div style="position:absolute;bottom:14px;left:14px;font-weight:800;font-size:1rem;background:linear-gradient(135deg,#b2fff0,#00e5a0,#00b8d9);-webkit-background-clip:text;-webkit-text-fill-color:transparent">NEBULA</div>
+              </div>
+              <div class="theme-info"><div class="theme-name">Aurora</div><div class="theme-desc">Northern lights. Emerald glow.</div></div>
+            </div>
+            <div class="theme-card" data-theme="synthwave">
+              <div class="theme-preview" style="background:linear-gradient(135deg,#0d0015,#1e002e);position:relative;overflow:hidden">
+                <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 50% 100%,rgba(255,45,138,.32),transparent 60%)"></div>
+                <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(255,45,138,.1) 1px,transparent 1px),linear-gradient(90deg,rgba(255,45,138,.1) 1px,transparent 1px);background-size:20px 14px;transform:perspective(200px) rotateX(55deg);transform-origin:bottom"></div>
+                <div style="position:absolute;bottom:14px;left:14px;font-weight:800;font-size:1rem;background:linear-gradient(135deg,#ff2d8a,#bf00ff,#00f0ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent">NEBULA</div>
+              </div>
+              <div class="theme-info"><div class="theme-name">Synthwave</div><div class="theme-desc">Retro neon. Grid & glow.</div></div>
+            </div>
+            <div class="theme-card" data-theme="crimson">
+              <div class="theme-preview" style="background:linear-gradient(135deg,#0e0808,#1a0d0d);position:relative;overflow:hidden">
+                <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 40% 60%,rgba(240,60,60,.4),transparent 60%),radial-gradient(ellipse at 80% 20%,rgba(180,20,20,.25),transparent 60%)"></div>
+                <div style="position:absolute;bottom:14px;left:14px;font-weight:800;font-size:1rem;background:linear-gradient(135deg,#ffd0d0,#f05050,#c0392b);-webkit-background-clip:text;-webkit-text-fill-color:transparent">NEBULA</div>
+              </div>
+              <div class="theme-info"><div class="theme-name">Crimson</div><div class="theme-desc">Deep red dark. Blood and stars.</div></div>
+            </div>
+            <div class="theme-card" data-theme="midnight">
+              <div class="theme-preview" style="background:linear-gradient(135deg,#0c0a06,#181408);position:relative;overflow:hidden">
+                <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 35% 65%,rgba(240,140,30,.38),transparent 55%),radial-gradient(ellipse at 75% 25%,rgba(120,60,0,.3),transparent 55%)"></div>
+                <div style="position:absolute;bottom:14px;left:14px;font-weight:800;font-size:1rem;background:linear-gradient(135deg,#ffedc0,#f0a030,#c07010);-webkit-background-clip:text;-webkit-text-fill-color:transparent">NEBULA</div>
+              </div>
+              <div class="theme-info"><div class="theme-name">Midnight</div><div class="theme-desc">Warm amber dark. Candlelight.</div></div>
+            </div>
+            <div class="theme-card" data-theme="slate">
+              <div class="theme-preview" style="background:linear-gradient(135deg,#0f1117,#181b24);position:relative;overflow:hidden">
+                <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 40% 55%,rgba(99,102,241,.3),transparent 55%),radial-gradient(ellipse at 75% 25%,rgba(139,143,248,.2),transparent 55%)"></div>
+                <div style="position:absolute;bottom:14px;left:14px;font-weight:700;font-size:.95rem;font-family:monospace;background:linear-gradient(135deg,#e0e1ff,#8b8ff8,#6366f1);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:2px">NEBULA</div>
+              </div>
+              <div class="theme-info"><div class="theme-name">Slate</div><div class="theme-desc">Minimal indigo. IBM mono.</div></div>
+            </div>
+            <div class="theme-card" data-theme="forest">
+              <div class="theme-preview" style="background:linear-gradient(135deg,#071009,#0e1f10);position:relative;overflow:hidden">
+                <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 35% 65%,rgba(52,211,153,.3),transparent 55%),radial-gradient(ellipse at 75% 25%,rgba(16,185,129,.2),transparent 55%)"></div>
+                <div style="position:absolute;bottom:14px;left:14px;font-weight:800;font-size:1rem;background:linear-gradient(135deg,#d1fae5,#34d399,#059669);-webkit-background-clip:text;-webkit-text-fill-color:transparent">NEBULA</div>
+              </div>
+              <div class="theme-info"><div class="theme-name">Forest</div><div class="theme-desc">Deep green. Night in the woods.</div></div>
+            </div>
+            <div class="theme-card" data-theme="ocean">
+              <div class="theme-preview" style="background:linear-gradient(135deg,#030d1a,#061828);position:relative;overflow:hidden">
+                <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 40% 70%,rgba(6,182,212,.32),transparent 55%),radial-gradient(ellipse at 70% 20%,rgba(14,165,233,.22),transparent 55%)"></div>
+                <div style="position:absolute;bottom:14px;left:14px;font-weight:800;font-size:1rem;background:linear-gradient(135deg,#cffafe,#22d3ee,#0284c7);-webkit-background-clip:text;-webkit-text-fill-color:transparent">NEBULA</div>
+              </div>
+              <div class="theme-info"><div class="theme-name">Ocean</div><div class="theme-desc">Deep sea cyan. Abyssal blue.</div></div>
+            </div>
+            <div class="theme-card" data-theme="rose">
+              <div class="theme-preview" style="background:linear-gradient(135deg,#110710,#1e0d1c);position:relative;overflow:hidden">
+                <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 40% 65%,rgba(244,114,182,.3),transparent 55%),radial-gradient(ellipse at 75% 25%,rgba(217,70,239,.2),transparent 55%)"></div>
+                <div style="position:absolute;bottom:14px;left:14px;font-weight:800;font-size:1rem;background:linear-gradient(135deg,#fce7f3,#f472b6,#c026d3);-webkit-background-clip:text;-webkit-text-fill-color:transparent">NEBULA</div>
+              </div>
+              <div class="theme-info"><div class="theme-name">Rose</div><div class="theme-desc">Pink & magenta. After dark.</div></div>
+            </div>
+            <div class="theme-card" data-theme="solar">
+              <div class="theme-preview" style="background:linear-gradient(135deg,#0a0800,#1a1200);position:relative;overflow:hidden">
+                <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 50% 80%,rgba(251,191,36,.35),transparent 55%),radial-gradient(ellipse at 30% 20%,rgba(245,158,11,.22),transparent 55%)"></div>
+                <div style="position:absolute;bottom:14px;left:14px;font-weight:800;font-size:1rem;background:linear-gradient(135deg,#fef3c7,#fbbf24,#d97706);-webkit-background-clip:text;-webkit-text-fill-color:transparent">NEBULA</div>
+              </div>
+              <div class="theme-info"><div class="theme-name">Solar</div><div class="theme-desc">Blazing gold. Sun-scorched.</div></div>
+            </div>
+            <div class="theme-card" data-theme="void">
+              <div class="theme-preview" style="background:#000;position:relative;overflow:hidden">
+                <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 50% 50%,rgba(255,255,255,.04),transparent 60%)"></div>
+                <div style="position:absolute;bottom:14px;left:14px;font-weight:800;font-size:1rem;background:linear-gradient(135deg,#fff,rgba(255,255,255,.6));-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:1px">NEBULA</div>
+              </div>
+              <div class="theme-info"><div class="theme-name">Void</div><div class="theme-desc">Pure black. No distractions.</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ALERTS -->
+        <div class="settings-panel" id="sp-alerts">
+          <div class="notif-section-card">
+            <div class="nsc-header">
+              <div class="nsc-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg></div>
+              <div>
+                <div class="nsc-title">Chat Notifications</div>
+                <div class="nsc-sub">Receive notifications for new messages in channels</div>
+              </div>
+              <label class="toggle-switch" style="margin-left:auto">
+                <input type="checkbox" class="notif-toggle" data-key="chat" checked>
+                <div class="toggle-track"></div>
+              </label>
+            </div>
+          </div>
+          <div class="notif-section-card">
+            <div class="nsc-header">
+              <div class="nsc-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg></div>
+              <div>
+                <div class="nsc-title">DM Notifications</div>
+                <div class="nsc-sub">Receive notifications for new direct messages</div>
+              </div>
+              <label class="toggle-switch" style="margin-left:auto">
+                <input type="checkbox" class="notif-toggle" data-key="dm" checked>
+                <div class="toggle-track"></div>
+              </label>
+            </div>
+          </div>
+          <div class="notif-section-card">
+            <div class="nsc-header">
+              <div class="nsc-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+              <div>
+                <div class="nsc-title">Mention Alerts</div>
+                <div class="nsc-sub">Get notified when someone @mentions you</div>
+              </div>
+              <label class="toggle-switch" style="margin-left:auto">
+                <input type="checkbox" class="notif-toggle" data-key="mentions" checked>
+                <div class="toggle-track"></div>
+              </label>
+            </div>
+          </div>
+          <div class="notif-section-card">
+            <div class="nsc-header" style="flex-wrap:wrap">
+              <div class="nsc-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg></div>
+              <div>
+                <div class="nsc-title">Per-Channel Notifications</div>
+                <div class="nsc-sub">Choose which channels you get notified from</div>
+              </div>
+            </div>
+            <div class="notif-channel-list" id="sp-channel-notifs">
+              <div style="font-size:.72rem;color:var(--text-faint)">Log in to see channels</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- DISPLAY -->
+        <div class="settings-panel" id="sp-display">
+          <div class="notif-section-card">
+            <div class="nsc-header">
+              <div>
+                <div class="nsc-title">Compact Messages</div>
+                <div class="nsc-sub">Denser message layout — sender always shown</div>
+              </div>
+              <label class="toggle-switch" style="margin-left:auto">
+                <input type="checkbox" class="notif-toggle" data-key="compact">
+                <div class="toggle-track"></div>
+              </label>
+            </div>
+          </div>
+          <div class="notif-section-card">
+            <div class="nsc-header">
+              <div>
+                <div class="nsc-title">Parallax Background</div>
+                <div class="nsc-sub">Mouse-tracked nebula layers (disable to save performance)</div>
+              </div>
+              <label class="toggle-switch" style="margin-left:auto">
+                <input type="checkbox" class="notif-toggle" data-key="parallax" checked>
+                <div class="toggle-track"></div>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════ ADMIN ══════ -->
+    <section id="section-admin" class="section">
+      <div class="pad">
+        <div class="pg-title" id="admin-page-title">Admin</div>
+        <div class="pg-sub">Manage accounts and moderation</div>
+        <div class="admin-tabs">
+          <button class="adm-tab active" data-tab="pending">Pending</button>
+          <button class="adm-tab" data-tab="members">Members</button>
+          <button class="adm-tab" data-tab="banned">Banned</button>
+        </div>
+        <div class="adm-panel active" id="ap-pending">
+          <div style="color:var(--text-faint);font-size:.78rem">Loading...</div>
+        </div>
+        <div class="adm-panel" id="ap-members">
+          <div style="color:var(--text-faint);font-size:.78rem">Click the tab to load.</div>
+        </div>
+        <div class="adm-panel" id="ap-banned">
+          <div style="color:var(--text-faint);font-size:.78rem">Click the tab to load.</div>
+        </div>
+      </div>
+    </section>
+
+  </div><!-- /#main -->
+
+</div><!-- /#app -->
+
+<!-- ═══════════════════════════════
+     GAME VIEWER
+═══════════════════════════════ -->
+<div id="game-vault" style="display:none;flex-direction:column;position:fixed;inset:0;z-index:10000;background:#000">
+  <div class="ghdr">
+    <div class="ghdr-left">
+      <span class="ghdr-logo">NEBULA</span>
+      <span class="ghdr-sep">/</span>
+      <span class="ghdr-name" id="game-name"></span>
+    </div>
+    <div class="ghdr-right">
+      <button class="btn btn-ghost btn-sm" onclick="window.fullscreenGame()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg>
+        Fullscreen
+      </button>
+      <button class="btn btn-danger btn-sm" onclick="window.closeGameVault()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        Close
+      </button>
+    </div>
+  </div>
+  <iframe id="game-frame" sandbox="allow-scripts allow-same-origin allow-forms allow-popups" allow="fullscreen" style="border:none;width:100%;flex:1;display:block"></iframe>
+</div>
+
+<!-- ═══════════════════════════════
+     MODAL SYSTEM
+═══════════════════════════════ -->
+<div id="modal-overlay" class="hidden" style="position:fixed;inset:0;z-index:7000;background:rgba(0,0,0,.8);backdrop-filter:blur(14px);animation:fadeIn .14s ease"></div>
+<div class="modal hidden" id="modal-wrap">
+  <div class="modal-box" id="modal-box-main"></div>
+</div>
+
+<!-- ═══════════════════════════════
+     TOAST STACK
+═══════════════════════════════ -->
+<div id="notif-stack"></div>
+
+<!-- ═══════════════════════════════
+     SCRIPTS
+═══════════════════════════════ -->
+<script type="module">
+  import { initGames } from './js/games.js';
+  import './js/app.js';
+
+  // Init games when section becomes active
+  let gamesInitialized = false;
+  const observer = new MutationObserver(mutations => {
+    const gamesSection = document.getElementById('section-games');
+    if(gamesSection?.classList.contains('active') && !gamesInitialized) {
+      gamesInitialized = true;
+      initGames();
+    }
+  });
+  observer.observe(document.getElementById('app') || document.body, {
+    childList: true, subtree: true, attributeFilter: ['class']
+  });
+
+  // Also check on nav clicks
+  document.addEventListener('click', e => {
+    const item = e.target.closest('[data-section]');
+    if(item?.dataset.section === 'games' && !gamesInitialized) {
+      gamesInitialized = true;
+      initGames();
+    }
+  });
+
+  // Signup fields sync
+  const signupBtn = document.querySelector('[data-tab="signup"]');
+  if(signupBtn) {
+    signupBtn.addEventListener('click', () => {
+      document.getElementById('auth-signup-fields-2')?.classList.remove('hidden');
+    });
+  }
+  const loginBtn = document.querySelector('[data-tab="login"]');
+  if(loginBtn) {
+    loginBtn.addEventListener('click', () => {
+      document.getElementById('auth-signup-fields-2')?.classList.add('hidden');
+    });
+  }
+
+  // Modal overlay close
+  document.getElementById('modal-overlay')?.addEventListener('click', () => {
+    document.getElementById('modal-overlay')?.classList.add('hidden');
+    document.getElementById('modal-box-main').innerHTML = '';
+  });
+
+  // Scroll to bottom button
+  document.getElementById('messages-wrap')?.addEventListener('scroll', function() {
+    const btn = document.getElementById('scroll-to-bottom-btn');
+    if(!btn) return;
+    const atBottom = this.scrollHeight - this.scrollTop - this.clientHeight < 80;
+    btn.classList.toggle('show', !atBottom);
+  });
+  document.getElementById('scroll-to-bottom-btn')?.addEventListener('click', () => {
+    const wrap = document.getElementById('messages-wrap');
+    if(wrap) wrap.scrollTop = wrap.scrollHeight;
+  });
+</script>
+
+</body>
+</html>

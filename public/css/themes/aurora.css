@@ -1,0 +1,95 @@
+/* ══════════════════════════════
+   AURORA — Northern Lights
+══════════════════════════════ */
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Raleway:wght@700;800;900&display=swap');
+
+:root {
+  --font-body: 'Nunito', sans-serif;
+  --font-display: 'Raleway', sans-serif;
+
+  --bg: #060e14;
+  --bg2: #0a1820;
+  --bg3: #0f2030;
+  --accent: #00e5a0;
+  --accent-glow: rgba(0,229,160,.32);
+  --accent-dim: rgba(0,229,160,.14);
+  --text: #d4f0e8;
+  --text-muted: rgba(212,240,232,.68);
+  --text-faint: rgba(212,240,232,.28);
+  --border: rgba(0,229,160,.16);
+  --border2: rgba(255,255,255,.07);
+  --danger: #ff5f7e;
+  --danger-dim: rgba(255,95,126,.18);
+  --success: #00e5a0;
+  --warn: #ffcc5c;
+  --badge-text: #020d0a;
+  --btn-text: #020d0a;
+
+  --card-bg: rgba(8,18,26,.82);
+  --card-border: rgba(0,229,160,.06);
+  --input-bg: rgba(0,229,160,.04);
+  --nav-hover: rgba(0,229,160,.07);
+  --nav-active-bg: rgba(0,229,160,.12);
+  --msg-hover: rgba(0,229,160,.016);
+  --scrollbar-thumb: rgba(0,229,160,.16);
+
+  --grad: linear-gradient(135deg, #b2fff0 0%, #00e5a0 50%, #00b8d9 100%);
+}
+
+body { background: var(--bg); }
+#sidebar { background: rgba(3,9,14,.94); border-right: 1px solid var(--border2); box-shadow: 3px 0 24px rgba(0,0,0,.5); backdrop-filter: blur(20px); }
+.sidebar-logo { border-bottom-color: var(--border2); }
+.logo-text { background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-weight: 900; letter-spacing: 2px; }
+.logo-pulse { background: var(--accent); box-shadow: 0 0 12px var(--accent-glow); }
+.sidebar-profile { border-top-color: var(--border2); }
+.pg-title { background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.pg-sub { color: var(--text-muted); }
+.home-title { background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.home-card { background: rgba(8,18,26,.82); border: 1px solid rgba(0,229,160,.07); backdrop-filter: blur(14px); }
+.home-card:hover { border-color: rgba(0,229,160,.42); box-shadow: 0 18px 60px rgba(0,0,0,.55), 0 0 22px rgba(0,229,160,.1); }
+.hcard-icon { color: var(--accent); }
+.hcard-sub { color: var(--text-muted); }
+.tt-el { color: var(--text-muted); }
+.home-copy { color: var(--text-faint); }
+.stat-label { color: var(--text-muted); }
+.thread-sidebar { background: rgba(3,9,14,.9); border-right-color: var(--border2); backdrop-filter: blur(16px); }
+.ts-title { color: var(--text-faint); }
+.ts-add { background: rgba(0,229,160,.1); color: var(--accent); border-color: rgba(0,229,160,.3); }
+.ts-add:hover { background: rgba(0,229,160,.22); box-shadow: 0 0 10px rgba(0,229,160,.2); }
+.titem.active::before { box-shadow: 0 0 8px var(--accent-glow); }
+.chat-topbar { background: rgba(4,10,17,.9); border-bottom-color: var(--border2); backdrop-filter: blur(20px); }
+.chat-input-area { background: rgba(4,10,17,.8); backdrop-filter: blur(20px); }
+.chat-no-select { color: var(--text-faint); }
+.cns-title { color: var(--text-muted); }
+.msg-text { color: rgba(212,240,232,.88); }
+.msg-text .mention { color: var(--accent); background: rgba(0,229,160,.1); }
+.msg-edited { color: var(--text-faint); }
+.date-divider span { background: rgba(0,229,160,.05); border: 1px solid rgba(0,229,160,.12); color: rgba(0,229,160,.55); }
+.rchip { background: rgba(0,229,160,.07); border: 1px solid rgba(0,229,160,.14); color: var(--text-muted); }
+.rchip:hover, .rchip.mine { background: rgba(0,229,160,.17); border-color: rgba(0,229,160,.42); color: var(--accent); }
+.typing-dots span { background: var(--text-muted); }
+.msg-actions { background: rgba(4,10,17,.98); backdrop-filter: blur(16px); }
+.members-sidebar { background: rgba(3,9,14,.9); backdrop-filter: blur(16px); }
+#neb-1 { background: radial-gradient(ellipse at center, rgba(0,229,160,.55) 0%, rgba(0,184,217,.28) 45%, transparent 72%); }
+#neb-2 { background: radial-gradient(ellipse at center, rgba(0,120,200,.5) 0%, rgba(80,40,180,.22) 50%, transparent 76%); }
+#neb-3 { background: radial-gradient(ellipse at center, rgba(0,229,160,.4) 0%, rgba(0,180,150,.18) 50%, transparent 76%); }
+#neb-stars { background-image: radial-gradient(1px 1px at 15% 22%,rgba(200,255,240,.55) 0%,transparent 100%),radial-gradient(1px 1px at 38% 68%,rgba(200,255,240,.4) 0%,transparent 100%),radial-gradient(1.5px 1.5px at 62% 11%,rgba(180,255,230,.65) 0%,transparent 100%),radial-gradient(1px 1px at 80% 50%,rgba(200,255,240,.45) 0%,transparent 100%),radial-gradient(1px 1px at 92% 30%,rgba(180,255,230,.35) 0%,transparent 100%),radial-gradient(1.5px 1.5px at 8% 85%,rgba(180,255,230,.5) 0%,transparent 100%); }
+.skel-sidebar { background: rgba(3,9,14,.97); }
+.skel-pulse { background: rgba(0,229,160,.07); }
+.auth-card { background: rgba(6,14,22,.9); border: 1px solid rgba(0,229,160,.14); box-shadow: 0 22px 60px rgba(0,0,0,.65); backdrop-filter: blur(28px); }
+.auth-logo { background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.auth-sub { color: var(--text-faint); }
+.auth-tabs { background: rgba(0,229,160,.04); border: 1px solid var(--border2); }
+.auth-tab.active { background: rgba(0,229,160,.15); color: var(--accent); }
+.auth-err { color: var(--danger); }
+.auth-foot { color: var(--text-faint); }
+.pending-inner { background: rgba(8,18,26,.9); border: 1px solid rgba(0,229,160,.14); backdrop-filter: blur(24px); }
+.pending-inner h2 { background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.carousel-viewport { background: rgba(0,229,160,.02); }
+.game-card:hover { box-shadow: 0 18px 60px rgba(0,0,0,.55), 0 0 20px rgba(0,229,160,.15); }
+.ghdr { background: rgba(4,10,17,.98); border-bottom-color: var(--border2); }
+.ghdr-logo { background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-weight: 900; letter-spacing: 3px; }
+.scroll-to-bottom { background: rgba(4,10,17,.97); }
+.scroll-to-bottom:hover { background: rgba(0,229,160,.14); border-color: rgba(0,229,160,.42); }
+.ctb-announce { background: rgba(0,229,160,.1); border: 1px solid rgba(0,229,160,.2); color: var(--accent); }
+.modal-box { background: linear-gradient(145deg,#06101a,#040c14); border-color: var(--border); }

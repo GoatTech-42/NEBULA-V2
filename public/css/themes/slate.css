@@ -1,0 +1,63 @@
+/* ══════════════════════════════
+   SLATE — Minimal Monochrome
+══════════════════════════════ */
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@600;700&display=swap');
+
+:root {
+  --font-body: 'IBM Plex Sans', sans-serif;
+  --font-display: 'IBM Plex Mono', monospace;
+  --bg: #0f1117; --bg2: #181b24; --bg3: #1f2330;
+  --accent: #8b8ff8; --accent-glow: rgba(139,143,248,.3); --accent-dim: rgba(139,143,248,.14);
+  --text: #e8eaf0; --text-muted: rgba(232,234,240,.65); --text-faint: rgba(232,234,240,.28);
+  --border: rgba(139,143,248,.18); --border2: rgba(255,255,255,.07);
+  --danger: #f87171; --danger-dim: rgba(248,113,113,.18); --success: #6ee7b7; --warn: #fcd34d;
+  --badge-text: #0f1117; --btn-text: #0f1117;
+  --card-bg: rgba(16,18,28,.88); --card-border: rgba(139,143,248,.06);
+  --input-bg: rgba(139,143,248,.04); --nav-hover: rgba(139,143,248,.07); --nav-active-bg: rgba(139,143,248,.13);
+  --msg-hover: rgba(139,143,248,.016); --scrollbar-thumb: rgba(139,143,248,.18);
+  --grad: linear-gradient(135deg,#e0e1ff 0%,#8b8ff8 60%,#6366f1 100%);
+}
+body { background: var(--bg); }
+#sidebar { background: rgba(10,11,18,.96); border-right: 1px solid var(--border2); box-shadow: 3px 0 24px rgba(0,0,0,.55); backdrop-filter: blur(20px); }
+.sidebar-logo { border-bottom-color: var(--border2); }
+.logo-text { background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-weight: 700; }
+.logo-pulse { background: var(--accent); box-shadow: 0 0 10px var(--accent-glow); }
+.sidebar-profile { border-top-color: var(--border2); }
+.pg-title { background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.pg-sub { color: var(--text-muted); }
+.home-title { background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.home-card { background: rgba(16,18,28,.88); border: 1px solid rgba(139,143,248,.07); backdrop-filter: blur(14px); }
+.home-card:hover { border-color: rgba(139,143,248,.42); box-shadow: 0 18px 60px rgba(0,0,0,.55), 0 0 22px rgba(139,143,248,.1); }
+.hcard-icon { color: var(--accent); } .hcard-sub { color: var(--text-muted); } .tt-el { color: var(--text-muted); } .home-copy { color: var(--text-faint); } .stat-label { color: var(--text-muted); }
+.thread-sidebar { background: rgba(10,11,18,.92); border-right-color: var(--border2); backdrop-filter: blur(16px); }
+.ts-title { color: var(--text-faint); }
+.ts-add { background: rgba(139,143,248,.1); color: var(--accent); border-color: rgba(139,143,248,.3); }
+.chat-topbar { background: rgba(12,13,22,.9); border-bottom-color: var(--border2); backdrop-filter: blur(20px); }
+.chat-input-area { background: rgba(12,13,22,.8); backdrop-filter: blur(20px); }
+.chat-no-select { color: var(--text-faint); } .cns-title { color: var(--text-muted); }
+.msg-text { color: rgba(232,234,240,.88); }
+.msg-text .mention { color: var(--accent); background: rgba(139,143,248,.1); }
+.msg-edited { color: var(--text-faint); }
+.date-divider span { background: rgba(139,143,248,.05); border: 1px solid rgba(139,143,248,.12); color: rgba(139,143,248,.55); }
+.rchip { background: rgba(139,143,248,.07); border: 1px solid rgba(139,143,248,.15); color: var(--text-muted); }
+.rchip:hover,.rchip.mine { background: rgba(139,143,248,.18); border-color: rgba(139,143,248,.45); color: var(--accent); }
+.typing-dots span { background: var(--text-muted); } .msg-actions { background: rgba(12,13,22,.98); backdrop-filter: blur(16px); }
+.members-sidebar { background: rgba(10,11,18,.92); backdrop-filter: blur(16px); }
+#neb-1 { background: radial-gradient(ellipse at center,rgba(99,102,241,.35) 0%,rgba(139,92,246,.18) 45%,transparent 72%); }
+#neb-2 { background: radial-gradient(ellipse at center,rgba(139,143,248,.3) 0%,rgba(99,102,241,.14) 50%,transparent 76%); }
+#neb-3 { background: radial-gradient(ellipse at center,rgba(79,70,229,.28) 0%,rgba(99,102,241,.12) 50%,transparent 76%); }
+#neb-stars { background-image: radial-gradient(1px 1px at 15% 22%,rgba(200,202,255,.5) 0%,transparent 100%),radial-gradient(1px 1px at 38% 68%,rgba(200,202,255,.38) 0%,transparent 100%),radial-gradient(1.5px 1.5px at 62% 11%,rgba(180,184,255,.6) 0%,transparent 100%),radial-gradient(1px 1px at 80% 50%,rgba(200,202,255,.42) 0%,transparent 100%); }
+.skel-sidebar { background: rgba(10,11,18,.97); } .skel-pulse { background: rgba(139,143,248,.07); }
+.auth-card { background: rgba(14,16,26,.9); border: 1px solid rgba(139,143,248,.15); box-shadow: 0 22px 60px rgba(0,0,0,.65); backdrop-filter: blur(28px); }
+.auth-logo { background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.auth-tagline { color: var(--text-faint); } .auth-tabs { background: rgba(139,143,248,.04); border: 1px solid var(--border2); }
+.auth-tab.active { background: rgba(139,143,248,.15); color: var(--accent); }
+.auth-err { color: var(--danger); } .auth-foot { color: var(--text-faint); }
+.pending-inner { background: rgba(14,16,26,.9); border: 1px solid rgba(139,143,248,.15); backdrop-filter: blur(24px); }
+.pending-inner h2 { background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.game-card:hover { box-shadow: 0 18px 60px rgba(0,0,0,.55), 0 0 20px rgba(139,143,248,.18); }
+.ghdr { background: rgba(12,13,22,.98); border-bottom-color: var(--border2); }
+.ghdr-logo { background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-weight: 700; letter-spacing: 3px; }
+.scroll-to-bottom { background: rgba(12,13,22,.97); }
+.modal-box { background: linear-gradient(145deg,#0f1117,#0b0c16); border-color: var(--border); }
+.ctb-announce { background: rgba(139,143,248,.08); border: 1px solid rgba(139,143,248,.2); color: var(--accent); }

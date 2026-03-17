@@ -1,0 +1,91 @@
+/* ══════════════════════════════
+   BLUSH — Warm Pastel Light
+══════════════════════════════ */
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap');
+
+:root {
+  --font-body: 'Nunito', sans-serif;
+  --font-display: 'Nunito', sans-serif;
+
+  --bg: #fdf0f3;
+  --bg2: #ffffff;
+  --bg3: #fce4ea;
+  --accent: #e11d67;
+  --accent-glow: rgba(225,29,103,.2);
+  --accent-dim: rgba(225,29,103,.1);
+  --text: #2d1a22;
+  --text-muted: rgba(45,26,34,.62);
+  --text-faint: rgba(45,26,34,.35);
+  --border: rgba(225,29,103,.18);
+  --border2: rgba(0,0,0,.07);
+  --danger: #dc2626;
+  --danger-dim: rgba(220,38,38,.1);
+  --success: #059669;
+  --warn: #d97706;
+  --badge-text: #ffffff;
+  --btn-text: #ffffff;
+
+  --card-bg: rgba(255,255,255,.92);
+  --card-border: rgba(0,0,0,.06);
+  --input-bg: rgba(255,255,255,.85);
+  --nav-hover: rgba(225,29,103,.05);
+  --nav-active-bg: rgba(225,29,103,.09);
+  --msg-hover: rgba(225,29,103,.025);
+  --scrollbar-thumb: rgba(225,29,103,.18);
+
+  --grad: linear-gradient(135deg,#831843 0%,#e11d67 55%,#fb7185 100%);
+}
+
+body { background: var(--bg); }
+#sidebar { background: rgba(255,248,250,.97); border-right: 1px solid var(--border2); box-shadow: 2px 0 16px rgba(0,0,0,.06); }
+.sidebar-logo { border-bottom-color: var(--border2); }
+.logo-text { background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-weight: 900; }
+.logo-pulse { background: var(--accent); box-shadow: 0 0 8px var(--accent-glow); }
+.sidebar-profile { border-top-color: var(--border2); }
+.snav-item { color: var(--text-muted); }
+.snav-item:hover { background: var(--nav-hover); color: var(--text); }
+.snav-item.active { background: var(--nav-active-bg); color: var(--accent); }
+.pg-title { background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.pg-sub { color: var(--text-muted); }
+.home-title { background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.home-card { background: rgba(255,255,255,.92); border: 1px solid rgba(0,0,0,.06); box-shadow: 0 4px 20px rgba(225,29,103,.06); }
+.home-card:hover { border-color: rgba(225,29,103,.32); box-shadow: 0 10px 36px rgba(225,29,103,.12); }
+.hcard-icon { color: var(--accent); } .hcard-sub,.tt-el,.stat-label { color: var(--text-muted); } .home-copy { color: var(--text-faint); }
+.thread-sidebar { background: rgba(255,248,250,.97); border-right-color: var(--border2); }
+.ts-title { color: var(--text-faint); }
+.ts-add { color: var(--accent); }
+.chat-topbar { background: rgba(255,248,250,.97); border-bottom-color: var(--border2); }
+.chat-input-area { background: rgba(253,244,246,.9); border-top-color: var(--border2); }
+.chat-input-wrap { background: rgba(255,255,255,.85); }
+.msg-text { color: rgba(45,26,34,.88); }
+.msg-text .mention { color: var(--accent); background: rgba(225,29,103,.08); }
+.msg-edited { color: var(--text-faint); }
+.date-divider span { background: rgba(225,29,103,.05); border: 1px solid rgba(225,29,103,.14); color: rgba(225,29,103,.6); }
+.rchip { background: rgba(225,29,103,.06); border: 1px solid rgba(225,29,103,.14); color: var(--text-muted); }
+.rchip:hover,.rchip.mine { background: rgba(225,29,103,.14); border-color: rgba(225,29,103,.36); color: var(--accent); }
+.typing-dots span { background: var(--text-muted); }
+.msg-actions { background: rgba(255,248,250,.99); border-color: var(--border2); }
+.mab { color: var(--text-muted); } .mab:hover { color: var(--accent); }
+.members-sidebar { background: rgba(255,248,250,.97); }
+#neb-1 { background: radial-gradient(ellipse at center,rgba(251,113,133,.3) 0%,rgba(244,114,182,.15) 45%,transparent 72%); }
+#neb-2 { background: radial-gradient(ellipse at center,rgba(253,164,175,.25) 0%,rgba(249,168,212,.12) 50%,transparent 76%); }
+#neb-3 { background: radial-gradient(ellipse at center,rgba(225,29,103,.18) 0%,rgba(244,114,182,.08) 50%,transparent 76%); }
+#neb-stars { background-image: none; opacity: 0; }
+.skel-sidebar { background: rgba(255,248,250,.98); } .skel-pulse { background: rgba(225,29,103,.08); }
+.auth-card { background: rgba(255,255,255,.96); border: 1px solid rgba(225,29,103,.12); box-shadow: 0 20px 60px rgba(0,0,0,.1); }
+.auth-logo { background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.auth-tagline,.auth-sub { color: var(--text-faint); } .auth-tabs { background: rgba(0,0,0,.03); border: 1px solid var(--border2); }
+.auth-tab { color: var(--text-muted); } .auth-tab.active { background: rgba(225,29,103,.1); color: var(--accent); }
+.auth-err { color: var(--danger); } .auth-foot { color: var(--text-faint); }
+.pending-inner { background: rgba(255,255,255,.96); border: 1px solid rgba(225,29,103,.12); }
+.pending-inner h2 { background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.game-card:hover { box-shadow: 0 18px 60px rgba(0,0,0,.12); border-color: rgba(225,29,103,.3); }
+.ghdr { background: rgba(255,248,250,.98); border-bottom-color: var(--border2); }
+.ghdr-logo { background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-weight: 900; letter-spacing: 3px; }
+.scroll-to-bottom { background: rgba(255,248,250,.97); color: var(--accent); }
+.titem { color: var(--text-muted); } .titem.active { color: var(--accent); }
+.modal-box { background: #fff; border: 1px solid rgba(0,0,0,.1); }
+.ctb-announce { background: rgba(225,29,103,.08); border: 1px solid rgba(225,29,103,.18); color: var(--accent); }
+.adm-tab.active { background: rgba(225,29,103,.1); color: var(--accent); border-color: rgba(225,29,103,.3); }
+.ms-section-label { color: var(--text-faint); }
+.snav-icon svg { stroke: currentColor; }

@@ -1,0 +1,85 @@
+/* ══════════════════════════
+   DARK THEME — Pure Dark
+══════════════════════════ */
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Serif+Display&display=swap');
+
+:root {
+  --font-body: 'DM Sans', sans-serif;
+  --font-display: 'DM Serif Display', serif;
+
+  --bg: #0a0a0a;
+  --bg2: #141414;
+  --bg3: #1c1c1c;
+  --accent: #a78bfa;
+  --accent-glow: rgba(167,139,250,.3);
+  --accent-dim: rgba(167,139,250,.15);
+  --text: #f1f1f1;
+  --text-muted: rgba(241,241,241,.6);
+  --text-faint: rgba(241,241,241,.25);
+  --border: rgba(167,139,250,.15);
+  --border2: rgba(255,255,255,.08);
+  --danger: #f87171;
+  --danger-dim: rgba(248,113,113,.18);
+  --success: #34d399;
+  --warn: #fbbf24;
+  --badge-text: #0a0a0a;
+  --btn-text: #0a0a0a;
+
+  --card-bg: rgba(20,20,20,.9);
+  --card-border: rgba(255,255,255,.05);
+  --input-bg: rgba(255,255,255,.04);
+  --nav-hover: rgba(255,255,255,.06);
+  --nav-active-bg: rgba(167,139,250,.12);
+  --msg-hover: rgba(167,139,250,.02);
+  --scrollbar-thumb: rgba(167,139,250,.16);
+
+  --grad: linear-gradient(135deg,#e9d5ff 0%,#a78bfa 100%);
+}
+
+body { background: var(--bg); }
+
+#sidebar { background: rgba(10,10,10,.96); border-right: 1px solid var(--border2); }
+.logo-text { background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.logo-pulse { background: var(--success); box-shadow: 0 0 10px var(--success); }
+.pg-title { background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.pg-sub { color: var(--text-muted); }
+.home-title { background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.home-card { background: var(--card-bg); border: 1px solid var(--card-border); }
+.home-card:hover { border-color: var(--accent); }
+.hcard-icon { color: var(--accent); }
+.hcard-sub { color: var(--text-muted); }
+.tt-el { color: var(--text-muted); }
+.home-copy { color: var(--text-faint); }
+.stat-label { color: var(--text-muted); }
+.thread-sidebar { background: rgba(10,10,10,.95); }
+.ts-title { color: var(--text-faint); }
+.ts-add { color: var(--accent); }
+.chat-topbar { background: rgba(10,10,10,.9); }
+.chat-input-area { background: rgba(10,10,10,.8); }
+.msg-text { color: rgba(241,241,241,.85); }
+.msg-text .mention { color: var(--accent); background: rgba(167,139,250,.1); }
+.date-divider span { background: rgba(167,139,250,.05); border: 1px solid rgba(167,139,250,.12); color: rgba(167,139,250,.55); }
+.rchip { background: rgba(167,139,250,.07); border: 1px solid rgba(167,139,250,.15); color: var(--text-muted); }
+.rchip:hover, .rchip.mine { background: rgba(167,139,250,.18); border-color: rgba(167,139,250,.45); color: var(--accent); }
+.msg-actions { background: rgba(10,10,10,.98); }
+.members-sidebar { background: rgba(10,10,10,.95); }
+#neb-1 { background: radial-gradient(ellipse at center,rgba(167,139,250,.25) 0%,rgba(100,80,200,.12) 45%,transparent 72%); }
+#neb-2 { background: radial-gradient(ellipse at center,rgba(139,92,246,.2) 0%,rgba(100,60,180,.1) 50%,transparent 76%); }
+#neb-3 { background: radial-gradient(ellipse at center,rgba(167,139,250,.15) 0%,rgba(80,50,150,.08) 50%,transparent 76%); }
+#neb-stars { background-image: radial-gradient(1px 1px at 15% 20%,rgba(255,255,255,.4) 0%,transparent 100%),radial-gradient(1px 1px at 40% 65%,rgba(255,255,255,.3) 0%,transparent 100%),radial-gradient(1.5px 1.5px at 60% 10%,rgba(200,200,255,.5) 0%,transparent 100%),radial-gradient(1px 1px at 80% 50%,rgba(255,255,255,.35) 0%,transparent 100%); }
+.skel-sidebar { background: rgba(10,10,10,.98); }
+.skel-pulse { background: rgba(167,139,250,.07); }
+.auth-card { background: rgba(14,14,14,.92); border: 1px solid rgba(167,139,250,.12); backdrop-filter: blur(28px); }
+.auth-logo { background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.auth-sub { color: var(--text-faint); }
+.auth-tabs { background: rgba(255,255,255,.04); border: 1px solid var(--border2); }
+.auth-tab.active { background: rgba(167,139,250,.12); color: var(--accent); }
+.auth-err { color: var(--danger); }
+.auth-foot { color: var(--text-faint); }
+.pending-inner { background: rgba(14,14,14,.92); border: 1px solid rgba(167,139,250,.12); backdrop-filter: blur(24px); }
+.pending-inner h2 { background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.ghdr { background: rgba(10,10,10,.98); }
+.ghdr-logo { background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-weight: 800; letter-spacing: 3px; }
+.scroll-to-bottom { background: rgba(10,10,10,.97); }
+.typing-dots span { background: var(--text-muted); }
+.modal-box { background: linear-gradient(145deg,#0e0e0e,#0a0a0a); border-color: var(--border); }

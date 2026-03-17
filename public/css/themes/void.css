@@ -1,0 +1,63 @@
+/* ══════════════════════════════
+   VOID — Pure Black Minimal
+══════════════════════════════ */
+@import url('https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600;700;800;900&display=swap');
+:root {
+  --font-body: 'Geist Mono', monospace;
+  --font-display: 'Geist Mono', monospace;
+  --bg: #000; --bg2: #0a0a0a; --bg3: #111;
+  --accent: #e5e5e5; --accent-glow: rgba(229,229,229,.2); --accent-dim: rgba(229,229,229,.08);
+  --text: #f5f5f5; --text-muted: rgba(245,245,245,.6); --text-faint: rgba(245,245,245,.25);
+  --border: rgba(255,255,255,.15); --border2: rgba(255,255,255,.07);
+  --danger: #ef4444; --danger-dim: rgba(239,68,68,.15); --success: #4ade80; --warn: #fbbf24;
+  --badge-text: #000; --btn-text: #000;
+  --card-bg: rgba(15,15,15,.95); --card-border: rgba(255,255,255,.06);
+  --input-bg: rgba(255,255,255,.04); --nav-hover: rgba(255,255,255,.06); --nav-active-bg: rgba(255,255,255,.1);
+  --msg-hover: rgba(255,255,255,.02); --scrollbar-thumb: rgba(255,255,255,.12);
+  --grad: linear-gradient(135deg,#fff 0%,rgba(255,255,255,.7) 100%);
+}
+body{background:var(--bg)}
+#sidebar{background:rgba(0,0,0,.98);border-right:1px solid rgba(255,255,255,.06);backdrop-filter:blur(20px)}
+.sidebar-logo{border-bottom-color:rgba(255,255,255,.06)}
+.logo-text{color:#fff;font-weight:900;letter-spacing:4px}
+.logo-pulse{background:#fff;box-shadow:0 0 8px rgba(255,255,255,.4)}
+.sidebar-profile{border-top-color:rgba(255,255,255,.06)}
+.pg-title{color:#fff;font-weight:900}
+.pg-sub{color:var(--text-muted)}
+.home-title{color:#fff}
+.home-card{background:rgba(15,15,15,.95);border:1px solid rgba(255,255,255,.07)}
+.home-card:hover{border-color:rgba(255,255,255,.25);box-shadow:0 18px 60px rgba(0,0,0,.8)}
+.hcard-icon{color:var(--text-muted)}.home-card:hover .hcard-icon{color:#fff}
+.hcard-sub,.tt-el,.stat-label{color:var(--text-muted)}.home-copy{color:var(--text-faint)}
+.thread-sidebar{background:rgba(0,0,0,.98);border-right-color:rgba(255,255,255,.06)}
+.ts-title{color:var(--text-faint)}
+.ts-add{background:rgba(255,255,255,.07);color:var(--text-muted);border-color:rgba(255,255,255,.15)}
+.chat-topbar{background:rgba(0,0,0,.98);border-bottom-color:rgba(255,255,255,.06)}
+.chat-input-area{background:rgba(0,0,0,.95)}
+.chat-no-select{color:var(--text-faint)}
+.msg-text{color:rgba(245,245,245,.88)}
+.msg-text .mention{color:#fff;background:rgba(255,255,255,.1)}
+.msg-edited{color:var(--text-faint)}
+.date-divider span{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);color:rgba(255,255,255,.4)}
+.rchip{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:var(--text-muted)}
+.rchip:hover,.rchip.mine{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.3);color:#fff}
+.typing-dots span{background:var(--text-muted)}.msg-actions{background:rgba(0,0,0,.99)}
+.members-sidebar{background:rgba(0,0,0,.98)}
+#neb-1{background:radial-gradient(ellipse at center,rgba(255,255,255,.03) 0%,transparent 70%)}
+#neb-2{background:radial-gradient(ellipse at center,rgba(255,255,255,.02) 0%,transparent 70%)}
+#neb-3{background:radial-gradient(ellipse at center,rgba(255,255,255,.02) 0%,transparent 70%)}
+#neb-stars{background-image:radial-gradient(1px 1px at 15% 22%,rgba(255,255,255,.4) 0%,transparent 100%),radial-gradient(1px 1px at 38% 68%,rgba(255,255,255,.3) 0%,transparent 100%),radial-gradient(1.5px 1.5px at 62% 11%,rgba(255,255,255,.5) 0%,transparent 100%),radial-gradient(1px 1px at 80% 50%,rgba(255,255,255,.35) 0%,transparent 100%),radial-gradient(1px 1px at 25% 85%,rgba(255,255,255,.3) 0%,transparent 100%)}
+.skel-sidebar{background:#000}.skel-pulse{background:rgba(255,255,255,.06)}
+.auth-card{background:rgba(10,10,10,.98);border:1px solid rgba(255,255,255,.1);box-shadow:0 22px 60px rgba(0,0,0,.9);backdrop-filter:blur(28px)}
+.auth-logo{color:#fff;font-weight:900}
+.auth-tagline{color:var(--text-faint)}.auth-tabs{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07)}
+.auth-tab.active{background:rgba(255,255,255,.1);color:#fff}
+.auth-err{color:var(--danger)}.auth-foot{color:var(--text-faint)}
+.pending-inner{background:rgba(10,10,10,.98);border:1px solid rgba(255,255,255,.1);backdrop-filter:blur(24px)}
+.pending-inner h2{color:#fff}
+.game-card:hover{box-shadow:0 18px 60px rgba(0,0,0,.8);border-color:rgba(255,255,255,.25)}
+.ghdr{background:rgba(0,0,0,.99);border-bottom-color:rgba(255,255,255,.06)}
+.ghdr-logo{color:#fff;font-weight:900;letter-spacing:3px}
+.scroll-to-bottom{background:rgba(0,0,0,.99)}
+.modal-box{background:#0a0a0a;border-color:rgba(255,255,255,.1)}
+.ctb-announce{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:var(--text-muted)}
