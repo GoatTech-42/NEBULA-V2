@@ -8,42 +8,34 @@
 
 ---
 
-## Features
 
-**Chat**
-- Real-time channels and direct messages powered by Firestore
-- Message grouping, reactions, editing, and deletion
-- Typing indicators, mentions (`@username`), and URL linkification
-- Announcement-only channels
-- Password-protected channels
-- Per-channel notification preferences
+## Project Overview
 
-**Game Vault**
-- Hundreds of browser games with cover art
-- Featured carousel with daily rotation
-- Search, sort by popularity / name / newest
-- Favorites (saved via cookie)
-- In-app game viewer with fullscreen support
+**Nebula V2** is a private, invite-only web platform that combines real-time chat, a curated browser game vault, and a dynamic user ranking system—all wrapped in a highly polished, themeable interface.
 
-**Accounts & Ranks**
-- Invite-only — new accounts require moderator approval
-- Six rank tiers: `earthbound` → `planetary` → `solar` → `galactic` → `universal` → `goat`
-- Rank-gated channel access
-- Username cooldown (7-day change limit)
-- Custom avatar colors
+### Key Components
+- **Frontend:** Built with vanilla JavaScript, Nebula V2 features modular code for core app logic, user authentication, game browsing, virtual currency, and user profiles.
+  - `app.js`: Manages app state, user sessions, channel/DM logic, and UI utilities.
+  - `firebase.js`: Handles Firebase initialization, authentication, and Firestore integration.
+  - `games.js`: Powers the game vault, including search, favorites, and in-app game launching.
+  - `goatcoin.js`: Implements the GoatCoin virtual currency, multiplayer blackjack, and leaderboards.
+  - `profile.js`: Manages user profiles, badges, and adblocker detection.
 
-**Themes**
-- 16 built-in themes with animated circular transition on switch
-- OG · Dark · Light · Aurora · Synthwave · Crimson · Midnight · Slate · Forest · Ocean · Rose · Solar · Void · Neon · Blush · Ice
+- **Visual Design:**
+  - `layout.css`: Provides the structural and utility styles for a responsive, modern layout.
+  - `themes/`: Sixteen unique CSS themes, each with custom fonts, colors, and animated transitions, allow deep personalization.
 
-**Misc**
-- Parallax nebula background with mouse tracking
-- Live visit counter
-- FPS meter + battery indicator on home screen
-- Fully responsive, mobile-friendly layout
+- **HTML Shell:**
+  - `index.html`: The main entry point, styled for a playful, retro look with custom cursors and CRT effects.
+
+### Features
+- Real-time chat with advanced features (reactions, editing, mentions, notifications)
+- Hundreds of browser games, with search, favorites, and daily featured carousel
+- GoatCoin currency system, multiplayer blackjack, and weekly badge awards
+- Six user ranks, each unlocking new privileges and channels
+- Fully responsive, mobile-friendly design with animated backgrounds and theme transitions
 
 ---
-
 ## Project Structure
 
 ```
@@ -54,7 +46,8 @@ Nebula V2/
 │   │   ├── app.js          # Core app logic
 │   │   ├── firebase.js     # Firebase init & exports
 │   │   ├── games.js        # Game vault logic
-│   │   └── tooltips.json   # Home screen tooltip pool
+│   │   ├── goatcoin.js     # GoatCoin currency & multiplayer
+│   │   └── profile.js      # Profiles, badges, adblocker
 │   └── css/
 │       ├── layout.css      # Structure, spacing, animations
 │       └── themes/         # One CSS file per theme
@@ -65,51 +58,37 @@ Nebula V2/
 ```
 
 ---
-
 ## Setup
 
 ### 1. Clone the repo
 
 ```bash
 git clone https://github.com/GoatTech-42/NEBULA-V2.git
-cd NEBULA-V2
-```
 
-### 2. Firebase
-
-This project uses Firebase for auth and Firestore. The config is in `public/js/firebase.js`.
-
-To use your own Firebase project:
 
 1. Go to [console.firebase.google.com](https://console.firebase.google.com)
 2. Create a project
-3. Enable **Authentication → Email/Password**
 4. Enable **Firestore Database**
 5. Replace the `firebaseConfig` object in `firebase.js` with your own credentials
 
 ### 3. Firestore Rules
 
 Set your Firestore rules to require authentication:
-
 ```
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /{document=**} {
       allow read, write: if request.auth != null;
     }
   }
 }
 ```
-
 ### 4. Serve
 
 No build step required. Just serve the `public/` folder with any static file server:
-
 ```bash
 # Using VS Code Live Server, or:
 npx serve public
-```
 
 > ⚠️ Must be served over HTTP/HTTPS — Firebase Auth won't work from `file://`.
 
@@ -131,7 +110,6 @@ New signups start as `earthbound` with status `pending`. A `universal+` user mus
 ---
 
 ## Built With
-
 - **Firebase** — Auth + Firestore realtime database
 - **Vanilla JS** — No frameworks, no build tools
 - **CSS custom properties** — Full theming system via CSS variables
