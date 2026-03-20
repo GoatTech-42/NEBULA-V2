@@ -14,6 +14,7 @@
   --card-bg: rgba(16,12,0,.86); --card-border: rgba(251,191,36,.06);
   --input-bg: rgba(251,191,36,.04); --nav-hover: rgba(251,191,36,.07); --nav-active-bg: rgba(251,191,36,.13);
   --msg-hover: rgba(251,191,36,.016); --scrollbar-thumb: rgba(251,191,36,.18);
+  --color-scheme: dark;
   --grad: linear-gradient(135deg,#fef3c7 0%,#fbbf24 50%,#d97706 100%);
 }
 body{background:var(--bg)}
@@ -60,3 +61,28 @@ body{background:var(--bg)}
 .scroll-to-bottom{background:rgba(8,6,0,.97)}
 .modal-box{background:linear-gradient(145deg,#0c0900,#080600);border-color:var(--border)}
 .ctb-announce{background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.2);color:var(--accent)}
+
+/* __NEBULA_GC_THEME__ */
+/* GoatCoin + Blackjack overrides for solar theme */
+.bj-card {
+  background: #fffbe8;
+  border-color: rgba(251,191,36,.4);
+  box-shadow: 0 4px 16px rgba(251,191,36,.2);
+}
+.bj-card.red .bj-cv,
+.bj-card.red .bj-cs {
+  color: #dc2626;
+}
+.bj-card .bj-cv,
+.bj-card .bj-cs {
+  color: #0f172a;
+}
+.gc-stat-card {
+  box-shadow: 0 4px 20px rgba(251,191,36,.15);
+}
+.lb-me {
+  box-shadow: 0 0 12px rgba(251,191,36,.15);
+}
+.badge-chip:hover {
+  box-shadow: 0 0 8px rgba(251,191,36,.15);
+}

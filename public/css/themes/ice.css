@@ -33,6 +33,7 @@
   --msg-hover: rgba(186,230,253,.016);
   --scrollbar-thumb: rgba(186,230,253,.18);
 
+  --color-scheme: dark;
   --grad: linear-gradient(135deg,#ffffff 0%,#bae6fd 45%,#38bdf8 100%);
 }
 
@@ -80,3 +81,28 @@ body { background: var(--bg); }
 .scroll-to-bottom { background: rgba(3,9,20,.97); }
 .modal-box { background: linear-gradient(145deg,#040f22,#02090f); border-color: var(--border); }
 .ctb-announce { background: rgba(186,230,253,.08); border: 1px solid rgba(186,230,253,.2); color: var(--accent); }
+
+/* __NEBULA_GC_THEME__ */
+/* GoatCoin + Blackjack overrides for ice theme */
+.bj-card {
+  background: #f0faff;
+  border-color: rgba(56,189,248,.4);
+  box-shadow: 0 4px 16px rgba(56,189,248,.2);
+}
+.bj-card.red .bj-cv,
+.bj-card.red .bj-cs {
+  color: #dc2626;
+}
+.bj-card .bj-cv,
+.bj-card .bj-cs {
+  color: #0f172a;
+}
+.gc-stat-card {
+  box-shadow: 0 4px 20px rgba(56,189,248,.12);
+}
+.lb-me {
+  box-shadow: 0 0 12px rgba(56,189,248,.12);
+}
+.badge-chip:hover {
+  box-shadow: 0 0 8px rgba(56,189,248,.12);
+}

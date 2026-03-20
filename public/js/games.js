@@ -12,10 +12,6 @@ const htmlURL = "https://cdn.jsdelivr.net/gh/gn-math/html@main";
 
 let zones = [];
 let popularityData = {};
-let featuredGames = [];
-let carouselIndex = 0;
-let carouselTimer;
-let isTransitioning = false;
 let showFavsOnly = false;
 
 // Favorites use cookies, not localStorage
@@ -50,7 +46,6 @@ export async function initGames() {
     const resp = await fetch(zonesURL+"?t="+Date.now());
     zones = await resp.json();
     await fetchPopularity();
-    setupFeatured();
     handleSearch();
     setupVaultEvents();
   } catch(e) {
@@ -70,75 +65,6 @@ async function fetchPopularity() {
   } catch {}
 }
 
-function setupFeatured() {
-  if(zones.length < 5) return;
-  const now = new Date();
-  const seed = now.getFullYear()+'-'+now.getMonth()+'-'+now.getDate()+(now.getHours()<12?'AM':'PM');
-  let hash = 0;
-  for(let c of seed) hash = seed.charCodeAt(seed.indexOf(c)) + ((hash<<5)-hash);
-  const rand = () => { hash = Math.sin(hash)*10000; return hash - Math.floor(hash); };
-
-  let pool = zones.filter(z=>!z.name.includes("SUGGEST"));
-  featuredGames = [];
-  for(let i=0; i<10; i++) {
-    const idx = Math.floor(rand()*pool.length);
-    featuredGames.push(pool.splice(idx,1)[0]);
-  }
-  renderFeatured();
-  const fw = document.getElementById('feat-wrapper');
-  if(fw) fw.classList.remove('hidden');
-}
-
-function renderFeatured() {
-  const track = document.getElementById('feat-track');
-  if(!track) return;
-  track.innerHTML = '';
-  const visible = window.innerWidth > 800 ? 5 : 2;
-  const clonesBefore = featuredGames.slice(-visible);
-  const clonesAfter = featuredGames.slice(0, visible);
-  [...clonesBefore, ...featuredGames, ...clonesAfter].forEach(file => {
-    const div = document.createElement('div');
-    div.className = 'feat-item';
-    div.onclick = () => openZone(file);
-    const img = document.createElement('img');
-    img.src = file.cover.replace('{COVER_URL}',coverURL).replace('{HTML_URL}',htmlURL);
-    img.alt = file.name;
-    const p = document.createElement('div');
-    p.textContent = file.name;
-    div.append(img, p);
-    track.appendChild(div);
-  });
-  carouselIndex = visible;
-  updateCarousel(false);
-  startCarousel();
-}
-
-function updateCarousel(transition=true) {
-  const track = document.getElementById('feat-track');
-  if(!track) return;
-  const visible = window.innerWidth > 800 ? 5 : 2;
-  track.style.transition = transition ? 'transform .6s cubic-bezier(.23,1,.32,1)' : 'none';
-  track.style.transform = `translateX(-${carouselIndex*(100/visible)}%)`;
-}
-
-function startCarousel() {
-  clearInterval(carouselTimer);
-  carouselTimer = setInterval(()=>moveCarousel(1), 4500);
-}
-
-function moveCarousel(dir) {
-  if(isTransitioning) return;
-  const visible = window.innerWidth>800?5:2;
-  isTransitioning = true;
-  carouselIndex += dir;
-  updateCarousel(true);
-  setTimeout(()=>{
-    if(carouselIndex >= featuredGames.length+visible) { carouselIndex=visible; updateCarousel(false); }
-    else if(carouselIndex <= 0) { carouselIndex=featuredGames.length; updateCarousel(false); }
-    isTransitioning = false;
-  }, 600);
-}
-
 function handleSearch() {
   const q = (document.getElementById('vault-search')?.value||'').toLowerCase();
   const sort = document.getElementById('vault-sort')?.value||'popular';
@@ -153,16 +79,60 @@ function handleSearch() {
   renderGrid(filtered);
 }
 
+// Lazy load observer - reused across renders
+let _lazyObserver = null;
+function getLazyObserver() {
+  if(_lazyObserver) return _lazyObserver;
+  _lazyObserver = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if(e.isIntersecting) {
+        const img = e.target;
+        if(img.dataset.src) { img.src = img.dataset.src; delete img.dataset.src; }
+        _lazyObserver.unobserve(img);
+      }
+    });
+  }, { rootMargin: '200px' });
+  return _lazyObserver;
+}
+
+const PAGE_SIZE = 40;
+let _gridPage = 0, _gridData = [], _gridLoading = false;
+
 function renderGrid(data) {
   const grid = document.getElementById('game-grid');
   if(!grid) return;
+  _gridData = data;
+  _gridPage = 0;
   grid.innerHTML='';
   if(!data.length) {
     grid.innerHTML=`<div class="vault-empty" style="grid-column:1/-1"><div class="vault-empty-ico"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div><span style="font-size:.85rem;font-weight:600">No games found</span></div>`;
     return;
   }
+  renderGridPage();
+  // Infinite scroll sentinel
+  let sentinel = grid.parentElement.querySelector('.grid-sentinel');
+  if(!sentinel) {
+    sentinel = document.createElement('div');
+    sentinel.className = 'grid-sentinel';
+    grid.parentElement.appendChild(sentinel);
+    new IntersectionObserver(entries => {
+      if(entries[0].isIntersecting && !_gridLoading) renderGridPage();
+    }, { rootMargin: '300px' }).observe(sentinel);
+  }
+}
+
+function renderGridPage() {
+  const grid = document.getElementById('game-grid');
+  if(!grid || _gridLoading) return;
+  const start = _gridPage * PAGE_SIZE;
+  const slice = _gridData.slice(start, start + PAGE_SIZE);
+  if(!slice.length) return;
+  _gridLoading = true;
+  _gridPage++;
+  const observer = getLazyObserver();
   const favs = getFavs();
-  data.forEach(file => {
+  const frag = document.createDocumentFragment();
+  slice.forEach(file => {
     const card = document.createElement('div');
     card.className = 'game-card';
     card.onclick = () => openZone(file);
@@ -171,8 +141,11 @@ function renderGrid(data) {
     favBtn.innerHTML = `<svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`;
     favBtn.onclick = e => { e.stopPropagation(); toggleFav(file.id, card, favBtn); };
     const img = document.createElement('img');
-    img.src = file.cover.replace('{COVER_URL}',coverURL).replace('{HTML_URL}',htmlURL);
+    img.dataset.src = file.cover.replace('{COVER_URL}',coverURL).replace('{HTML_URL}',htmlURL);
+    img.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2 3"/>'; // placeholder
     img.alt = file.name;
+    img.loading = 'lazy';
+    observer.observe(img);
     const body = document.createElement('div');
     body.className = 'game-card-body';
     const name = document.createElement('div');
@@ -180,8 +153,10 @@ function renderGrid(data) {
     name.textContent = file.name;
     body.appendChild(name);
     card.append(favBtn, img, body);
-    grid.appendChild(card);
+    frag.appendChild(card);
   });
+  grid.appendChild(frag);
+  _gridLoading = false;
 }
 
 function toggleFav(id, card, btn) {
@@ -218,13 +193,5 @@ function setupVaultEvents() {
     document.getElementById('fav-filter-btn').classList.toggle('active', showFavsOnly);
     handleSearch();
   });
-  document.getElementById('carousel-prev')?.addEventListener('click', ()=>{
-    moveCarousel(-1); clearInterval(carouselTimer);
-    setTimeout(startCarousel, 4000);
-  });
-  document.getElementById('carousel-next')?.addEventListener('click', ()=>{
-    moveCarousel(1); clearInterval(carouselTimer);
-    setTimeout(startCarousel, 4000);
-  });
-  window.addEventListener('resize', ()=>{ if(featuredGames.length) renderFeatured(); });
+
 }

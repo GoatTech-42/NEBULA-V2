@@ -4,6 +4,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs, onSnapshot, orderBy, limit, serverTimestamp, increment, deleteDoc, addDoc, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBkjYpi0MY0JVtSKAmJ-K2Kr93k2F6gqmg",
@@ -17,6 +18,13 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
+
+// Initialize Firebase App Check with reCAPTCHA v3
+// Use the SITE KEY (public key) only, never the secret key in frontend code
+initializeAppCheck(app, {
+  provider: new ReCaptchaV3Provider('6Ld-N48sAAAAAOn5Qm_EgZ8ZtB8SXff0hWZjB-kI'),
+  isTokenAutoRefreshEnabled: true
+});
 
 // Export everything needed across modules
 export { app, db, auth,

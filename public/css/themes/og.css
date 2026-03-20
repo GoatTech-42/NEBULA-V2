@@ -33,17 +33,18 @@
   --msg-hover: rgba(56,189,248,.018);
   --scrollbar-thumb: rgba(56,189,248,.16);
 
+  --color-scheme: dark;
   --grad: linear-gradient(135deg,#e8fbff 0%,#66e0ff 100%);
 }
 
 body { background: var(--bg); }
 
 #sidebar { background: rgba(3,7,16,.92); border-right: 1px solid var(--border2); box-shadow: 3px 0 24px rgba(0,0,0,.38); backdrop-filter: blur(20px); }
-.logo-text { background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-weight: 800; }
+.logo-text { background: var(--grad); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-weight: 800; }
 .logo-pulse { background: var(--success); box-shadow: 0 0 10px var(--success); }
-.pg-title { background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.pg-title { background: var(--grad); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
 .pg-sub { color: var(--text-muted); }
-.home-title { background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.home-title { background: var(--grad); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
 .home-card { background: rgba(10,20,36,.80); border: 1px solid rgba(255,255,255,.035); box-shadow: 0 8px 28px rgba(0,0,0,.45); backdrop-filter: blur(14px); }
 .home-card:hover { border-color: rgba(56,189,248,.38); }
 .hcard-icon { color: var(--accent); opacity: .8; }
@@ -70,16 +71,41 @@ body { background: var(--bg); }
 .skel-sidebar { background: rgba(3,7,16,.97); }
 .skel-pulse { background: rgba(56,189,248,.07); }
 .auth-card { background: rgba(6,13,26,.88); border: 1px solid rgba(56,189,248,.14); backdrop-filter: blur(28px); }
-.auth-logo { background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.auth-logo { background: var(--grad); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
 .auth-sub { color: var(--text-faint); }
 .auth-tabs { background: rgba(255,255,255,.04); border: 1px solid var(--border2); }
 .auth-tab.active { background: rgba(56,189,248,.15); color: var(--accent); }
 .auth-err { color: var(--danger); }
 .auth-foot { color: var(--text-faint); }
 .pending-inner { background: rgba(10,20,36,.9); border: 1px solid rgba(56,189,248,.14); backdrop-filter: blur(24px); }
-.pending-inner h2 { background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.pending-inner h2 { background: var(--grad); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
 .ghdr { background: rgba(4,9,22,.98); }
-.ghdr-logo { background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-weight: 800; letter-spacing: 3px; }
+.ghdr-logo { background: var(--grad); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-weight: 800; letter-spacing: 3px; }
 .scroll-to-bottom { background: rgba(4,9,22,.97); }
 .typing-dots span { background: var(--text-muted); }
 .modal-box { background: linear-gradient(145deg,#07101f,#050c18); border-color: var(--border); }
+
+/* __NEBULA_GC_THEME__ */
+/* GoatCoin + Blackjack overrides for og theme */
+.bj-card {
+  background: #e8f7ff;
+  border-color: rgba(79,201,234,.4);
+  box-shadow: 0 4px 16px rgba(79,201,234,.2);
+}
+.bj-card.red .bj-cv,
+.bj-card.red .bj-cs {
+  color: #dc2626;
+}
+.bj-card .bj-cv,
+.bj-card .bj-cs {
+  color: #0f172a;
+}
+.gc-stat-card {
+  box-shadow: 0 4px 20px rgba(79,201,234,.18);
+}
+.lb-me {
+  box-shadow: 0 0 12px rgba(79,201,234,.18);
+}
+.badge-chip:hover {
+  box-shadow: 0 0 8px rgba(79,201,234,.18);
+}

@@ -1,711 +1,851 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Nebula V2</title>
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✦</text></svg>">
-  <!-- Layout (structure only) -->
-  <link rel="stylesheet" href="css/layout.css">
-  <!-- Active theme injected by JS — default fallback -->
-  <link rel="stylesheet" id="theme-stylesheet" href="css/themes/og.css">
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-3DNSV0WCYG"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-3DNSV0WCYG');
+</script>
+    <meta charset="UTF-8">
+    <title>ERROR: EVERYTHING IS FINE</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@700&display=swap');
+
+        * { box-sizing: border-box; }
+
+        html {
+            cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Ctext y='24' font-size='24'%3E💀%3C/text%3E%3C/svg%3E") 16 16, auto;
+        }
+
+        body {
+            background-color: #cc00cc;
+            color: #00ff00;
+            font-family: "Comic Sans MS", "Comic Neue", cursive;
+            overflow-x: hidden;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+        }
+
+        /* CRT scanlines — static, no flash */
+        .overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0,0,0,0.07),
+                rgba(0,0,0,0.07) 1px,
+                transparent 1px,
+                transparent 3px
+            );
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        /* Rainbow bar — slow slide */
+        .rainbow-bar {
+            width: 100%;
+            height: 10px;
+            background: linear-gradient(90deg, red, orange, yellow, green, blue, violet, red);
+            background-size: 200% 100%;
+            animation: barSlide 2s linear infinite;
+        }
+        @keyframes barSlide {
+            from { background-position: 0% 0; }
+            to   { background-position: 200% 0; }
+        }
+
+        /* Marquees */
+        marquee { font-weight: bold; }
+        marquee.top-marq  { font-size:26px; background:#111;     color:lime;   border:8px dashed yellow; }
+        marquee.mid-marq  { font-size:20px; background:navy;     color:yellow; border:6px dashed cyan; }
+        marquee.bot-marq  { font-size:18px; background:darkred;  color:white;  border:6px dashed orange; }
+        marquee.inner-marq1 { font-size:16px; background:black; color:lime;   border:none; }
+        marquee.inner-marq2 { font-size:14px; background:black; color:orange; border:none; }
+        marquee.inner-marq3 { font-size:13px; background:black; color:cyan;   border:none; }
+
+        /* Glitch text — slow enough, not strobing */
+        .glitch-container {
+            position: relative;
+            width: 100%;
+            text-align: center;
+            padding: 10px 0;
+        }
+
+        .spam {
+            font-size: 52px;
+            font-weight: bold;
+            text-transform: uppercase;
+            text-shadow: 4px 4px 0 red, -4px -4px 0 blue, 8px 0 yellow;
+            display: inline-block;
+            animation: spamWobble 1.3s ease-in-out infinite alternate;
+        }
+        @keyframes spamWobble {
+            from { transform: skew(-3deg) scale(1); }
+            to   { transform: skew(3deg) scale(1.05); }
+        }
+
+        .spin-text {
+            font-size: 40px; font-weight: bold; color: yellow;
+            text-shadow: 3px 3px magenta;
+            animation: spin3d 2s linear infinite;
+            display: inline-block;
+        }
+        @keyframes spin3d { from { transform: rotateY(0deg); } to { transform: rotateY(360deg); } }
+
+        .bounce-text {
+            font-size: 30px; color: cyan; display: inline-block;
+            animation: bounce 0.8s ease infinite alternate;
+        }
+        @keyframes bounce {
+            from { transform: translateY(0); }
+            to   { transform: translateY(-16px) rotate(5deg); }
+        }
+
+        .zigzag-text {
+            font-size: 28px; font-weight: bold; color: orange; display: inline-block;
+            animation: zigzag 0.7s ease infinite alternate;
+        }
+        @keyframes zigzag {
+            from { transform: translateX(-15px); }
+            to   { transform: translateX(15px); }
+        }
+
+        /* Main content */
+        .main-content { margin-top: 10px; padding: 20px; position: relative; }
+
+        h1 {
+            font-size: 58px; text-align: center;
+            animation: wobble 1.5s ease-in-out infinite;
+            text-shadow: 5px 5px 0 blue, 10px 10px 0 red, 15px 15px 0 yellow;
+            color: #00ff00;
+        }
+        @keyframes wobble {
+            0%   { transform: rotate(-2deg) scale(1.05); }
+            50%  { transform: rotate(2deg) scale(0.97); }
+            100% { transform: rotate(-2deg) scale(1.05); }
+        }
+
+        p.body-text {
+            font-size: 20px; line-height: 1.6;
+            background: rgba(0,0,0,0.5); padding: 15px;
+            border: 5px double yellow; color: white;
+        }
+
+        /* Elusive button */
+        #elusive-button {
+            position: fixed; padding: 18px 28px;
+            background: blue; color: white; font-size: 20px;
+            font-family: "Comic Sans MS", cursive; font-weight: bold;
+            border: 6px outset cyan; z-index: 10000; cursor: pointer;
+            animation: buttonPulse 1.5s ease infinite alternate;
+            transition: left 0.08s, top 0.08s;
+        }
+        @keyframes buttonPulse {
+            from { background: blue; transform: scale(1); box-shadow: 0 0 15px cyan; }
+            to   { background: #6600cc; transform: scale(1.08); box-shadow: 0 0 30px yellow; }
+        }
+
+        /* Win95 popups */
+        .popup {
+            position: fixed; background: #c0c0c0;
+            border: 3px outset white; padding: 0; z-index: 5000;
+            font-family: "Comic Sans MS", cursive;
+            min-width: 290px; max-width: 380px;
+            box-shadow: 5px 5px 0 black;
+            animation: popIn 0.15s ease-out;
+        }
+        @keyframes popIn { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .popup-title {
+            background: linear-gradient(90deg, navy, #0055ff);
+            color: white; padding: 4px 8px; font-size: 13px; font-weight: bold;
+            display: flex; justify-content: space-between; align-items: center; user-select: none;
+        }
+        .popup-title .close-btn {
+            background: #c0c0c0; border: 2px outset white; color: black;
+            font-weight: bold; cursor: pointer; padding: 1px 6px; font-size: 12px; line-height: 1.2;
+        }
+        .popup-title .close-btn:hover { background: red; color: white; }
+        .popup-body { padding: 14px; font-size: 13px; text-align: center; color: black; }
+        .popup-body .popup-icon { font-size: 32px; margin-bottom: 8px; display: block; }
+        .popup-btn {
+            background: #c0c0c0; border: 2px outset white; padding: 4px 14px;
+            font-size: 13px; cursor: pointer; margin: 4px 3px;
+            font-family: "Comic Sans MS", cursive; white-space: nowrap;
+        }
+        .popup-btn:active { border-style: inset; }
+        .popup-btn:hover { background: #a0d0ff; }
+
+        /* Text rain */
+        #text-rain-container {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; overflow: hidden; z-index: 1;
+        }
+        .rain-word {
+            position: absolute; font-weight: bold;
+            font-family: "Comic Sans MS", cursive;
+            animation: fall linear infinite; white-space: nowrap; opacity: 0.85;
+        }
+        @keyframes fall {
+            from { transform: translateY(-60px); opacity: 0.9; }
+            to   { transform: translateY(110vh); opacity: 0.4; }
+        }
+
+        /* Congrats zone */
+        .congrats-zone {
+            background: black; color: #ffcc00; border: 8px solid red;
+            padding: 18px; text-align: center; font-size: 26px;
+            margin: 15px; position: relative; overflow: hidden;
+            animation: congrBorder 2s ease infinite alternate;
+        }
+        @keyframes congrBorder {
+            from { border-color: red; color: #ffcc00; }
+            to   { border-color: lime; color: white; }
+        }
+
+        /* Visitor counter */
+        .visitor-counter {
+            font-size: 16px; text-align: center; color: yellow;
+            padding: 6px; letter-spacing: 2px; font-weight: bold;
+        }
+
+        /* Spin zone */
+        .spin-zone {
+            display: flex; justify-content: center;
+            gap: 18px; flex-wrap: wrap; margin: 8px 0;
+        }
+        .rotating-img { font-size: 48px; animation: rotateIcon 2s linear infinite; display: inline-block; }
+        @keyframes rotateIcon { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .ping-pong { font-size: 48px; animation: pingpong 0.9s ease infinite alternate; display: inline-block; }
+        @keyframes pingpong {
+            from { transform: translateX(-25px) scale(0.85); }
+            to   { transform: translateX(25px) scale(1.2); }
+        }
+        .float-icon { font-size: 48px; animation: floatUp 1.2s ease infinite alternate; display: inline-block; }
+        @keyframes floatUp {
+            from { transform: translateY(0); }
+            to   { transform: translateY(-18px); }
+        }
+
+        /* Spam text */
+        .spam-text-block {
+            font-size: 9px; color: rgba(255,255,255,0.3);
+            line-height: 1.4; padding: 10px; letter-spacing: 3px; font-weight: bold;
+        }
+
+        /* Cursor canvas */
+        #cursor-canvas {
+            position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none; z-index: 9998;
+        }
+
+        /* Explosion */
+        .explosion {
+            position: fixed; pointer-events: none; font-size: 38px; z-index: 9997;
+            animation: explode 0.7s ease-out forwards;
+        }
+        @keyframes explode {
+            0%   { transform: scale(0.3) rotate(0deg); opacity: 1; }
+            60%  { transform: scale(2.2) rotate(30deg); opacity: 1; }
+            100% { transform: scale(3.5) rotate(60deg); opacity: 0; }
+        }
+
+        /* Gentle shake */
+        .shake-me { animation: shake 2s ease infinite; }
+        @keyframes shake {
+            0%,100% { transform: translate(0,0) rotate(0deg); }
+            10% { transform: translate(-2px,-1px) rotate(-0.5deg); }
+            20% { transform: translate(2px,1px) rotate(0.5deg); }
+            30% { transform: translate(-1px,2px) rotate(-0.3deg); }
+            40% { transform: translate(1px,-1px) rotate(0.4deg); }
+            50% { transform: translate(-2px,1px) rotate(-0.5deg); }
+            60% { transform: translate(2px,-2px) rotate(0.3deg); }
+            70% { transform: translate(-1px,1px) rotate(-0.4deg); }
+            80% { transform: translate(1px,2px) rotate(0.5deg); }
+            90% { transform: translate(-2px,-1px) rotate(-0.3deg); }
+        }
+
+        /* Bottom ticker */
+        .ticker-wrap {
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            background: black; border-top: 3px solid red;
+            overflow: hidden; z-index: 9990; padding: 4px 0;
+        }
+        .ticker-inner {
+            display: inline-block; white-space: nowrap;
+            animation: tickerScroll 22s linear infinite;
+            font-size: 16px; color: lime; font-weight: bold;
+        }
+        @keyframes tickerScroll {
+            from { transform: translateX(100vw); }
+            to   { transform: translateX(-100%); }
+        }
+
+        /* Floating ad */
+        .float-ad {
+            position: fixed; border: 4px solid red;
+            padding: 10px 14px; font-size: 14px; font-weight: bold;
+            color: black; font-family: "Comic Sans MS", cursive;
+            cursor: pointer; z-index: 6000; box-shadow: 4px 4px 0 black;
+            animation: adBob 2s ease infinite alternate;
+            max-width: 200px; text-align: center;
+        }
+        @keyframes adBob {
+            from { transform: rotate(-2deg) scale(1); }
+            to   { transform: rotate(2deg) scale(1.05); }
+        }
+        .float-ad .ad-close {
+            position: absolute; top: -8px; right: -8px;
+            background: red; color: white; border-radius: 50%;
+            width: 20px; height: 20px; font-size: 12px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; border: 2px solid black; font-weight: bold;
+        }
+
+        /* Progress bar */
+        .fake-progress-wrap {
+            background: #333; border: 3px inset #888;
+            height: 28px; margin: 10px 20px; position: relative; overflow: hidden;
+        }
+        .fake-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, lime, yellow, lime);
+            background-size: 200%;
+            animation: progressAnim 1.5s linear infinite;
+            transition: width 0.8s ease;
+        }
+        @keyframes progressAnim { from { background-position: 0%; } to { background-position: 200%; } }
+        .fake-progress-label {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%,-50%);
+            color: black; font-weight: bold; font-size: 14px;
+            font-family: "Comic Sans MS", cursive;
+            mix-blend-mode: difference; filter: invert(1);
+        }
+
+        /* Side banners */
+        .side-banner {
+            position: fixed; top: 50%; writing-mode: vertical-rl;
+            transform: translateY(-50%); background: black; color: yellow;
+            font-size: 13px; font-weight: bold; padding: 10px 6px;
+            border: 3px solid lime; z-index: 8000; letter-spacing: 2px;
+            animation: sidePulse 1.8s ease infinite alternate;
+        }
+        .side-banner.left  { left: 0; border-left: none; }
+        .side-banner.right { right: 0; border-right: none; }
+        @keyframes sidePulse {
+            from { background: black; color: yellow; }
+            to   { background: #003300; color: lime; }
+        }
+
+        /* Divider */
+        .divider {
+            height: 8px;
+            background: repeating-linear-gradient(90deg, red 0,red 20px,yellow 20px,yellow 40px,blue 40px,blue 60px,lime 60px,lime 80px);
+            margin: 8px 0;
+        }
+
+        /* Safe blink */
+        .blink-safe { animation: blinkSafe 1s step-end infinite; }
+        @keyframes blinkSafe { 0%,100% { opacity:1; } 50% { opacity:0; } }
+
+        /* Notif badge */
+        .notif-badge {
+            display: inline-block; background: red; color: white;
+            border-radius: 50%; padding: 2px 7px; font-size: 13px; font-weight: bold;
+            animation: badgePop 0.8s ease infinite alternate; margin-left: 4px;
+        }
+        @keyframes badgePop { from { transform: scale(1); } to { transform: scale(1.3); } }
+
+        /* Typewriter */
+        .typewriter-line {
+            font-size: 18px; color: lime; overflow: hidden;
+            white-space: nowrap; border-right: 3px solid lime;
+            font-weight: bold; padding: 4px 8px; min-height: 28px;
+        }
+
+        /* Inline ad zone */
+        #ad-zone { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin: 10px 0; }
+
+        .bottom-pad { padding-bottom: 45px; }
+    </style>
 </head>
 <body>
+<canvas id="cursor-canvas"></canvas>
+<div class="overlay"></div>
+<div id="text-rain-container"></div>
 
-<!-- ═══════════════════════════════
-     BACKGROUND LAYERS
-═══════════════════════════════ -->
-<div id="parallax-root" aria-hidden="true">
-  <div class="neb-layer" id="neb-1"></div>
-  <div class="neb-layer" id="neb-2"></div>
-  <div class="neb-layer" id="neb-3"></div>
-  <div id="neb-stars"></div>
+<!-- Side banners -->
+<div class="side-banner left">🌀 <a onclick="openMainInBlank()" style="color:inherit;text-decoration:none;cursor:url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2232%22 height=%2232%22%3E%3Ctext y=%2224%22 font-size=%2224%22%3E💀%3C/text%3E%3C/svg%3E') 16 16, auto;">DANGER ZONE</a> 🌀 probably fine 🌀 do not worry 🌀 nothing here 🌀 keep scrolling 🌀</div>
+<div class="side-banner right">👁️ we see you 👁️ hi 👁️ how are you 👁️ that's good 👁️ anyway 👁️ carry on 👁️</div>
+
+<!-- Bottom ticker -->
+<div class="ticker-wrap">
+    <div class="ticker-inner">
+        🖥️ your computer asked me to tell you it's tired &nbsp;|&nbsp; 🧦 one of your socks is slightly off-center &nbsp;|&nbsp; 📞 an unknown caller has been calling since 2004, they haven't left a message &nbsp;|&nbsp; 🌀 your WinRAR trial expired before you were born &nbsp;|&nbsp; 🐈 local cat seen hovering 3 inches off the ground. officials baffled &nbsp;|&nbsp; ☕ the coffee you made this morning is still out there. thinking about you &nbsp;|&nbsp; 💾 downloading more ram: eta unknown &nbsp;|&nbsp; 🤔 system32 has been deleted but it seems fine actually &nbsp;|&nbsp; 🍕 a pizza has been ordered to your address. you did not order a pizza &nbsp;|&nbsp; 📺 your screen is ON. very suspicious &nbsp;|&nbsp; 🧠 scanning for thoughts... found 3. two were yours &nbsp;&nbsp;&nbsp;
+    </div>
 </div>
 
-<!-- ═══════════════════════════════
-     SKELETON SCREEN
-═══════════════════════════════ -->
-<div class="skeleton-screen" id="skeleton">
-  <div class="skel-sidebar">
-    <div class="skel-logo skel-pulse"></div>
-    <div class="skel-nav-item skel-pulse"></div>
-    <div class="skel-nav-item skel-pulse"></div>
-    <div class="skel-nav-item skel-pulse"></div>
-    <div class="skel-nav-item skel-pulse"></div>
-  </div>
-  <div class="skel-main">
-    <div class="skel-hero skel-pulse"></div>
-  </div>
+<div class="rainbow-bar"></div>
+<div class="rainbow-bar" style="animation-delay:-1s; transform:scaleX(-1);"></div>
+
+<marquee class="top-marq" scrollamount="22">🚨 congratulations on having a screen 🚨 your mouse just moved and we clocked it 🚨 the Wi-Fi is stronger near the ceiling, please climb up there 🚨 you have been visited by the webpage 🚨 please do not read this marquee 🚨 okay you can read it a little 🚨 we are legally obligated to tell you this is a marquee 🚨</marquee>
+
+<div class="glitch-container">
+    <p class="spam">⚠️ something is definitely happening ⚠️</p>
+    <p class="spam" style="color:cyan; margin-left:30px;">🔄 have you tried restarting your life 🔄</p>
+    <p class="spam" style="color:yellow; margin-top:6px;">💾 LOADING... <span id="loading-pct">999</span>% 💾</p>
+    <div style="margin-top:8px;"><span class="spin-text">🌀 almost there buddy 🌀</span></div>
+    <div style="margin-top:8px;"><span class="bounce-text">your lucky numbers are: 4, 8, 15, 16, 23, 42 (do not use these)</span></div>
+    <div style="margin-top:6px;"><span class="zigzag-text">⏳ estimated time remaining: it's complicated ⏳</span></div>
 </div>
 
-<!-- ═══════════════════════════════
-     AUTH SCREEN
-═══════════════════════════════ -->
-<div id="auth-screen" class="hidden">
-  <div class="auth-inner">
-    <div class="auth-logo">NEBULA</div>
-    <div class="auth-tagline">V2 — Beyond The Stars</div>
-    <div class="auth-card">
-      <div class="auth-tabs">
-        <button class="auth-tab active" data-tab="login">Sign In</button>
-        <button class="auth-tab" data-tab="signup">Request Access</button>
-      </div>
-      <form id="auth-form" autocomplete="off">
-        <!-- Signup-only fields -->
-        <div id="auth-signup-fields" class="hidden">
-          <div class="field-group">
-            <label class="field-label" for="auth-fullname">Full Name</label>
-            <input id="auth-fullname" class="field-input" type="text" placeholder="Your real name" autocomplete="off">
-          </div>
-          <div class="field-group">
-            <label class="field-label" for="auth-username">Username</label>
-            <input id="auth-username" class="field-input" type="text" placeholder="Letters, numbers, underscores" maxlength="20" autocomplete="off">
-          </div>
-        </div>
-        <div class="field-group">
-          <label class="field-label" for="auth-email">Email</label>
-          <input id="auth-email" class="field-input" type="email" placeholder="your@email.com" autocomplete="email">
-        </div>
-        <div class="field-group">
-          <label class="field-label" for="auth-pass">Password</label>
-          <input id="auth-pass" class="field-input" type="password" placeholder="••••••••" autocomplete="current-password">
-        </div>
-        <div id="auth-signup-fields-2" class="hidden">
-          <div class="field-group">
-            <label class="field-label" for="auth-pass-confirm">Confirm Password</label>
-            <input id="auth-pass-confirm" class="field-input" type="password" placeholder="••••••••">
-          </div>
-        </div>
-        <div class="auth-err" id="auth-err"></div>
-        <button type="submit" id="auth-btn" class="btn btn-full" style="margin-top:.6rem">ENTER</button>
-      </form>
-      <div class="auth-foot">Nebula V2 — Restricted Access</div>
-    </div>
-  </div>
+<div class="fake-progress-wrap">
+    <div class="fake-progress-bar" id="fake-prog" style="width:73%"></div>
+    <div class="fake-progress-label" id="fake-prog-label">FIXING YOUR COMPUTER... 73%</div>
 </div>
 
-<!-- ═══════════════════════════════
-     PENDING SCREEN
-═══════════════════════════════ -->
-<div id="pending-screen" class="hidden">
-  <div class="pending-inner">
-    <div class="pending-icon">
-      <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
-      </svg>
-    </div>
-    <h2>Awaiting Approval</h2>
-    <p>Your account request has been submitted and is pending moderator review. You'll gain access once approved.</p>
-    <button class="btn btn-ghost btn-sm" onclick="import('./js/firebase.js').then(m=>m.signOut(m.auth)).then(()=>location.reload())">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-      Sign Out
-    </button>
-  </div>
+<div class="spin-zone">
+    <span class="rotating-img">☢️</span>
+    <span class="ping-pong">🏓</span>
+    <span class="rotating-img" style="animation-direction:reverse; animation-duration:1.5s">🌀</span>
+    <span class="float-icon">💥</span>
+    <span class="rotating-img" style="animation-duration:3s">⚙️</span>
+    <span class="ping-pong" style="animation-delay:-0.4s">🎉</span>
+    <span class="rotating-img" style="animation-direction:reverse; animation-duration:0.8s">☣️</span>
+    <span class="float-icon" style="animation-delay:-0.3s">🤡</span>
+    <span class="rotating-img" style="animation-duration:1.2s">💩</span>
 </div>
 
-<!-- ═══════════════════════════════
-     APP SHELL
-═══════════════════════════════ -->
-<div id="app" class="hidden">
+<div class="divider"></div>
 
-  <!-- ── Sidebar ── -->
-  <nav id="sidebar">
-    <div class="sidebar-logo" data-section="home" title="Home">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-      <span class="logo-text">NEBULA</span>
-      <span class="logo-pulse"></span>
+<div class="main-content">
+    <h1 class="shake-me">Welcome to the Void™ <span class="notif-badge" id="notif-count">99+</span></h1>
+
+    <p class="body-text">
+        This page is <strong>completely under control</strong>. Nothing to worry about. Navigating this site is easy if you do not think about it too hard, which we strongly advise against.<br><br>
+        By continuing to scroll you agree to our terms, which include: not telling anyone about this website, accepting that the font choice was intentional, and acknowledging that the spinning skull in the corner is just decorative and is not watching you specifically.<br><br>
+        <span class="blink-safe">▶ this message will self-destruct in: <span id="self-destruct">9999</span> seconds (it will not) ◀</span>
+    </p>
+
+    <div class="typewriter-line" id="typewriter-line">Scanning for problems... found 417...</div>
+
+    <div class="divider"></div>
+
+    <div class="congrats-zone shake-me">
+        🎉 oh wow you're here 🎉<br>
+        <span style="font-size:17px;">you are visitor number <span id="visitor-num">1,000,000</span> which is either very good or very bad, we're not sure<br>
+        your free prize expires in: <strong id="offer-timer">00:04:59</strong> &nbsp;<span class="blink-safe">⏰</span> (the prize is nothing)</span>
     </div>
-    <div class="sidebar-nav">
-      <button class="snav-item active" data-section="home">
-        <span class="snav-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>
-        <span class="snav-label">Home</span>
-      </button>
-      <button class="snav-item" data-section="chat">
-        <span class="snav-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></span>
-        <span class="snav-label">Chat</span>
-        <span class="snav-badge hidden" id="chat-badge">0</span>
-      </button>
-      <button class="snav-item" data-section="dms">
-        <span class="snav-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg></span>
-        <span class="snav-label">Direct Messages</span>
-        <span class="snav-badge hidden" id="dm-badge">0</span>
-      </button>
-      <button class="snav-item" data-section="games">
-        <span class="snav-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M12 12h.01M7 12h.01M17 12h.01M12 7v10"/><circle cx="12" cy="12" r="1" fill="currentColor"/></svg></span>
-        <span class="snav-label">Games</span>
-      </button>
-      <button class="snav-item" data-section="profile">
-        <span class="snav-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
-        <span class="snav-label">Profile</span>
-      </button>
-      <button class="snav-item" data-section="settings">
-        <span class="snav-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></span>
-        <span class="snav-label">Settings</span>
-      </button>
-      <button class="snav-item hidden" data-section="admin" id="nav-admin">
-        <span class="snav-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span>
-        <span class="snav-label">Admin</span>
-      </button>
+
+    <div class="visitor-counter">
+        people who have been here: <span id="fake-counter">34,829,112</span> &nbsp;|&nbsp;
+        here right now somehow: <span id="active-count">4,291</span> &nbsp;|&nbsp;
+        cookies baked: <span id="virus-count">8,841,003</span>
     </div>
-    <div class="sidebar-profile">
-      <div class="sp-ava" id="sp-ava"></div>
-      <div class="sp-info">
-        <div class="sp-name" id="sp-name"></div>
-        <div class="sp-rank" id="sp-rank"></div>
-      </div>
-      <button class="sp-signout" id="sp-signout" title="Sign Out">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-      </button>
+
+    <div class="divider"></div>
+
+    <marquee class="mid-marq" scrollamount="14" direction="right">🖨️ your printer is thinking about you 🖨️ java has been updating since 2009, it's nearly done 🖨️ your computer's fan is just nervous 🖨️ winrar would like to have a word 🖨️ the cloud is just someone else's attic 🖨️ your IP address is showing but it's fine, it's cute actually 🖨️</marquee>
+
+    <div class="spin-zone" style="margin:14px 0;">
+        <span class="rotating-img" style="font-size:65px">💀</span>
+        <span class="float-icon" style="font-size:65px">🔥</span>
+        <span class="rotating-img" style="font-size:65px; animation-direction:reverse; animation-duration:1.5s">💀</span>
+        <span class="ping-pong" style="font-size:65px">👾</span>
+        <span class="rotating-img" style="font-size:65px; animation-duration:0.7s">🌀</span>
     </div>
-  </nav>
 
-  <!-- ── Main Content ── -->
-  <div id="main">
+    <div class="divider"></div>
 
-    <!-- ══════ HOME ══════ -->
-    <section id="section-home" class="section active">
-      <div class="home-hero">
-        <div class="home-title">NEBULA V2</div>
-        <div id="tt-wrap">
-          <div class="tt-el vis">LOADING TOOLTIPS...</div>
-        </div>
-        <div class="home-cards">
-          <div class="home-card" data-goto="chat">
-            <div class="hcard-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div>
-            <div class="hcard-title">Chat</div>
-            <div class="hcard-sub">Channels & messages</div>
-          </div>
-          <div class="home-card" data-goto="dms">
-            <div class="hcard-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg></div>
-            <div class="hcard-title">DMs</div>
-            <div class="hcard-sub">Private conversations</div>
-          </div>
-          <div class="home-card" data-goto="games">
-            <div class="hcard-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><line x1="6" y1="12" x2="10" y2="12"/><line x1="8" y1="10" x2="8" y2="14"/><line x1="15" y1="11" x2="15" y2="11" stroke-width="3" stroke-linecap="round"/><line x1="18" y1="11" x2="18" y2="11" stroke-width="3" stroke-linecap="round"/></svg></div>
-            <div class="hcard-title">Games</div>
-            <div class="hcard-sub">The vault</div>
-          </div>
-          <div class="home-card" data-goto="settings">
-            <div class="hcard-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></div>
-            <div class="hcard-title">Settings</div>
-            <div class="hcard-sub">Themes & alerts</div>
-          </div>
-        </div>
-        <div class="home-stats">
-          <div class="stat-item">
-            <div class="stat-value" id="fps-val" style="color:var(--success)">--</div>
-            <div class="stat-label">FPS</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-value" id="visits-count" style="color:var(--accent)">--</div>
-            <div class="stat-label">Total Visits</div>
-          </div>
-          <div class="stat-item">
-            <div id="battery-wrap" style="display:flex;align-items:center;gap:.4rem;justify-content:center;"></div>
-            <div class="stat-label">Battery</div>
-          </div>
-        </div>
-        <div class="home-copy">nebula v2 — beyond the stars</div>
-      </div>
-    </section>
-
-    <!-- ══════ CHAT ══════ -->
-    <section id="section-chat" class="section">
-      <div class="chat-layout">
-        <!-- Thread Sidebar -->
-        <div class="thread-sidebar">
-          <div class="ts-header">
-            <span class="ts-title">Channels</span>
-            <button class="ts-add hidden" id="ts-add-channel" title="New Channel">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            </button>
-            <button class="mobile-menu-btn" style="display:none" id="chat-mobile-menu">
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-            </button>
-          </div>
-          <div class="ts-list" id="channel-list"></div>
-        </div>
-
-        <!-- Chat Area -->
-        <div class="chat-area">
-          <div class="chat-no-select" id="chat-no-select">
-            <div class="cns-icon"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div>
-            <div class="cns-title">Select a Channel</div>
-            <div class="cns-sub">Choose a channel from the left to start chatting</div>
-          </div>
-          <div class="chat-window hidden" id="chat-window">
-            <div class="chat-topbar">
-              <div class="ctb-left">
-                <span class="ctb-hash" style="color:var(--text-faint)">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg>
-                </span>
-                <span class="ctb-name" id="chat-channel-name"></span>
-                <span class="ctb-announce hidden" id="chat-announce-badge">
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M18 8h1a4 4 0 010 8h-1"/><path d="M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z" fill="none" stroke="currentColor" stroke-width="2"/><line x1="6" y1="1" x2="6" y2="4" stroke="currentColor" stroke-width="2"/><line x1="10" y1="1" x2="10" y2="4" stroke="currentColor" stroke-width="2"/><line x1="14" y1="1" x2="14" y2="4" stroke="currentColor" stroke-width="2"/></svg>
-                  Announcements
-                </span>
-              </div>
-              <div class="ctb-right"></div>
-            </div>
-            <div class="messages-wrap" id="messages-wrap">
-              <div class="messages" id="messages"></div>
-            </div>
-            <button class="scroll-to-bottom" id="scroll-to-bottom-btn">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
-            </button>
-            <div class="typing-bar" id="typing-bar"></div>
-            <div class="chat-input-area">
-              <div class="chat-input-wrap">
-                <input id="chat-input" type="text" placeholder="Select a channel first" maxlength="500" disabled>
-                <span class="char-ctr" id="char-ctr">500</span>
-                <button class="send-btn" id="chat-send-btn" disabled>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Members Sidebar -->
-        <div class="members-sidebar">
-          <div class="ms-header">Members</div>
-          <div class="ms-list" id="members-list"></div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ══════ DMs ══════ -->
-    <section id="section-dms" class="section">
-      <div class="chat-layout">
-        <div class="thread-sidebar">
-          <div class="ts-header">
-            <span class="ts-title">Direct Messages</span>
-          </div>
-          <div id="dm-search-wrap" class="dm-user-search" style="position:relative">
-            <input id="dm-search-input" type="text" placeholder="Find user...">
-          </div>
-          <div class="ts-list" id="dm-list"></div>
-        </div>
-        <div class="chat-area">
-          <div class="chat-no-select" id="dm-no-select">
-            <div class="cns-icon"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg></div>
-            <div class="cns-title">Your DMs</div>
-            <div class="cns-sub">Search for a user above to start a private conversation</div>
-          </div>
-          <div class="chat-window hidden" id="dm-window">
-            <div class="chat-topbar">
-              <div class="ctb-left">
-                <span class="ctb-name" id="dm-channel-name"></span>
-              </div>
-            </div>
-            <div class="messages-wrap" id="dm-messages-wrap">
-              <div class="messages" id="dm-messages"></div>
-            </div>
-            <div class="typing-bar" id="dm-typing-bar"></div>
-            <div class="chat-input-area">
-              <div class="chat-input-wrap">
-                <input id="dm-input" type="text" placeholder="Send a message..." maxlength="500">
-                <button class="send-btn" id="dm-send-btn">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ══════ GAMES ══════ -->
-    <section id="section-games" class="section">
-      <div class="vault-scroll">
-        <!-- Topbar -->
-        <div class="vault-topbar">
-          <div class="vault-search-wrap">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            <input id="vault-search" type="text" placeholder="Search games...">
-          </div>
-          <select id="vault-sort">
-            <option value="popular">Most Popular</option>
-            <option value="name">A–Z</option>
-            <option value="id">Newest</option>
-          </select>
-          <button id="fav-filter-btn">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
-            Favorites
-          </button>
-        </div>
-        <!-- Featured Carousel -->
-        <div class="vault-featured hidden" id="feat-wrapper">
-          <div class="vault-featured-hdr">Featured Today</div>
-          <div class="carousel-viewport">
-            <div id="feat-track"></div>
-          </div>
-          <button class="carousel-btn" id="carousel-prev">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
-          </button>
-          <button class="carousel-btn" id="carousel-next">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
-          </button>
-        </div>
-        <!-- Game Grid -->
-        <div id="game-grid">
-          <div class="vault-loading">Loading games...</div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ══════ PROFILE ══════ -->
-    <section id="section-profile" class="section">
-      <div class="prof-page">
-
-        <!-- Identity card -->
-        <div class="prof-card">
-          <div class="prof-card-banner"></div>
-          <div class="prof-card-body">
-            <div class="prof-ava-wrap">
-              <div class="prof-ava" id="prof-ava" title="Click to change color"></div>
-              <button class="prof-ava-edit-btn" onclick="document.getElementById('prof-color-section')?.scrollIntoView({behavior:'smooth'})" title="Change color">
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
-              </button>
-            </div>
-            <div class="prof-identity">
-              <div class="prof-name" id="prof-name"></div>
-              <div class="prof-username" id="prof-username"></div>
-              <div class="prof-badges">
-                <div id="prof-rank"></div>
-                <div id="prof-joined" class="prof-joined"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Edit panels -->
-        <div class="prof-panels" id="prof-edit-section">
-          <!-- Populated by JS -->
-        </div>
-
-      </div>
-    </section>
-
-    <!-- ══════ SETTINGS ══════ -->
-    <section id="section-settings" class="section">
-      <div class="pad">
-        <div class="pg-title">Settings</div>
-        <div class="pg-sub">Personalize your Nebula experience</div>
-        <div class="settings-tabs">
-          <button class="stab active" data-tab="themes">Themes</button>
-          <button class="stab" data-tab="alerts">Alerts</button>
-          <button class="stab" data-tab="display">Display</button>
-        </div>
-
-        <!-- THEMES -->
-        <div class="settings-panel active" id="sp-themes">
-          <div style="font-size:.75rem;color:var(--text-muted);margin-bottom:1.2rem;font-weight:600">Choose your theme. Changes apply instantly and persist.</div>
-          <div class="theme-grid">
-            <div class="theme-card" data-theme="og">
-              <div class="theme-preview" style="background:linear-gradient(135deg,#071827,#0f2b44);position:relative;overflow:hidden">
-                <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 40% 60%,rgba(79,201,234,.3),transparent 60%),radial-gradient(ellipse at 80% 20%,rgba(150,100,255,.2),transparent 60%)"></div>
-                <div style="position:absolute;bottom:14px;left:14px;font-weight:800;font-size:1rem;background:linear-gradient(135deg,#e8fbff,#66e0ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent">NEBULA</div>
-              </div>
-              <div class="theme-info"><div class="theme-name">OG</div><div class="theme-desc">The original. Classic deep blue.</div></div>
-            </div>
-            <div class="theme-card" data-theme="dark">
-              <div class="theme-preview" style="background:linear-gradient(135deg,#0a0a0a,#141414);position:relative;overflow:hidden">
-                <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 50% 50%,rgba(167,139,250,.2),transparent 60%)"></div>
-                <div style="position:absolute;bottom:14px;left:14px;font-weight:800;font-size:1rem;background:linear-gradient(135deg,#e9d5ff,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent">NEBULA</div>
-              </div>
-              <div class="theme-info"><div class="theme-name">Dark</div><div class="theme-desc">Pure black. Purple accent.</div></div>
-            </div>
-            <div class="theme-card" data-theme="light">
-              <div class="theme-preview" style="background:linear-gradient(135deg,#f0f4f8,#e8edf3);position:relative;overflow:hidden">
-                <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 50% 80%,rgba(147,197,253,.38),transparent 60%)"></div>
-                <div style="position:absolute;bottom:14px;left:14px;font-weight:800;font-size:1rem;background:linear-gradient(135deg,#1e40af,#3b82f6);-webkit-background-clip:text;-webkit-text-fill-color:transparent">NEBULA</div>
-              </div>
-              <div class="theme-info"><div class="theme-name">Light</div><div class="theme-desc">Clean white. Blue accent.</div></div>
-            </div>
-            <div class="theme-card" data-theme="aurora">
-              <div class="theme-preview" style="background:linear-gradient(135deg,#060e14,#0a1820);position:relative;overflow:hidden">
-                <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 30% 60%,rgba(0,229,160,.35),transparent 55%),radial-gradient(ellipse at 80% 20%,rgba(0,184,217,.25),transparent 55%)"></div>
-                <div style="position:absolute;bottom:14px;left:14px;font-weight:800;font-size:1rem;background:linear-gradient(135deg,#b2fff0,#00e5a0,#00b8d9);-webkit-background-clip:text;-webkit-text-fill-color:transparent">NEBULA</div>
-              </div>
-              <div class="theme-info"><div class="theme-name">Aurora</div><div class="theme-desc">Northern lights. Emerald glow.</div></div>
-            </div>
-            <div class="theme-card" data-theme="synthwave">
-              <div class="theme-preview" style="background:linear-gradient(135deg,#0d0015,#1e002e);position:relative;overflow:hidden">
-                <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 50% 100%,rgba(255,45,138,.32),transparent 60%)"></div>
-                <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(255,45,138,.1) 1px,transparent 1px),linear-gradient(90deg,rgba(255,45,138,.1) 1px,transparent 1px);background-size:20px 14px;transform:perspective(200px) rotateX(55deg);transform-origin:bottom"></div>
-                <div style="position:absolute;bottom:14px;left:14px;font-weight:800;font-size:1rem;background:linear-gradient(135deg,#ff2d8a,#bf00ff,#00f0ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent">NEBULA</div>
-              </div>
-              <div class="theme-info"><div class="theme-name">Synthwave</div><div class="theme-desc">Retro neon. Grid & glow.</div></div>
-            </div>
-            <div class="theme-card" data-theme="crimson">
-              <div class="theme-preview" style="background:linear-gradient(135deg,#0e0808,#1a0d0d);position:relative;overflow:hidden">
-                <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 40% 60%,rgba(240,60,60,.4),transparent 60%),radial-gradient(ellipse at 80% 20%,rgba(180,20,20,.25),transparent 60%)"></div>
-                <div style="position:absolute;bottom:14px;left:14px;font-weight:800;font-size:1rem;background:linear-gradient(135deg,#ffd0d0,#f05050,#c0392b);-webkit-background-clip:text;-webkit-text-fill-color:transparent">NEBULA</div>
-              </div>
-              <div class="theme-info"><div class="theme-name">Crimson</div><div class="theme-desc">Deep red dark. Blood and stars.</div></div>
-            </div>
-            <div class="theme-card" data-theme="midnight">
-              <div class="theme-preview" style="background:linear-gradient(135deg,#0c0a06,#181408);position:relative;overflow:hidden">
-                <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 35% 65%,rgba(240,140,30,.38),transparent 55%),radial-gradient(ellipse at 75% 25%,rgba(120,60,0,.3),transparent 55%)"></div>
-                <div style="position:absolute;bottom:14px;left:14px;font-weight:800;font-size:1rem;background:linear-gradient(135deg,#ffedc0,#f0a030,#c07010);-webkit-background-clip:text;-webkit-text-fill-color:transparent">NEBULA</div>
-              </div>
-              <div class="theme-info"><div class="theme-name">Midnight</div><div class="theme-desc">Warm amber dark. Candlelight.</div></div>
-            </div>
-            <div class="theme-card" data-theme="slate">
-              <div class="theme-preview" style="background:linear-gradient(135deg,#0f1117,#181b24);position:relative;overflow:hidden">
-                <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 40% 55%,rgba(99,102,241,.3),transparent 55%),radial-gradient(ellipse at 75% 25%,rgba(139,143,248,.2),transparent 55%)"></div>
-                <div style="position:absolute;bottom:14px;left:14px;font-weight:700;font-size:.95rem;font-family:monospace;background:linear-gradient(135deg,#e0e1ff,#8b8ff8,#6366f1);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:2px">NEBULA</div>
-              </div>
-              <div class="theme-info"><div class="theme-name">Slate</div><div class="theme-desc">Minimal indigo. IBM mono.</div></div>
-            </div>
-            <div class="theme-card" data-theme="forest">
-              <div class="theme-preview" style="background:linear-gradient(135deg,#071009,#0e1f10);position:relative;overflow:hidden">
-                <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 35% 65%,rgba(52,211,153,.3),transparent 55%),radial-gradient(ellipse at 75% 25%,rgba(16,185,129,.2),transparent 55%)"></div>
-                <div style="position:absolute;bottom:14px;left:14px;font-weight:800;font-size:1rem;background:linear-gradient(135deg,#d1fae5,#34d399,#059669);-webkit-background-clip:text;-webkit-text-fill-color:transparent">NEBULA</div>
-              </div>
-              <div class="theme-info"><div class="theme-name">Forest</div><div class="theme-desc">Deep green. Night in the woods.</div></div>
-            </div>
-            <div class="theme-card" data-theme="ocean">
-              <div class="theme-preview" style="background:linear-gradient(135deg,#030d1a,#061828);position:relative;overflow:hidden">
-                <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 40% 70%,rgba(6,182,212,.32),transparent 55%),radial-gradient(ellipse at 70% 20%,rgba(14,165,233,.22),transparent 55%)"></div>
-                <div style="position:absolute;bottom:14px;left:14px;font-weight:800;font-size:1rem;background:linear-gradient(135deg,#cffafe,#22d3ee,#0284c7);-webkit-background-clip:text;-webkit-text-fill-color:transparent">NEBULA</div>
-              </div>
-              <div class="theme-info"><div class="theme-name">Ocean</div><div class="theme-desc">Deep sea cyan. Abyssal blue.</div></div>
-            </div>
-            <div class="theme-card" data-theme="rose">
-              <div class="theme-preview" style="background:linear-gradient(135deg,#110710,#1e0d1c);position:relative;overflow:hidden">
-                <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 40% 65%,rgba(244,114,182,.3),transparent 55%),radial-gradient(ellipse at 75% 25%,rgba(217,70,239,.2),transparent 55%)"></div>
-                <div style="position:absolute;bottom:14px;left:14px;font-weight:800;font-size:1rem;background:linear-gradient(135deg,#fce7f3,#f472b6,#c026d3);-webkit-background-clip:text;-webkit-text-fill-color:transparent">NEBULA</div>
-              </div>
-              <div class="theme-info"><div class="theme-name">Rose</div><div class="theme-desc">Pink & magenta. After dark.</div></div>
-            </div>
-            <div class="theme-card" data-theme="solar">
-              <div class="theme-preview" style="background:linear-gradient(135deg,#0a0800,#1a1200);position:relative;overflow:hidden">
-                <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 50% 80%,rgba(251,191,36,.35),transparent 55%),radial-gradient(ellipse at 30% 20%,rgba(245,158,11,.22),transparent 55%)"></div>
-                <div style="position:absolute;bottom:14px;left:14px;font-weight:800;font-size:1rem;background:linear-gradient(135deg,#fef3c7,#fbbf24,#d97706);-webkit-background-clip:text;-webkit-text-fill-color:transparent">NEBULA</div>
-              </div>
-              <div class="theme-info"><div class="theme-name">Solar</div><div class="theme-desc">Blazing gold. Sun-scorched.</div></div>
-            </div>
-            <div class="theme-card" data-theme="void">
-              <div class="theme-preview" style="background:#000;position:relative;overflow:hidden">
-                <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 50% 50%,rgba(255,255,255,.04),transparent 60%)"></div>
-                <div style="position:absolute;bottom:14px;left:14px;font-weight:800;font-size:1rem;background:linear-gradient(135deg,#fff,rgba(255,255,255,.6));-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:1px">NEBULA</div>
-              </div>
-              <div class="theme-info"><div class="theme-name">Void</div><div class="theme-desc">Pure black. No distractions.</div></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- ALERTS -->
-        <div class="settings-panel" id="sp-alerts">
-          <div class="notif-section-card">
-            <div class="nsc-header">
-              <div class="nsc-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg></div>
-              <div>
-                <div class="nsc-title">Chat Notifications</div>
-                <div class="nsc-sub">Receive notifications for new messages in channels</div>
-              </div>
-              <label class="toggle-switch" style="margin-left:auto">
-                <input type="checkbox" class="notif-toggle" data-key="chat" checked>
-                <div class="toggle-track"></div>
-              </label>
-            </div>
-          </div>
-          <div class="notif-section-card">
-            <div class="nsc-header">
-              <div class="nsc-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg></div>
-              <div>
-                <div class="nsc-title">DM Notifications</div>
-                <div class="nsc-sub">Receive notifications for new direct messages</div>
-              </div>
-              <label class="toggle-switch" style="margin-left:auto">
-                <input type="checkbox" class="notif-toggle" data-key="dm" checked>
-                <div class="toggle-track"></div>
-              </label>
-            </div>
-          </div>
-          <div class="notif-section-card">
-            <div class="nsc-header">
-              <div class="nsc-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
-              <div>
-                <div class="nsc-title">Mention Alerts</div>
-                <div class="nsc-sub">Get notified when someone @mentions you</div>
-              </div>
-              <label class="toggle-switch" style="margin-left:auto">
-                <input type="checkbox" class="notif-toggle" data-key="mentions" checked>
-                <div class="toggle-track"></div>
-              </label>
-            </div>
-          </div>
-          <div class="notif-section-card">
-            <div class="nsc-header" style="flex-wrap:wrap">
-              <div class="nsc-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg></div>
-              <div>
-                <div class="nsc-title">Per-Channel Notifications</div>
-                <div class="nsc-sub">Choose which channels you get notified from</div>
-              </div>
-            </div>
-            <div class="notif-channel-list" id="sp-channel-notifs">
-              <div style="font-size:.72rem;color:var(--text-faint)">Log in to see channels</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- DISPLAY -->
-        <div class="settings-panel" id="sp-display">
-          <div class="notif-section-card">
-            <div class="nsc-header">
-              <div>
-                <div class="nsc-title">Compact Messages</div>
-                <div class="nsc-sub">Denser message layout — sender always shown</div>
-              </div>
-              <label class="toggle-switch" style="margin-left:auto">
-                <input type="checkbox" class="notif-toggle" data-key="compact">
-                <div class="toggle-track"></div>
-              </label>
-            </div>
-          </div>
-          <div class="notif-section-card">
-            <div class="nsc-header">
-              <div>
-                <div class="nsc-title">Parallax Background</div>
-                <div class="nsc-sub">Mouse-tracked nebula layers (disable to save performance)</div>
-              </div>
-              <label class="toggle-switch" style="margin-left:auto">
-                <input type="checkbox" class="notif-toggle" data-key="parallax" checked>
-                <div class="toggle-track"></div>
-              </label>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ══════ ADMIN ══════ -->
-    <section id="section-admin" class="section">
-      <div class="pad">
-        <div class="pg-title" id="admin-page-title">Admin</div>
-        <div class="pg-sub">Manage accounts and moderation</div>
-        <div class="admin-tabs">
-          <button class="adm-tab active" data-tab="pending">Pending</button>
-          <button class="adm-tab" data-tab="members">Members</button>
-          <button class="adm-tab" data-tab="banned">Banned</button>
-        </div>
-        <div class="adm-panel active" id="ap-pending">
-          <div style="color:var(--text-faint);font-size:.78rem">Loading...</div>
-        </div>
-        <div class="adm-panel" id="ap-members">
-          <div style="color:var(--text-faint);font-size:.78rem">Click the tab to load.</div>
-        </div>
-        <div class="adm-panel" id="ap-banned">
-          <div style="color:var(--text-faint);font-size:.78rem">Click the tab to load.</div>
-        </div>
-      </div>
-    </section>
-
-  </div><!-- /#main -->
-
-</div><!-- /#app -->
-
-<!-- ═══════════════════════════════
-     GAME VIEWER
-═══════════════════════════════ -->
-<div id="game-vault" style="display:none;flex-direction:column;position:fixed;inset:0;z-index:10000;background:#000">
-  <div class="ghdr">
-    <div class="ghdr-left">
-      <span class="ghdr-logo">NEBULA</span>
-      <span class="ghdr-sep">/</span>
-      <span class="ghdr-name" id="game-name"></span>
+    <!-- Nested marquee block -->
+    <div style="border:6px ridge hotpink; padding:6px; background:black; margin:10px 0;">
+        <marquee class="inner-marq1" scrollamount="10">
+            pssst. hey. your mouse is at <span id="mouse-x">0</span>, <span id="mouse-y">0</span> right now. pretty wild. &nbsp;•&nbsp; we have been watching that coordinate. impressive moves out there &nbsp;•&nbsp; blink if you need help. we cannot help but we appreciate the gesture
+        </marquee>
+        <marquee class="inner-marq2" scrollamount="18" direction="right">
+            🔊 fun fact: every time you close a popup another one is born somewhere 🔊 scientists have not confirmed this 🔊 we are the scientists 🔊
+        </marquee>
+        <marquee class="inner-marq3" scrollamount="6">
+            ℹ️ by moving your mouse you have agreed to let us see what you had for lunch. we think it was fine. not great, not bad. just fine. we're not judging. (we are a little judging.)
+        </marquee>
+        <marquee class="inner-marq1" scrollamount="13" direction="right">
+            📡 updates: your printer is in its villain era &nbsp;•&nbsp; java update number 4,891 is ready, it does the same thing &nbsp;•&nbsp; one virus was detected and it seems happy &nbsp;•&nbsp; the void said hi back
+        </marquee>
     </div>
-    <div class="ghdr-right">
-      <button class="btn btn-ghost btn-sm" onclick="window.fullscreenGame()">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg>
-        Fullscreen
-      </button>
-      <button class="btn btn-danger btn-sm" onclick="window.closeGameVault()">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-        Close
-      </button>
+
+    <div class="divider"></div>
+
+    <div id="ad-zone"></div>
+
+    <marquee class="bot-marq" scrollamount="12">🐱 cat fact: cats are aware of everything 🐱 the number 7 is thinking about you 🐱 your refrigerator makes that noise on purpose 🐱 astrology is just horoscopes with better PR 🐱 you scrolled here specifically 🐱 this sentence was written just for you 🐱</marquee>
+
+    <div class="spam-text-block" id="spam-text-block">
+        hmm hmm hmm nothing to see here hmm hmm hmm hmm just some text hmm hmm hmm hmm hmm actually do not read this
+        hmm hmm hmm scrolling detected hmm hmm hmm hmm eyes on screen hmm hmm hmm hmm we see you buddy hmm hmm hmm
+        hmm hmm hmm hmm hmm everything is fine hmm hmm hmm hmm hmm nothing is wrong hmm hmm hmm hmm hmm stop reading
+        this is the bottom of the page hmm hmm hmm congratulations hmm hmm hmm your prize is more text hmm hmm hmm
+        hmm hmm hmm hmm hmm hmm hmm hmm hmm hmm hmm hmm hmm hmm hmm hmm hmm hmm hmm hmm hmm hmm hmm hmm hmm hmm
     </div>
-  </div>
-  <iframe id="game-frame" sandbox="allow-scripts allow-same-origin allow-forms allow-popups" allow="fullscreen" style="border:none;width:100%;flex:1;display:block"></iframe>
+
+    <div class="bottom-pad"></div>
 </div>
 
-<!-- ═══════════════════════════════
-     MODAL SYSTEM
-═══════════════════════════════ -->
-<div id="modal-overlay" class="hidden" style="position:fixed;inset:0;z-index:7000;background:rgba(0,0,0,.8);backdrop-filter:blur(14px);animation:fadeIn .14s ease"></div>
-<div class="modal hidden" id="modal-wrap">
-  <div class="modal-box" id="modal-box-main"></div>
-</div>
+<button id="elusive-button">🖱️ CLICK TO FIX EVERYTHING 🖱️</button>
 
-<!-- ═══════════════════════════════
-     TOAST STACK
-═══════════════════════════════ -->
-<div id="notif-stack"></div>
-
-<!-- ═══════════════════════════════
-     SCRIPTS
-═══════════════════════════════ -->
-<script type="module">
-  import { initGames } from './js/games.js';
-  import './js/app.js';
-
-  // Init games when section becomes active
-  let gamesInitialized = false;
-  const observer = new MutationObserver(mutations => {
-    const gamesSection = document.getElementById('section-games');
-    if(gamesSection?.classList.contains('active') && !gamesInitialized) {
-      gamesInitialized = true;
-      initGames();
+<script>
+// ─── CURSOR TRAIL ────────────────────────────────────────────────
+const canvas = document.getElementById('cursor-canvas');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+window.addEventListener('resize', () => { canvas.width=window.innerWidth; canvas.height=window.innerHeight; });
+const trail = [];
+const trailEmojis = ['💀','🔥','⚡','💥','🌀','😱','🤡','👾','💩','🎉','✨','🍕','📢','🧨','🎮','🛸'];
+document.addEventListener('mousemove', e => {
+    document.getElementById('mouse-x').textContent = e.clientX;
+    document.getElementById('mouse-y').textContent = e.clientY;
+    trail.push({ x:e.clientX, y:e.clientY, age:0, emoji:trailEmojis[Math.floor(Math.random()*trailEmojis.length)] });
+    if (trail.length > 30) trail.shift();
+});
+function drawTrail() {
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    for (const t of trail) {
+        ctx.globalAlpha = 1 - t.age/30;
+        ctx.font = `${22 - t.age*0.5}px serif`;
+        ctx.fillText(t.emoji, t.x, t.y);
+        t.age++;
     }
-  });
-  observer.observe(document.getElementById('app') || document.body, {
-    childList: true, subtree: true, attributeFilter: ['class']
-  });
+    requestAnimationFrame(drawTrail);
+}
+drawTrail();
 
-  // Also check on nav clicks
-  document.addEventListener('click', e => {
-    const item = e.target.closest('[data-section]');
-    if(item?.dataset.section === 'games' && !gamesInitialized) {
-      gamesInitialized = true;
-      initGames();
-    }
-  });
+// ─── ELUSIVE BUTTON ─────────────────────────────────────────────
+const btn = document.getElementById('elusive-button');
+btn.style.left = '40px'; btn.style.top = '200px';
+let catchCount = 0;
+btn.addEventListener('mousemove', () => {
+    const m = 60;
+    btn.style.left = (m + Math.random()*(window.innerWidth  - btn.offsetWidth  - m*2)) + 'px';
+    btn.style.top  = (m + Math.random()*(window.innerHeight - btn.offsetHeight - m*2)) + 'px';
+});
+btn.addEventListener('click', () => {
+    catchCount++;
+    const msgs = [
+        "okay you got me. nothing happens though.",
+        "the fix is: have you tried believing in yourself",
+        "error 404: fix not found. error also not found. everything is fine.",
+        "wow. you actually caught it. i respect that. still nothing happens.",
+        "i'm calling someone. not the police. just someone.",
+        `you've caught this button ${catchCount} times. this is a hobby now.`,
+        "fixed! (not fixed.) (was never broken.) (debatable.)",
+        "your computer is healed. spiritually. not technically.",
+        "catching buttons is a skill. you have it. use it wisely.",
+        "the button has been caught. the button is thinking about what it did.",
+        `${catchCount} catches. i am genuinely impressed and also concerned.`,
+    ];
+    spawnExplosion(parseInt(btn.style.left)+btn.offsetWidth/2, parseInt(btn.style.top)+btn.offsetHeight/2);
+    showPopup("RESULT ✅", msgs[Math.min(catchCount-1,msgs.length-1)], ["OK","THANK YOU","WOW","COOL"]);
+});
 
-  // Signup fields sync
-  const signupBtn = document.querySelector('[data-tab="signup"]');
-  if(signupBtn) {
-    signupBtn.addEventListener('click', () => {
-      document.getElementById('auth-signup-fields-2')?.classList.remove('hidden');
+// ─── COUNTERS ────────────────────────────────────────────────────
+let fakeCount=34829112, activeCount=4291, virusCount=8841003;
+setInterval(() => {
+    fakeCount  += Math.floor(Math.random()*300+50);
+    activeCount += Math.floor(Math.random()*11-4);
+    virusCount  += Math.floor(Math.random()*500+100);
+    document.getElementById('fake-counter').textContent  = fakeCount.toLocaleString();
+    document.getElementById('active-count').textContent  = Math.max(1,activeCount).toLocaleString();
+    document.getElementById('virus-count').textContent   = virusCount.toLocaleString();
+}, 400);
+setInterval(() => {
+    document.getElementById('visitor-num').textContent = (Math.floor(Math.random()*9000000)+1000000).toLocaleString();
+}, 1200);
+
+// Loading % chaos
+const pctOpts=['999','1000','∞','ERROR','NaN','over 9000','-12','404','loading...','∞+1','69','BEEF'];
+setInterval(()=>{ document.getElementById('loading-pct').textContent=pctOpts[Math.floor(Math.random()*pctOpts.length)]; }, 1500);
+
+// Offer timer (sometimes goes up)
+let offerSecs=299;
+setInterval(()=>{
+    offerSecs=Math.max(0,offerSecs-1+(Math.random()<0.3?Math.floor(Math.random()*30):0));
+    if(offerSecs<=0) offerSecs=599;
+    const m=Math.floor(offerSecs/60).toString().padStart(2,'0');
+    const s=(offerSecs%60).toString().padStart(2,'0');
+    document.getElementById('offer-timer').textContent=`00:${m}:${s}`;
+}, 1000);
+
+// Notif badge
+const badgeOpts=['99+','!!','NEW','???','😱','∞','LOTS','WHY'];
+setInterval(()=>{ document.getElementById('notif-count').textContent=badgeOpts[Math.floor(Math.random()*badgeOpts.length)]; }, 900);
+
+// Self destruct
+let sdCount=9999;
+setInterval(()=>{
+    sdCount-=Math.floor(Math.random()*3+1);
+    if(sdCount<=0) sdCount=9999;
+    document.getElementById('self-destruct').textContent=sdCount;
+}, 800);
+
+// Progress bar
+let progPct=73, progDir=1;
+const progLabels=['thinking about fixing your computer','considering the options','identifying the vibe','downloading a sense of purpose','asking the computer nicely','negotiating with the RAM','untangling some stuff','reorganizing the electrons'];
+setInterval(()=>{
+    progPct+=progDir*(Math.random()*3);
+    if(progPct>=99){progPct=99;progDir=-1;} if(progPct<=5){progPct=5;progDir=1;}
+    document.getElementById('fake-prog').style.width=progPct.toFixed(1)+'%';
+    document.getElementById('fake-prog-label').textContent=progLabels[Math.floor(Math.random()*progLabels.length)]+`... ${progPct.toFixed(0)}%`;
+}, 700);
+
+// ─── TYPEWRITER ───────────────────────────────────────────────────
+const typeMsgs=[
+    "scanning for problems... found 417... putting them back...",
+    "your keyboard is typing slightly too confidently",
+    "contacting the void on your behalf... the void is busy",
+    "your saved passwords look fine to us (we looked)",
+    "uploading your vibe to the cloud... vibe: medium",
+    "error: no errors found. creating one for balance",
+    "your mouse is moving in a very interesting way",
+    "checking if you are a robot... inconclusive... checking again...",
+    "backing up your files to a post-it note",
+    "installing update 1 of 10,000. the rest will install while you sleep",
+    "please do not make eye contact with the progress bar",
+    "mining absolutely nothing on your behalf. you're welcome.",
+    "your browser has 47 tabs open. we counted. we're concerned.",
+    "your clipboard says: [redacted]. interesting.",
+    "estimating your vibe... vibe estimated: chaotic neutral",
+];
+let tmIdx=0;
+function typeNext(){
+    const el=document.getElementById('typewriter-line');
+    const msg=typeMsgs[tmIdx++%typeMsgs.length];
+    el.textContent='';
+    let i=0;
+    const iv=setInterval(()=>{
+        el.textContent+=msg[i++];
+        if(i>=msg.length){clearInterval(iv);setTimeout(typeNext,2000);}
+    },38);
+}
+typeNext();
+
+// ─── POPUP SYSTEM ─────────────────────────────────────────────────
+let pzBase=5000;
+function showPopup(title, message, buttons){
+    pzBase++;
+    const p=document.createElement('div'); p.className='popup';
+    p.style.left=(60+Math.random()*Math.max(0,window.innerWidth-380))+'px';
+    p.style.top=(60+Math.random()*Math.max(0,window.innerHeight-220))+'px';
+    p.style.zIndex=pzBase;
+    const icons=['🚨','⚠️','💥','🔔','❗','🛑','💀','🤖','🎉','🏆','😱','🧨'];
+    const icon=icons[Math.floor(Math.random()*icons.length)];
+    p.innerHTML=`
+        <div class="popup-title"><span>${icon} ${title}</span><button class="close-btn" onclick="this.closest('.popup').remove()">✕</button></div>
+        <div class="popup-body"><span class="popup-icon">${icon}</span><p style="margin:6px 0 12px;">${message}</p>
+        <div>${buttons.map(b=>`<button class="popup-btn" onclick="pbClick(this,'${b.replace(/'/g,"&#39;")}')">${b}</button>`).join('')}</div></div>`;
+    document.body.appendChild(p);
+    makeDraggable(p);
+}
+
+function pbClick(el,label){
+    const fu=[
+        ["Are you sure?","This cannot be undone. (It has already been undone. Twice.)","Yes,No,What did I do,please"],
+        ["noted.","your response has been forwarded to a very small folder that no one checks.","OK,oh,who checks it"],
+        ["wrong button","all buttons lead here. there is no correct button. there never was.","OK,OK,OK,OK"],
+        ["please rate this","how was your experience closing that popup?","⭐,⭐⭐,⭐⭐⭐,⭐⭐⭐⭐⭐"],
+        ["one more thing","it will be quick. (it will not be quick.)","okay,fine,ugh,sure whatever"],
+        ["final warning","this is warning 4 of 847. you are making great progress.","got it,ignore,what is this,sigh"],
+        ["thank you","your cooperation has been stored in a jar on a shelf somewhere.","Close,bye,okay bye,BYE"],
+        ["bonus content","you have unlocked: another popup. you earned this.","nice,okay,did i though"],
+        ["oops","that button does the same thing as the other button. they all do.","understood,relatable,wait what"],
+        ["just checking","do you actually want to close this, or are you just clicking things?","yes,no,honestly no idea"],
+        ["one last thing","this is genuinely the last thing. (there are seven more things.)","okay,fine,I don't believe you,correct"],
+    ];
+    const w=fu[Math.floor(Math.random()*fu.length)];
+    setTimeout(()=>showPopup(w[0],w[1],w[2].split(',')),150);
+    el.closest('.popup').remove();
+}
+
+function makeDraggable(el){
+    let ox=0,oy=0,mx=0,my=0;
+    const t=el.querySelector('.popup-title'); t.style.cursor='move';
+    t.addEventListener('mousedown',e=>{
+        e.preventDefault(); mx=e.clientX; my=e.clientY;
+        function mv(e){ox=mx-e.clientX;oy=my-e.clientY;mx=e.clientX;my=e.clientY;el.style.top=(el.offsetTop-oy)+'px';el.style.left=(el.offsetLeft-ox)+'px';}
+        function up(){document.removeEventListener('mousemove',mv);document.removeEventListener('mouseup',up);}
+        document.addEventListener('mousemove',mv); document.addEventListener('mouseup',up);
     });
-  }
-  const loginBtn = document.querySelector('[data-tab="login"]');
-  if(loginBtn) {
-    loginBtn.addEventListener('click', () => {
-      document.getElementById('auth-signup-fields-2')?.classList.add('hidden');
+}
+
+// ─── RANDOM POPUPS ────────────────────────────────────────────────
+const rndPopups=[
+    ["hey","your computer is running. just wanted to let you know.","okay,thanks,i know,why"],
+    ["update available","java update 4,891 is ready. it does approximately the same thing as before.","sure,not now,what does it do,what is java"],
+    ["free thing","you have been selected to receive a free thing. the thing is this popup.","oh,okay,is this the thing,yes this is the thing"],
+    ["cookie notice","this site uses cookies. and brownies. and a small amount of existential dread.","accept,decline (still accepts),what kind of cookies,oatmeal raisin (deal breaker)"],
+    ["just checking in","you've been on this page for a while. are you okay?","yes,no,define okay,getting there"],
+    ["survey","we'd love your feedback! the survey is 3 hours long. snacks are not provided.","begin,no thanks,how long again,3 hours,oh"],
+    ["suspicious activity","your scroll wheel has been scrolling. we are watching the scroll wheel.","understood,it won't happen again,it will happen again,correct"],
+    ["winrar","your winrar trial expired in 1993. you were not born yet. the trial still expired.","buy it,$0.00,was it free,technically yes"],
+    ["printer","your printer is offline. it went offline in 2017 and has not looked back. respect it.","okay,wake it,let it rest,F"],
+    ["password","your password must contain: a number, a symbol, a dream, and the smell of rain.","change it,reset,i forgot it immediately,relatable"],
+    ["caps lock","your caps lock key was briefly on. we noticed. we wrote it down.","sorry,it was the cat,i don't have a cat,suspicious"],
+    ["memory","your computer is low on memory. please think fewer thoughts.","okay,which thoughts,not the good ones,the good ones are taking the most space"],
+    ["location","this site would like to know your location, your vibe, and what you had for lunch.","allow,deny (allows anyway),why,we're curious"],
+    ["update","a new version is available with exciting new features, one of which is this popup.","update,later,what feature,this one"],
+    ["microphone","this page would like to listen in. just to vibe. no notes.","allow,deny,you can't handle my vibes,we can handle them"],
+    ["terms","terms of service updated. key change: we now own your idle thoughts on tuesdays.","accept,decline (accepts),which tuesdays,all of them"],
+];
+let rpi=0;
+function firePopup(){
+    const p=rndPopups[rpi++%rndPopups.length];
+    showPopup(p[0],p[1],p[2].split(','));
+    setTimeout(firePopup,1800+Math.random()*2200);
+}
+setTimeout(firePopup,800);
+
+// ─── FLOATING ADS ─────────────────────────────────────────────────
+const adDefs=[
+    {text:"local single<br>just standing there<br>📍 2 miles away",bg:"#ffff00",border:"red"},
+    {text:"free robux<br>(this is not real)<br>🎮 we're sorry",bg:"#00ff88",border:"blue"},
+    {text:"your fan<br>is venting<br>🔇 respect that",bg:"#ff9900",border:"black"},
+    {text:"winrar<br>misses you<br>🗜️ it's been years",bg:"#ccccff",border:"purple"},
+    {text:"download<br>more ram<br>💾 trust the process",bg:"#ffcccc",border:"darkred"},
+    {text:"we saw<br>you blink<br>👁️ impressive",bg:"#ffffaa",border:"navy"},
+    {text:"print this page<br>hang it up<br>🖨️ you earned it",bg:"#ccffcc",border:"green"},
+    {text:"your IP<br>is showing<br>🌐 very cute",bg:"#ffd0f0",border:"hotpink"},
+];
+let adI=0;
+function spawnFloatAd(){
+    if(document.querySelectorAll('.float-ad').length>=7) return;
+    const a=adDefs[adI++%adDefs.length];
+    const el=document.createElement('div'); el.className='float-ad';
+    el.style.background=a.bg; el.style.borderColor=a.border;
+    el.style.left=(Math.random()*(window.innerWidth-220))+'px';
+    el.style.top=(80+Math.random()*(window.innerHeight-300))+'px';
+    el.style.animationDelay=(Math.random()*2)+'s';
+    el.innerHTML=`<div class="ad-close" onclick="this.parentElement.remove();setTimeout(spawnFloatAd,800)">✕</div>${a.text}`;
+    el.addEventListener('click',e=>{
+        if(!e.target.classList.contains('ad-close'))
+            showPopup("you clicked it","we appreciate the click. genuinely. there is no prize but the click mattered to us.","okay,fair,i want a prize,there is no prize".split(','));
     });
-  }
+    document.body.appendChild(el);
+}
+setInterval(spawnFloatAd,3000);
+spawnFloatAd(); spawnFloatAd(); spawnFloatAd();
 
-  // Modal overlay close
-  document.getElementById('modal-overlay')?.addEventListener('click', () => {
-    document.getElementById('modal-overlay')?.classList.add('hidden');
-    document.getElementById('modal-box-main').innerHTML = '';
-  });
+// ─── INLINE ADS ───────────────────────────────────────────────────
+const adZone=document.getElementById('ad-zone');
+[
+    ['🖥️ your pc<br>needs a hug<br><b>we all do</b>','blue','white','cyan'],
+    ['🏆 winner<br>probably you<br><b>(unconfirmed)</b>','red','yellow','orange'],
+    ['💾 system32<br>is just vibing<br><b>leave it alone</b>','black','lime','green'],
+    ['🍕 a pizza exists<br>somewhere near you<br><b>follow your nose</b>','purple','white','violet'],
+    ['💻 the mainframe<br>is doing its best<br><b>be nice to it</b>','#004400','#00ff00','lime'],
+    ['⚡ one weird trick<br>scientists found it<br><b>then lost it</b>','orange','black','yellow'],
+    ['🧠 more brain<br>available now<br><b>limited supply</b>','navy','cyan','blue'],
+    ['🐱 a cat<br>watched you scroll<br><b>said nothing</b>','#2d0a2d','hotpink','magenta'],
+].forEach(([html,bg,color,bdr])=>{
+    const wrap=document.createElement('div');
+    wrap.style.cssText=`background:${bg};color:${color};padding:10px;border:4px outset ${bdr};font-size:13px;text-align:center;font-family:'Comic Sans MS',cursive;min-width:130px;cursor:pointer;`;
+    wrap.innerHTML=html;
+    wrap.addEventListener('click',()=>showPopup("oh","you clicked the little ad. it didn't do anything. we still think that was brave.","okay,sure,i regret it,we know".split(',')));
+    adZone.appendChild(wrap);
+});
 
-  // Scroll to bottom button
-  document.getElementById('messages-wrap')?.addEventListener('scroll', function() {
-    const btn = document.getElementById('scroll-to-bottom-btn');
-    if(!btn) return;
-    const atBottom = this.scrollHeight - this.scrollTop - this.clientHeight < 80;
-    btn.classList.toggle('show', !atBottom);
-  });
-  document.getElementById('scroll-to-bottom-btn')?.addEventListener('click', () => {
-    const wrap = document.getElementById('messages-wrap');
-    if(wrap) wrap.scrollTop = wrap.scrollHeight;
-  });
+// ─── TEXT RAIN ─────────────────────────────────────────────────────
+const rainC=document.getElementById('text-rain-container');
+const rainW=['hmm','uh oh','wait','huh','oh no','sir','ma\'am','buddy','friend','hello','yikes','oof','bruh','oh','ah','anyway','moving on','as i was saying','nevermind','okay','noted','understood','sure','fine','whatever','look','listen','hey','psst','okay so','the thing is','actually','you know what','genuinely','no but like','wait actually','hold on','oh also','one more thing'];
+const rainCol=['#ff00ff','#00ff00','#ffff00','#00ffff','#ff6600','#ff0000','white','orange','hotpink','#aaaaff'];
+function spawnRain(){
+    const el=document.createElement('div'); el.className='rain-word';
+    el.textContent=rainW[Math.floor(Math.random()*rainW.length)];
+    el.style.left=Math.random()*95+'vw';
+    el.style.color=rainCol[Math.floor(Math.random()*rainCol.length)];
+    el.style.fontSize=(11+Math.random()*22)+'px';
+    const dur=3+Math.random()*6;
+    el.style.animationDuration=dur+'s';
+    el.style.animationDelay='-'+(Math.random()*dur)+'s';
+    rainC.appendChild(el);
+    setTimeout(()=>el.remove(),dur*1200);
+}
+setInterval(spawnRain,80);
+
+// ─── EXPLOSIONS ──────────────────────────────────────────────────
+function spawnExplosion(x,y){
+    ['💥','✨','🔥','⚡','💫','🌟','🎆','🎉'].forEach((_,i)=>{
+        const el=document.createElement('div'); el.className='explosion';
+        el.textContent=['💥','✨','🔥','⚡','💫','🌟','🎆','🎉'][Math.floor(Math.random()*8)];
+        el.style.left=(x+(Math.random()-.5)*120)+'px';
+        el.style.top=(y+(Math.random()-.5)*120)+'px';
+        document.body.appendChild(el);
+        setTimeout(()=>el.remove(),800);
+    });
+}
+document.addEventListener('click',e=>{ if(e.target!==btn) spawnExplosion(e.clientX,e.clientY); });
+
+// ─── AUDIO ────────────────────────────────────────────────────────
+let aCtx=null;
+function getA(){ if(!aCtx) aCtx=new(window.AudioContext||window.webkitAudioContext)(); return aCtx; }
+function beep(f,d){
+    try{const a=getA(),o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);
+    o.frequency.value=f;o.type='square';g.gain.setValueAtTime(0.05,a.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001,a.currentTime+d);o.start(a.currentTime);o.stop(a.currentTime+d);}catch(e){}
+}
+document.addEventListener('click',e=>{
+    getA();
+    if(e.target.classList.contains('popup-btn')||e.target.classList.contains('close-btn'))
+        beep(550+Math.random()*500,0.12);
+});
+setInterval(()=>{ if(aCtx) beep(250+Math.random()*900,0.05+Math.random()*0.1); },1000);
+
+// ─── TITLE CHAOS ─────────────────────────────────────────────────
+const titles=["ERROR: EVERYTHING IS FINE","wait come back","your fan is just nervous","⚠️ something ⚠️","please","still loading (999%)","have you tried the button","you have (1) unread vibe","🔴 live: your screen doing stuff","do not close this, we're talking","is this a computer? yes. okay.","system32 got a lil deleted","nice browser honestly","the void said hi","hey. hey you. look at this.","you left the oven on (you didn't) (maybe)","downloading: your sense of calm","your printer wrote you a letter. it said nothing.","404: afternoon not found","we accept cookies and reasonable excuses","your mouse looks a little tired","loading your situation... 74%","front camera: thinking","please stop scrolling (keep going)","hello? anyone? just us? okay.","we are so back","the void stares back and honestly fair"];
+let ti=0;
+setInterval(()=>{ document.title=titles[ti++%titles.length]; },750);
+
+// ─── GENTLE SCROLL JITTER ─────────────────────────────────────────
+setInterval(()=>{ if(Math.random()<0.07) window.scrollBy(0,(Math.random()-.5)*18); },700);
+
+// ─── SPAM TEXT GROWS ──────────────────────────────────────────────
+const spamEl=document.getElementById('spam-text-block');
+const spamSnip=['hmm','okay but','wait actually','you know','the thing is','anyway','as i was saying','hold on','one sec','never mind','oh also','so basically','right so','and another thing','moving on','back to my point','where was i','oh right','actually though','in conclusion'];
+setInterval(()=>{
+    spamEl.textContent+=' '+spamSnip[Math.floor(Math.random()*spamSnip.length)];
+    if(spamEl.textContent.length>5000) spamEl.textContent=spamEl.textContent.slice(2500);
+}, 250);
+
+
+// ─── DANGER ZONE: inject main.html into about:blank ──────────────
+let mainLaunched = false;
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') mainLaunched = false;
+});
+function openMainInBlank() {
+    if (mainLaunched) return;
+    mainLaunched = true;
+    fetch('main.html')
+        .then(r => r.text())
+        .then(html => {
+            const w = window.open('about:blank', '_blank');
+            w.document.open();
+            w.document.write(html);
+            w.document.close();
+        })
+        .catch(() => {
+            // If fetch fails (e.g. no server), just open a blank tab with an error message
+            const w = window.open('about:blank', '_blank');
+            w.document.open();
+            w.document.write('<h1 style="font-family:Comic Sans MS;color:red">ERROR: main.html not found. Did you forget to bring it?</h1>');
+            w.document.close();
+        });
+}
+
 </script>
-
 </body>
 </html>

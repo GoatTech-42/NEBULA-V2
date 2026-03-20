@@ -33,6 +33,7 @@
   --msg-hover: rgba(255,45,138,.02);
   --scrollbar-thumb: rgba(255,45,138,.22);
 
+  --color-scheme: dark;
   --grad: linear-gradient(135deg,#ff2d8a 0%,#bf00ff 50%,#00f0ff 100%);
   --grad2: linear-gradient(135deg,#ff2d8a 0%,#bf00ff 100%);
 }
@@ -96,3 +97,28 @@ body::after { content:''; position:fixed; inset:0; background:repeating-linear-g
 .typing-dots span { background: var(--accent); }
 .modal-box { background: linear-gradient(145deg,#160022,#0d0015); border-color: rgba(255,45,138,.2); }
 .snav-item.active { text-shadow: 0 0 12px var(--accent-glow); }
+
+/* __NEBULA_GC_THEME__ */
+/* GoatCoin + Blackjack overrides for synthwave theme */
+.bj-card {
+  background: #fff0fb;
+  border-color: rgba(255,45,138,.45);
+  box-shadow: 0 4px 18px rgba(255,45,138,.25);
+}
+.bj-card.red .bj-cv,
+.bj-card.red .bj-cs {
+  color: #dc2626;
+}
+.bj-card .bj-cv,
+.bj-card .bj-cs {
+  color: #0f172a;
+}
+.gc-stat-card {
+  box-shadow: 0 4px 20px rgba(255,45,138,.18);
+}
+.lb-me {
+  box-shadow: 0 0 12px rgba(255,45,138,.18);
+}
+.badge-chip:hover {
+  box-shadow: 0 0 8px rgba(255,45,138,.18);
+}
