@@ -7,7 +7,7 @@ import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, si
 import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBkjYpi0MY0JVtSKAmJ-K2Kr93k2F6gqmg",
+  apiKey: "oh nah",
   authDomain: "nebulav2.firebaseapp.com",
   projectId: "nebulav2",
   storageBucket: "nebulav2.firebasestorage.app",
