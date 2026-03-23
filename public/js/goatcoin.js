@@ -813,23 +813,27 @@ async function _resolveRound() {
   const g = _mpGame;
   if(!g||g.phase!=='dealer'||_myRole!=='p1') return;
   const deck = _strToDeck(g.deck);
+  // Dealer draws to 17+ (still needed for comparison vs player totals)
   const dealerHand = [...g.dealerHand];
   while(_handTotal(dealerHand)<17) dealerHand.push(deck.pop());
   const dt=_handTotal(dealerHand), p1t=_handTotal(g.p1hand||[]), p2t=_handTotal(g.p2hand||[]);
 
   const rr = (pt, isDouble) => {
     const s = isDouble ? (g.stake||0)*2 : (g.stake||0);
-    if(pt>21)    return {result:'lose',delta:-s,win:false};
-    if(dt>21)    return {result:'win', delta:s, win:true};
-    if(pt>dt)    return {result:'win', delta:s, win:true};
-    if(pt===dt)  return {result:'push',delta:0, win:false};
-                 return {result:'lose',delta:-s,win:false};
+    if(pt>21)    return {result:'lose',delta:-s,win:false,bust:true};
+    if(dt>21)    return {result:'win', delta:s, win:true,bust:false};
+    if(pt>dt)    return {result:'win', delta:s, win:true,bust:false};
+    if(pt===dt)  return {result:'push',delta:0, win:false,bust:false};
+                 return {result:'lose',delta:-s,win:false,bust:false};
   };
   const r1=rr(p1t,g.p1double), r2=rr(p2t,g.p2double);
 
+  // Award round wins — if BOTH win, neither gets a round point (it's a shared win)
+  // If tied (both push or both lose), no points awarded either
   let p1rs=0, p2rs=0;
-  if(r1.win&&!r2.win) p1rs=1;
-  if(r2.win&&!r1.win) p2rs=1;
+  if(r1.win && !r2.win) p1rs=1;
+  if(r2.win && !r1.win) p2rs=1;
+  // Both win = shared round, nobody gets the point (not a round score tie)
 
   const newScores={p1:(g.scores?.p1||0)+p1rs, p2:(g.scores?.p2||0)+p2rs};
   const roundResults=[...(g.roundResults||[]),{
@@ -840,34 +844,56 @@ async function _resolveRound() {
   }];
 
   const bestOf=g.bestOf||3, winsNeeded=Math.ceil(bestOf/2);
-  const gameOver = newScores.p1>=winsNeeded || newScores.p2>=winsNeeded || (g.currentRound||1)>=bestOf;
-  const winner = gameOver ? (newScores.p1>newScores.p2?'p1':newScores.p2>newScores.p1?'p2':'push') : null;
+  const currentRound = g.currentRound||1;
+
+  // Check if either player has enough wins to end the game
+  const p1Won = newScores.p1 >= winsNeeded;
+  const p2Won = newScores.p2 >= winsNeeded;
+  // Only end on max rounds if there's a clear winner — otherwise extend for tiebreaker
+  const maxRoundsReached = currentRound >= bestOf;
+  const isTied = newScores.p1 === newScores.p2;
+
+  // Game is over if: someone hit win threshold, OR max rounds AND not tied
+  const gameOver = p1Won || p2Won || (maxRoundsReached && !isTied);
+  const winner = gameOver
+    ? (newScores.p1 > newScores.p2 ? 'p1' : newScores.p2 > newScores.p1 ? 'p2' : null)
+    : null;
 
   await updateDoc(doc(db,'bj_games',_mpGameId), {
     dealerHand, deck:_deckToStr(deck), scores:newScores, roundResults,
-    phase: gameOver?'gameDone':'roundDone',
+    phase: gameOver ? 'gameDone' : 'roundDone',
     winner: winner||null, p1double:false, p2double:false,
     updatedAt: serverTimestamp()
   });
 
-  await updateDoc(doc(db,'goatcoin',g.p1uid),{coins:increment(r1.delta),weekCoins:increment(r1.delta),totalCoins:increment(r1.delta)}).catch(()=>{});
-  await updateDoc(doc(db,'goatcoin',g.p2uid),{coins:increment(r2.delta),weekCoins:increment(r2.delta),totalCoins:increment(r2.delta)}).catch(()=>{});
-
-  if(gameOver&&winner&&winner!=='push') {
-    const winUid = winner==='p1'?g.p1uid:g.p2uid;
-    await updateDoc(doc(db,'goatcoin',winUid),{weekBJWins:increment(1),totalBJWins:increment(1)}).catch(()=>{});
+  // Only transfer coins on game over with a winner (no push possible at game level anymore)
+  if(gameOver && winner) {
+    const winnerUid = winner==='p1'?g.p1uid:g.p2uid;
+    const loserUid = winner==='p1'?g.p2uid:g.p1uid;
+    const totalWins = winner==='p1'?newScores.p1:newScores.p2;
+    const totalLosses = winner==='p1'?newScores.p2:newScores.p1;
+    // Transfer per-round stakes for the wins delta
+    const netDelta = (totalWins - totalLosses) * (g.stake||0);
+    if(netDelta > 0) {
+      await updateDoc(doc(db,'goatcoin',winnerUid),{coins:increment(netDelta),weekCoins:increment(netDelta),totalCoins:increment(netDelta)}).catch(()=>{});
+      await updateDoc(doc(db,'goatcoin',loserUid),{coins:increment(-netDelta),weekCoins:increment(-netDelta),totalCoins:increment(-netDelta)}).catch(()=>{});
+      await updateDoc(doc(db,'goatcoin',winnerUid),{weekBJWins:increment(1),totalBJWins:increment(1)}).catch(()=>{});
+    }
   }
   _renderBJTable();
 }
 
 export async function bjNextRound() {
-  if(!_mpGameId||!_mpGame||_mpGame.phase!=='roundDone'||_myRole!=='p1') return;
+  if(!_mpGameId||!_mpGame) return;
   const g = _mpGame;
+  // Allow next round from roundDone OR from gameDone when there's no winner (tiebreaker)
+  if((g.phase!=='roundDone' && !(g.phase==='gameDone'&&!g.winner))||_myRole!=='p1') return;
   const deck = _newDeck();
   const p1h=[deck.pop(),deck.pop()], p2h=[deck.pop(),deck.pop()], dh=[deck.pop(),deck.pop()];
   await updateDoc(doc(db,'bj_games',_mpGameId), {
     deck:_deckToStr(deck), p1hand:p1h, p2hand:p2h, dealerHand:dh,
     phase:'p1turn', p1action:null, p2action:null, p1double:false, p2double:false,
+    winner: null, // clear winner for tiebreaker
     currentRound:(g.currentRound||1)+1, updatedAt:serverTimestamp()
   });
 }
@@ -901,22 +927,23 @@ function _renderBJTable() {
   const done=['dealer','roundDone','gameDone'].includes(phase);
   const scores=g.scores||{p1:0,p2:0};
   const dh=g.dealerHand||[];
-  const dealerCards=done?dh.map(c=>_renderCard(c)).join(''):(dh.length?_renderCard(dh[0])+_renderCard(null,true):'');
-  const dealerTotal=done?`<span class="bj-total ${_handTotal(dh)>21?'bust':''}">${_handTotal(dh)}</span>`:'';
 
   let roundMsg='', gameOverMsg='';
   if(done) {
     const lr=(g.roundResults||[]).slice(-1)[0];
     if(lr) {
       const mr=lr[_myRole]?.result, or=lr[oppRole]?.result;
-      roundMsg=`<div class="bj-round-result"><span>You: ${mr==='win'?'Won 🎉':mr==='push'?'Push':'Lost'}</span><span>${escHtml(oppName)}: ${or==='win'?'Won 🎉':or==='push'?'Push':'Lost'}</span></div>`;
+      roundMsg=`<div class="bj-round-result"><span>You: ${mr==='win'?'Won 🎉':mr==='push'?'Push 🤝':'Lost 💸'}</span><span>${escHtml(oppName)}: ${or==='win'?'Won 🎉':or==='push'?'Push 🤝':'Lost 💸'}</span></div>`;
     }
   }
   if(phase==='gameDone') {
     const w=g.winner;
-    gameOverMsg=w==='push'?`<div class="bj-result bj-result-push">Tie — coins returned.</div>`
-      :w===_myRole?`<div class="bj-result bj-result-win">🎉 You won the series! GC transferred.</div>`
-      :`<div class="bj-result bj-result-lose">${escHtml(oppName)} won this one. Better luck next time.</div>`;
+    const isTied = !w && g.scores?.p1 === g.scores?.p2;
+    gameOverMsg = !w
+      ? `<div class="bj-result bj-result-push">Tiebreaker round — keep playing!</div>`
+      : w===_myRole
+        ? `<div class="bj-result bj-result-win">🏆 You won the series! GC transferred.</div>`
+        : `<div class="bj-result bj-result-lose">${escHtml(oppName)} won the series. Better luck next time.</div>`;
   }
 
   panel.innerHTML = `
@@ -945,8 +972,7 @@ function _renderBJTable() {
         </div>
       </div>
       <div class="bj-mp-area">
-        <div class="bj-side"><div class="bj-side-label">Dealer ${dealerTotal}</div><div class="bj-hand">${dealerCards}</div></div>
-        <div class="bj-sides-row">
+        <div class="bj-sides-row bj-sides-row-full">
           <div class="bj-side bj-my-side ${myTurn?'bj-active-side':''}">
             <div class="bj-side-label">You <span class="bj-total ${myTotal>21?'bust':''}">${myTotal}</span>${myTurn?'<span class="bj-your-turn-badge">your move</span>':''}</div>
             <div class="bj-hand">${myH.map(c=>_renderCard(c)).join('')}</div>
@@ -956,14 +982,16 @@ function _renderBJTable() {
             <div class="bj-hand">${done?oppH.map(c=>_renderCard(c)).join(''):oppH.map(()=>_renderCard(null,true)).join('')}</div>
           </div>
         </div>
+        ${done ? `<div class="bj-dealer-reveal">Dealer: <span class="bj-total ${_handTotal(dh)>21?'bust':''}">${_handTotal(dh)}</span> <span class="bj-dealer-cards">${dh.map(c=>_renderCard(c)).join('')}</span></div>` : ''}
         ${roundMsg}${gameOverMsg}
         <div class="bj-mp-actions">
           ${myTurn&&phase!=='gameDone'?('<button class="btn bj-btn" id="bj-mp-hit">Hit</button><button class="btn bj-btn" id="bj-mp-stand">Stand</button>'+(myH.length===2&&Math.floor(_gcData?.coins||0)>=(g.stake||0)*2?'<button class="btn bj-btn bj-double" id="bj-mp-double">Double</button>':'')):''}
           ${phase==='roundDone'?(_myRole==='p1'?'<button class="btn bj-btn" id="bj-mp-next">Next Round ▶</button>':`<div class="bj-wait-msg">${escHtml(g.p1name)} is starting the next round...</div>`):''}
-          ${phase==='gameDone'?'<button class="btn btn-ghost bj-btn" id="bj-mp-leave">Leave</button>':''}
+          ${phase==='gameDone'&&g.winner?'<button class="btn btn-ghost bj-btn" id="bj-mp-leave">Leave</button>':''}
+          ${phase==='gameDone'&&!g.winner?(_myRole==='p1'?'<button class="btn bj-btn" id="bj-mp-next">Tiebreaker Round ▶</button>':`<div class="bj-wait-msg">${escHtml(g.p1name)} is starting the tiebreaker...</div>`):''}
           ${phase==='p1turn'&&_myRole==='p2'?`<div class="bj-wait-msg">${escHtml(g.p1name)} is thinking...</div>`:''}
           ${phase==='p2turn'&&_myRole==='p1'?`<div class="bj-wait-msg">${escHtml(g.p2name)} is thinking...</div>`:''}
-          ${phase==='dealer'?'<div class="bj-wait-msg">Dealer drawing...</div>':''}
+          ${phase==='dealer'?'<div class="bj-wait-msg">Resolving round...</div>':''}
           ${phase==='dealing'?'<div class="bj-wait-msg">Dealing...</div>':''}
         </div>
       </div>

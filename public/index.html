@@ -9,6 +9,1035 @@
 
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 :root{
+  --p:#f8f3eb;--pd:#ede4d0;--pm:#f2e9d4;--ink:#1a1008;--inkl:#3a2a1c;
+  --inkf:#5c3d22;--sep:#7d5a0a;--sepl:#b8872a;--rs:#7a1818;
+  --bdr:#8b6624;--sh:rgba(24,17,8,.12);--bg:#faf5ee;
+  --h:100%;--accent:#c0392b;--accent2:#7a4b10;
+  --tag-bg:#e8dcc8;--tag-text:#5c3d22;
+  --nav-h:48px;
+}
+html,body{height:var(--h);overflow:hidden}
+body{background:#17090200;font-family:'Crimson Text',Georgia,serif;color:var(--ink);display:flex;flex-direction:column;background:#1a0d03}
+
+/* ── Outer chrome ── */
+.win{flex:1;display:flex;flex-direction:column;overflow:hidden;padding:9px}
+.win-bar{border-radius:9px 9px 0 0;border:1px solid var(--bdr);border-bottom:none;padding:6px 14px;display:flex;align-items:center;gap:9px;flex-shrink:0;background:#261200}
+.win-dots{display:flex;gap:5px}
+.win-dot{width:11px;height:11px;border-radius:50%}
+.wd-r{background:#ff5f57}.wd-y{background:#ffbd2e}.wd-g{background:#28c840}
+.win-url{flex:1;background:#1e0d00;border:1px solid var(--bdr);border-radius:4px;padding:3px 10px;font-size:.67rem;color:var(--sepl);font-family:monospace;letter-spacing:.3px;min-width:0}
+.win-search{background:#1e0d00;border:1px solid var(--bdr);border-radius:4px;padding:3px 8px;font-size:.67rem;color:var(--sepl);font-family:'Crimson Text',serif;width:160px;outline:none}
+.win-search::placeholder{color:rgba(196,153,58,.4)}
+.win-search:focus{border-color:var(--sepl)}
+.win-body{flex:1;border:1px solid var(--bdr);border-top:none;border-radius:0 0 8px 8px;overflow:hidden;display:flex;flex-direction:column}
+
+/* ── Site nav (top) ── */
+.site-nav{height:var(--nav-h);flex-shrink:0;background:var(--ink);display:flex;align-items:center;padding:0 1.2rem;gap:1.4rem;border-bottom:2px solid var(--bdr)}
+.site-nav-logo{font-family:'Playfair Display',serif;font-size:.88rem;font-weight:900;color:var(--sepl);white-space:nowrap;letter-spacing:.5px;flex-shrink:0}
+.site-nav-links{display:flex;gap:.2rem;flex:1;overflow:hidden}
+.snl{color:rgba(196,153,58,.55);font-size:.7rem;font-weight:600;letter-spacing:.3px;text-transform:uppercase;padding:.25rem .6rem;border-radius:3px;cursor:pointer;transition:color .12s,background .12s;white-space:nowrap}
+.snl:hover{color:var(--sepl);background:rgba(196,153,58,.08)}
+.snl.active{color:var(--sepl)}
+.site-nav-search{margin-left:auto;display:flex;align-items:center;gap:.4rem;background:rgba(196,153,58,.06);border:1px solid rgba(196,153,58,.18);border-radius:4px;padding:.24rem .65rem;cursor:text}
+.site-nav-search input{background:none;border:none;color:var(--sepl);font-family:'Crimson Text',serif;font-size:.72rem;width:120px;outline:none}
+.site-nav-search input::placeholder{color:rgba(196,153,58,.3)}
+
+/* ── Site layout ── */
+.site{flex:1;display:flex;overflow:hidden}
+
+/* Sidebar */
+.sb{width:210px;flex-shrink:0;background:var(--pd);border-right:2px solid var(--bdr);display:flex;flex-direction:column;overflow:hidden}
+.sb-brand{padding:1rem 1rem .85rem;border-bottom:1px solid var(--bdr);text-align:center}
+.sb-brand-name{font-family:'Playfair Display',serif;font-size:.9rem;font-weight:900;color:var(--ink);line-height:1.18;margin-bottom:.12rem}
+.sb-brand-tag{font-size:.54rem;letter-spacing:1.8px;text-transform:uppercase;color:var(--sep)}
+.sb-brand-vol{font-size:.58rem;color:var(--inkf);font-style:italic;margin-top:.18rem}
+.sb-search{padding:.5rem .7rem;border-bottom:1px solid var(--bdr)}
+.sb-search input{width:100%;background:rgba(88,57,26,.06);border:1px solid rgba(88,57,26,.18);border-radius:3px;padding:.3rem .55rem;font-size:.7rem;font-family:'Crimson Text',serif;color:var(--ink);outline:none;transition:border-color .12s}
+.sb-search input:focus{border-color:var(--bdr)}
+.sb-search input::placeholder{color:var(--inkf);font-style:italic}
+.sb-nav{flex:1;overflow-y:auto;padding:.4rem 0}
+.sb-nav::-webkit-scrollbar{width:0}
+.sb-sec{font-size:.52rem;letter-spacing:2.2px;text-transform:uppercase;color:var(--sep);padding:.5rem 1rem .18rem;font-family:'IM Fell English',serif;margin-top:.2rem}
+.sb-item{display:flex;align-items:center;gap:.4rem;padding:.42rem 1rem;cursor:pointer;font-size:.82rem;color:var(--inkl);transition:background .12s,color .12s;border-left:3px solid transparent;line-height:1.3;user-select:none}
+.sb-item:hover{background:var(--pm);color:var(--ink)}
+.sb-item.on{background:var(--p);color:var(--rs);border-left-color:var(--rs);font-weight:600}
+.sb-item svg{flex-shrink:0;opacity:.6;transition:opacity .12s}
+.sb-item.on svg,.sb-item:hover svg{opacity:1}
+.sb-item-tag{margin-left:auto;background:var(--tag-bg);color:var(--tag-text);font-size:.47rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;padding:.08rem .36rem;border-radius:3px}
+.sb-divider{height:1px;background:var(--bdr);opacity:.25;margin:.4rem .75rem}
+.sb-stats{padding:.65rem 1rem .55rem;border-top:1px solid var(--bdr)}
+.sb-stat-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:.25rem}
+.sb-stat-label{font-size:.6rem;color:var(--inkf);font-style:italic}
+.sb-stat-val{font-size:.6rem;font-weight:600;color:var(--ink)}
+.sb-foot{padding:.55rem .9rem;border-top:1px solid var(--bdr);font-size:.56rem;font-style:italic;color:var(--inkf);line-height:1.55;text-align:center}
+
+/* Main */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--p)}
+.topbar{height:38px;flex-shrink:0;background:var(--pd);border-bottom:1px solid var(--bdr);display:flex;align-items:center;padding:0 1.2rem;gap:.45rem;justify-content:space-between}
+.bc{font-size:.73rem;color:var(--inkf);display:flex;align-items:center;gap:.28rem}
+.bc .link{color:var(--rs);cursor:pointer}
+.bc .link:hover{text-decoration:underline}
+.bc .sep2{color:var(--sepl)}
+.topbar-right{display:flex;align-items:center;gap:.7rem}
+.topbar-tag{background:var(--tag-bg);color:var(--tag-text);font-size:.54rem;font-weight:700;padding:.12rem .5rem;border-radius:3px;text-transform:uppercase;letter-spacing:.5px}
+.topbar-date{font-size:.62rem;color:var(--inkf);font-style:italic;white-space:nowrap}
+
+/* Pages */
+.pages{flex:1;overflow:hidden;position:relative}
+.pg{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;display:none}
+.pg.on{display:block}
+.pg::-webkit-scrollbar{width:5px}
+.pg::-webkit-scrollbar-thumb{background:var(--bdr);border-radius:3px}
+.pi{max-width:800px;margin:0 auto;padding:1.8rem 2.2rem 5rem}
+
+/* ── HOME ── */
+.hm{text-align:center;padding:1.8rem 1rem 1.4rem;border-bottom:2px solid var(--pd);margin-bottom:1.8rem;position:relative}
+.hm::before,.hm::after{content:'✦';position:absolute;top:1.8rem;color:var(--sepl);font-size:.85rem}
+.hm::before{left:0}.hm::after{right:0}
+.hm-org{font-family:'IM Fell English',serif;font-size:.65rem;letter-spacing:3px;text-transform:uppercase;color:var(--sep);margin-bottom:.5rem}
+.hm-title{font-family:'Playfair Display',serif;font-size:2rem;font-weight:900;color:var(--ink);line-height:1.12;margin-bottom:.3rem}
+.hm-sub{font-size:.9rem;font-style:italic;color:var(--inkf);margin-bottom:.9rem}
+.hm-rule{display:flex;align-items:center;gap:.55rem}
+.hm-rule::before,.hm-rule::after{content:'';flex:1;height:1px;background:var(--bdr)}
+.hm-rule span{color:var(--sep);font-size:.82rem}
+.hm-intro{font-size:.95rem;line-height:1.85;color:var(--inkl);text-align:justify;hyphens:auto;margin-bottom:1.6rem}
+
+/* Featured strip */
+.hm-featured{display:flex;align-items:stretch;gap:1px;background:var(--bdr);border:1px solid var(--bdr);border-radius:3px;overflow:hidden;margin-bottom:1.8rem}
+.hm-feat-item{flex:1;background:var(--pm);padding:.85rem 1rem;cursor:pointer;transition:background .13s;display:flex;flex-direction:column;gap:.2rem}
+.hm-feat-item:hover{background:var(--p)}
+.hm-feat-cat{font-size:.52rem;letter-spacing:2px;text-transform:uppercase;color:var(--sep);font-family:'IM Fell English',serif}
+.hm-feat-title{font-family:'Playfair Display',serif;font-size:.88rem;font-weight:700;color:var(--ink);line-height:1.25}
+
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin-bottom:.4rem}
+.card{background:var(--pm);border:1.5px solid var(--bdr);border-radius:2px;padding:.95rem 1.05rem;cursor:pointer;transition:background .13s,border-color .13s,transform .17s;display:flex;flex-direction:column;gap:.22rem}
+.card:hover{background:var(--p);border-color:var(--rs);transform:translateY(-2px)}
+.card.w{grid-column:1/-1}
+.cn{font-size:.55rem;letter-spacing:2px;text-transform:uppercase;color:var(--sep);font-family:'IM Fell English',serif}
+.ct{font-family:'Playfair Display',serif;font-size:.98rem;font-weight:700;color:var(--ink);line-height:1.22}
+.cd{font-size:.78rem;color:var(--inkf);font-style:italic;line-height:1.45;margin-top:.08rem}
+.ca{margin-top:.3rem;font-size:.72rem;color:var(--rs);font-weight:600}
+
+/* Did You Know panel */
+.dyk-panel{background:var(--pm);border:1.5px solid var(--bdr);border-radius:2px;padding:1rem 1.2rem;margin-bottom:1.4rem}
+.dyk-label{font-size:.54rem;letter-spacing:2.2px;text-transform:uppercase;color:var(--sep);font-family:'IM Fell English',serif;margin-bottom:.5rem}
+.dyk-text{font-size:.88rem;line-height:1.7;color:var(--inkl);font-style:italic}
+
+/* ── ARTICLE ── */
+.ah{margin-bottom:1.2rem;border-bottom:1.5px solid var(--pd);padding-bottom:.95rem}
+.an{font-size:.57rem;letter-spacing:2.5px;text-transform:uppercase;color:var(--sep);font-family:'IM Fell English',serif;margin-bottom:.28rem}
+.at{font-family:'Playfair Display',serif;font-size:1.75rem;font-weight:700;color:var(--ink);line-height:1.2;margin-bottom:.22rem}
+.aby{font-size:.75rem;font-style:italic;color:var(--inkf)}
+.a-tags{display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.55rem}
+.a-tag{background:var(--tag-bg);color:var(--tag-text);font-size:.52rem;padding:.1rem .5rem;border-radius:3px;font-weight:600;letter-spacing:.3px;text-transform:uppercase}
+
+.ab p{font-size:.97rem;line-height:1.92;color:var(--inkl);text-align:justify;hyphens:auto;margin-bottom:.82rem}
+.ab p:first-of-type::first-letter{font-family:'Playfair Display',serif;font-size:2.9rem;font-weight:900;float:left;line-height:.82;margin:.04rem .1rem -.04rem 0;color:var(--ink)}
+
+.pq{border-left:4px solid var(--sepl);margin:.2rem 0 .82rem;padding:.6rem 1.1rem;background:rgba(139,104,18,.055)}
+.pq p{font-style:italic;font-size:.96rem!important;color:var(--inkf)!important;text-align:left!important;margin-bottom:.12rem!important}
+.pq p::first-letter{all:unset!important}
+.pq cite{display:block;font-size:.7rem;color:var(--sep);font-style:normal;margin-top:.18rem}
+
+.fb{float:right;width:200px;margin:0 0 .9rem 1.35rem;background:var(--pd);border:1.5px solid var(--bdr);padding:.8rem .95rem;clear:right;border-radius:2px}
+.fbt{font-family:'Playfair Display',serif;font-size:.66rem;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--sep);border-bottom:1px solid var(--bdr);padding-bottom:.3rem;margin-bottom:.42rem}
+.fb p{font-size:.78rem!important;line-height:1.55!important;text-align:left!important;hyphens:none!important;color:var(--inkl)!important;margin-bottom:0!important}
+.fb p::first-letter{all:unset!important}
+
+/* Key facts box */
+.facts-box{float:left;width:188px;margin:0 1.35rem .9rem 0;background:rgba(122,24,24,.04);border:1.5px solid rgba(122,24,24,.18);padding:.8rem .95rem;clear:left;border-radius:2px}
+.facts-box .fbt{color:var(--rs);border-color:rgba(122,24,24,.2)}
+.fact-item{display:flex;gap:.4rem;margin-bottom:.32rem;align-items:flex-start;font-size:.78rem;color:var(--inkl)}
+.fact-bullet{color:var(--rs);flex-shrink:0;margin-top:.12rem}
+
+.sdiv{text-align:center;margin:.2rem 0 .82rem;color:var(--sepl);font-size:.83rem;letter-spacing:4px}
+.cf::after{content:'';display:table;clear:both}
+
+.tl{margin:.2rem 0 .82rem;border-left:2px solid var(--sepl);padding-left:1.2rem}
+.tli{margin-bottom:.6rem;position:relative}
+.tli::before{content:'';position:absolute;left:-1.46rem;top:.37rem;width:8px;height:8px;border-radius:50%;background:var(--sepl);border:2px solid var(--p)}
+.tly{font-family:'IM Fell English',serif;font-size:.66rem;letter-spacing:1.2px;text-transform:uppercase;color:var(--sep);margin-bottom:.07rem}
+.tlt{font-size:.82rem;line-height:1.6;color:var(--inkl)}
+
+.h3{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:var(--ink);margin:1rem 0 .5rem;border-bottom:1px solid var(--pd);padding-bottom:.3rem}
+.h4{font-family:'Playfair Display',serif;font-size:.95rem;font-weight:700;color:var(--inkl);margin:.8rem 0 .35rem}
+
+/* Article footer nav */
+.art-nav{display:flex;gap:.6rem;margin-top:2.5rem;padding-top:1rem;border-top:1px solid var(--pd)}
+.art-nav-btn{flex:1;background:var(--pm);border:1px solid var(--bdr);padding:.7rem 1rem;border-radius:2px;cursor:pointer;transition:background .12s,border-color .12s;text-align:center}
+.art-nav-btn:hover{background:var(--p);border-color:var(--rs)}
+.art-nav-dir{font-size:.54rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--sep);margin-bottom:.18rem}
+.art-nav-title{font-family:'Playfair Display',serif;font-size:.82rem;font-weight:700;color:var(--rs)}
+
+/* ── LOUISIANA nested page ── */
+.lp-wrap{margin:1.5rem 0 .9rem;border:2px solid var(--bdr);border-radius:3px;overflow:hidden;box-shadow:0 4px 16px var(--sh)}
+.lp-bar{background:#261200;padding:5px 11px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--bdr)}
+.lp-dots{display:flex;gap:4px}
+.lp-dot{width:9px;height:9px;border-radius:50%}
+.lpd-r{background:#ff5f57}.lpd-y{background:#ffbd2e}.lpd-g{background:#28c840}
+.lp-url{flex:1;background:#1e0d00;border:1px solid var(--bdr);border-radius:3px;padding:2px 8px;font-size:.63rem;color:#c4993a;font-family:monospace}
+
+.lp-pg{height:440px;overflow-y:auto;overflow-x:hidden;background:#f8f1de;position:relative}
+.lp-pg::-webkit-scrollbar{width:4px}
+.lp-pg::-webkit-scrollbar-thumb{background:var(--bdr)}
+
+.lp-cnt{padding:1.5rem 1.7rem 1.8rem;font-family:'Crimson Text',Georgia,serif}
+.lp-h{font-family:'Playfair Display',serif;font-size:1.35rem;font-weight:700;color:var(--ink);margin-bottom:.18rem;line-height:1.2}
+.lp-s{font-size:.74rem;font-style:italic;color:var(--inkf);margin-bottom:.85rem;border-bottom:1px solid var(--pd);padding-bottom:.6rem}
+.lp-cnt p{font-size:.93rem;line-height:1.84;color:var(--inkl);text-align:justify;hyphens:auto;margin-bottom:.72rem}
+.lp-cnt p:first-of-type::first-letter{font-family:'Playfair Display',serif;font-size:2.6rem;font-weight:900;float:left;line-height:.82;margin:.04rem .1rem 0 0;color:var(--ink)}
+.lp-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin:.65rem 0 .8rem;background:var(--pd);border:1px solid var(--bdr);padding:.7rem .8rem}
+.lp-gi{font-size:.77rem;color:var(--inkl);line-height:1.38}
+.lp-gi strong{color:var(--ink);font-size:.74rem;display:block;font-family:'IM Fell English',serif;letter-spacing:.3px}
+.lp-q{border-left:3px solid var(--sepl);margin:.25rem 0 .7rem;padding:.5rem .95rem;background:rgba(139,104,18,.055)}
+.lp-q p{font-style:italic;font-size:.88rem!important;margin-bottom:0!important;text-align:left!important}
+.lp-q p::first-letter{all:unset!important}
+.lp-q cite{display:block;font-size:.68rem;color:var(--sep);margin-top:.22rem;font-style:normal}
+.lp-tl{margin:.2rem 0 .7rem;border-left:2px solid var(--sepl);padding-left:1.1rem}
+.lp-tli{margin-bottom:.55rem;position:relative}
+.lp-tli::before{content:'';position:absolute;left:-1.38rem;top:.35rem;width:8px;height:8px;border-radius:50%;background:var(--sepl);border:2px solid #f8f1de}
+.lp-tly{font-family:'IM Fell English',serif;font-size:.66rem;letter-spacing:1.1px;text-transform:uppercase;color:var(--sep);margin-bottom:.06rem}
+.lp-tlt{font-size:.83rem;line-height:1.56;color:var(--inkl)}
+.lp-h3{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:var(--ink);margin:.8rem 0 .4rem;border-bottom:1px solid rgba(139,104,18,.2);padding-bottom:.25rem}
+
+/* ── Konami overlay ── */
+#ko{display:none;position:absolute;inset:0;z-index:50;background:rgba(5,2,0,.95);align-items:center;justify-content:center;flex-direction:column;animation:fi .3s ease}
+#ko.on{display:flex}
+.ko-box{text-align:center;padding:1.1rem 1.4rem;animation:fu .4s cubic-bezier(.16,1,.3,1)}
+.ko-t{font-family:'Playfair Display',serif;font-size:1.22rem;font-weight:900;color:#4fc9ea;margin-bottom:.28rem}
+.ko-s{font-size:.78rem;color:rgba(220,235,244,.48);margin-bottom:1.1rem;font-style:italic;line-height:1.65;max-width:310px;margin-left:auto;margin-right:auto}
+.ko-btns{display:flex;gap:.6rem;justify-content:center;flex-wrap:wrap}
+.ko-btn{padding:.48rem 1.25rem;border-radius:6px;font-size:.78rem;font-weight:700;cursor:pointer;font-family:'Crimson Text',serif;text-decoration:none;display:inline-block;transition:all .15s;border:1px solid transparent}
+.ko-p{background:#4fc9ea;color:#020d1a}
+.ko-p:hover{background:#66e0ff;transform:translateY(-2px)}
+.ko-g{background:transparent;color:rgba(220,235,244,.6);border-color:rgba(79,201,234,.3)}
+.ko-g:hover{border-color:rgba(79,201,234,.6);color:#4fc9ea}
+
+/* ── Figures page ── */
+.fig-grid{display:grid;grid-template-columns:1fr 1fr;gap:.85rem;margin-bottom:.5rem}
+.fig-card{background:var(--pm);border:1.5px solid var(--bdr);border-radius:2px;padding:.95rem 1.05rem}
+.fig-name{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:var(--ink);margin-bottom:.12rem}
+.fig-dates{font-size:.65rem;color:var(--sep);font-family:'IM Fell English',serif;letter-spacing:.5px;margin-bottom:.45rem}
+.fig-desc{font-size:.8rem;line-height:1.68;color:var(--inkl)}
+
+/* ── About page ── */
+.about-hero{background:var(--pd);border:1.5px solid var(--bdr);border-radius:2px;padding:1.4rem 1.6rem;margin-bottom:1.4rem;text-align:center}
+.about-hero h2{font-family:'Playfair Display',serif;font-size:1.55rem;font-weight:900;color:var(--ink);margin-bottom:.35rem}
+.about-hero p{font-size:.88rem;color:var(--inkf);line-height:1.7;font-style:italic;max-width:520px;margin:0 auto}
+.team-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.65rem;margin:.5rem 0 1.2rem}
+.team-card{background:var(--pm);border:1px solid var(--bdr);border-radius:2px;padding:.8rem .9rem;text-align:center}
+.team-card .tc-init{width:44px;height:44px;border-radius:50%;background:var(--ink);color:var(--pd);display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:900;margin:0 auto .6rem}
+.team-card .tc-name{font-family:'Playfair Display',serif;font-size:.85rem;font-weight:700;color:var(--ink);margin-bottom:.18rem}
+.team-card .tc-role{font-size:.68rem;color:var(--sep);font-style:italic;margin-bottom:.35rem}
+.team-card .tc-bio{font-size:.73rem;color:var(--inkf);line-height:1.55}
+
+/* ── Search results ── */
+.search-results-panel{padding:1.4rem 0}
+.sr-title{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:var(--ink);margin-bottom:.85rem;border-bottom:1px solid var(--pd);padding-bottom:.55rem}
+.sr-item{padding:.7rem 0;border-bottom:1px solid var(--pd);cursor:pointer}
+.sr-item:hover .sr-item-title{color:var(--rs)}
+.sr-item:last-child{border-bottom:none}
+.sr-item-cat{font-size:.55rem;letter-spacing:2px;text-transform:uppercase;color:var(--sep);font-family:'IM Fell English',serif;margin-bottom:.18rem}
+.sr-item-title{font-family:'Playfair Display',serif;font-size:.98rem;font-weight:700;color:var(--ink);transition:color .12s}
+.sr-item-excerpt{font-size:.78rem;color:var(--inkf);font-style:italic;margin-top:.22rem;line-height:1.5}
+.sr-none{font-size:.88rem;color:var(--inkf);font-style:italic;padding:2rem 0}
+
+@keyframes fi{from{opacity:0}to{opacity:1}}
+@keyframes fu{from{opacity:0;transform:translateY(13px)}to{opacity:1;transform:translateY(0)}}
+
+/* responsive */
+@media(max-width:680px){
+  .sb{display:none}
+  .cards{grid-template-columns:1fr}
+  .fb,.facts-box{float:none;width:100%;margin:0 0 .8rem 0}
+  .lp-pg{height:360px}
+  .lp-grid,.fig-grid,.team-grid{grid-template-columns:1fr}
+  .pi{padding:1.1rem .95rem 3rem}
+  .hm-featured{flex-direction:column}
+}
+</style>
+</head>
+<body>
+
+<div class="win">
+  <div class="win-bar">
+    <div class="win-dots"><div class="win-dot wd-r"></div><div class="win-dot wd-y"></div><div class="win-dot wd-g"></div></div>
+    <div class="win-url" id="urlbar">nebula-historians.edu/american-history</div>
+    <input class="win-search" placeholder="Search…" id="win-search-inp" oninput="doSearch(this.value)">
+  </div>
+  <div class="win-body">
+
+    <!-- SITE-WIDE NAV -->
+    <div class="site-nav">
+      <div class="site-nav-logo">NHS</div>
+      <div class="site-nav-links">
+        <span class="snl active" onclick="go('home');setNavActive(this)">Home</span>
+        <span class="snl" onclick="go('exploration');setNavActive(this)">Exploration</span>
+        <span class="snl" onclick="go('revolution');setNavActive(this)">Revolution</span>
+        <span class="snl" onclick="go('declaration');setNavActive(this)">Declaration</span>
+        <span class="snl" onclick="go('constitution');setNavActive(this)">Constitution</span>
+        <span class="snl" onclick="go('louisiana');setNavActive(this)">Louisiana</span>
+        <span class="snl" onclick="go('westward');setNavActive(this)">Expansion</span>
+        <span class="snl" onclick="go('figures');setNavActive(this)">Figures</span>
+        <span class="snl" onclick="go('about');setNavActive(this)">About</span>
+      </div>
+      <div class="site-nav-search">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="rgba(196,153,58,.5)" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input placeholder="Search articles…" id="nav-search-inp" oninput="doSearch(this.value)">
+      </div>
+    </div>
+
+    <div class="site">
+      <!-- SIDEBAR -->
+      <aside class="sb">
+        <div class="sb-brand">
+          <div class="sb-brand-name">Nebula Historical Society</div>
+          <div class="sb-brand-tag">American Founding Era</div>
+          <div class="sb-brand-vol">Digital Archive · Vol. III</div>
+        </div>
+        <div class="sb-search">
+          <input placeholder="Search articles…" id="sb-search-inp" oninput="doSearch(this.value)">
+        </div>
+        <nav class="sb-nav">
+          <div class="sb-sec">Main</div>
+          <div class="sb-item on" data-p="home" onclick="go('home')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Overview
+          </div>
+          <div class="sb-sec">Articles</div>
+          <div class="sb-item" data-p="exploration" onclick="go('exploration')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>Early Exploration
+            <span class="sb-item-tag">1492</span>
+          </div>
+          <div class="sb-item" data-p="revolution" onclick="go('revolution')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="7"/><path d="M9 9l1.5 1.5M13.5 13.5L15 15"/></svg>The Revolution
+            <span class="sb-item-tag">1763</span>
+          </div>
+          <div class="sb-item" data-p="declaration" onclick="go('declaration')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Declaration, 1776
+            <span class="sb-item-tag">1776</span>
+          </div>
+          <div class="sb-item" data-p="constitution" onclick="go('constitution')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>The Constitution
+            <span class="sb-item-tag">1787</span>
+          </div>
+          <div class="sb-item" data-p="louisiana" onclick="go('louisiana')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h18v18H3z"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>Louisiana Purchase
+            <span class="sb-item-tag">1803</span>
+          </div>
+          <div class="sb-item" data-p="westward" onclick="go('westward')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"/></svg>Westward Expansion
+            <span class="sb-item-tag">1850</span>
+          </div>
+          <div class="sb-sec">Reference</div>
+          <div class="sb-item" data-p="primary" onclick="go('primary')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>Primary Sources
+          </div>
+          <div class="sb-item" data-p="figures" onclick="go('figures')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Key Figures
+          </div>
+          <div class="sb-divider"></div>
+          <div class="sb-item" data-p="about" onclick="go('about')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>About NHS
+          </div>
+        </nav>
+        <div class="sb-stats">
+          <div class="sb-stat-row"><span class="sb-stat-label">Articles</span><span class="sb-stat-val">8</span></div>
+          <div class="sb-stat-row"><span class="sb-stat-label">Period covered</span><span class="sb-stat-val">1492–1850</span></div>
+          <div class="sb-stat-row"><span class="sb-stat-label">Sources cited</span><span class="sb-stat-val">40+</span></div>
+          <div class="sb-stat-row"><span class="sb-stat-label">Last updated</span><span class="sb-stat-val">2024</span></div>
+        </div>
+        <div class="sb-foot">Nebula Historical Society · Educational Resource<br>All sources peer-reviewed · © 2024 NHS</div>
+      </aside>
+
+      <!-- MAIN -->
+      <main class="main">
+        <div class="topbar">
+          <div class="bc" id="bc"><span>Home</span></div>
+          <div class="topbar-right">
+            <span class="topbar-tag" id="topbar-tag">Overview</span>
+            <span class="topbar-date">Last revised 2024</span>
+          </div>
+        </div>
+        <div class="pages">
+
+          <!-- SEARCH RESULTS -->
+          <div class="pg" id="pg-search">
+            <div class="pi">
+              <div class="search-results-panel">
+                <div class="sr-title" id="sr-title">Search Results</div>
+                <div id="sr-list"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- HOME -->
+          <div class="pg on" id="pg-home">
+            <div class="pi">
+              <div class="hm">
+                <div class="hm-org">Nebula Historical Society — Digital Archive</div>
+                <h1 class="hm-title">The American Founding Era</h1>
+                <p class="hm-sub">Exploration, Revolution, and the Construction of a Republic, 1492–1850</p>
+                <div class="hm-rule"><span>⚜</span></div>
+              </div>
+              <p class="hm-intro">This archive presents a comprehensive survey of the formative period of American history, from the first European contact with the North American continent through the era of continental expansion. Drawing on primary sources, contemporary scholarship, and archival records held at the Nebula Historical Society, these articles are intended for students, educators, and readers seeking a rigorous but accessible account of the events that shaped the United States.</p>
+
+              <!-- Did You Know -->
+              <div class="dyk-panel">
+                <div class="dyk-label">⚡ Did You Know?</div>
+                <div class="dyk-text" id="dyk-text">Loading…</div>
+              </div>
+
+              <!-- Featured strip -->
+              <div class="hm-featured">
+                <div class="hm-feat-item" onclick="go('declaration')">
+                  <div class="hm-feat-cat">Featured</div>
+                  <div class="hm-feat-title">The Declaration of Independence, 1776</div>
+                </div>
+                <div class="hm-feat-item" onclick="go('louisiana')">
+                  <div class="hm-feat-cat">Deep Dive</div>
+                  <div class="hm-feat-title">Louisiana Purchase — Full Record</div>
+                </div>
+                <div class="hm-feat-item" onclick="go('figures')">
+                  <div class="hm-feat-cat">Reference</div>
+                  <div class="hm-feat-title">Key Figures of the Founding Era</div>
+                </div>
+              </div>
+
+              <div class="cards">
+                <div class="card w" onclick="go('exploration')">
+                  <div class="cn">Article I</div>
+                  <div class="ct">Early European Exploration of North America, 1492–1607</div>
+                  <div class="cd">From Columbus's landfall in the Caribbean through the establishment of Jamestown — the century of contact that irrevocably transformed two hemispheres.</div>
+                  <div class="ca">Read article →</div>
+                </div>
+                <div class="card" onclick="go('revolution')">
+                  <div class="cn">Article II</div>
+                  <div class="ct">The Road to Revolution, 1763–1776</div>
+                  <div class="cd">Thirteen years of escalating conflict between Britain and its American colonies, from the Seven Years' War to Lexington and Concord.</div>
+                  <div class="ca">Read article →</div>
+                </div>
+                <div class="card" onclick="go('declaration')">
+                  <div class="cn">Article III</div>
+                  <div class="ct">The Declaration of Independence, 1776</div>
+                  <div class="cd">Jefferson's seventeen days and a document that became both the nation's founding promise and the enduring measure of its failures.</div>
+                  <div class="ca">Read article →</div>
+                </div>
+                <div class="card" onclick="go('constitution')">
+                  <div class="cn">Article IV</div>
+                  <div class="ct">The Constitutional Convention, 1787</div>
+                  <div class="cd">Fifty-five men in a sweltering Philadelphia summer — the compromises and conflicts that produced America's foundational law.</div>
+                  <div class="ca">Read article →</div>
+                </div>
+                <div class="card" onclick="go('louisiana')">
+                  <div class="cn">Article V</div>
+                  <div class="ct">The Louisiana Purchase, 1803</div>
+                  <div class="cd">How fifteen million dollars, Napoleon's Caribbean catastrophe, and Jefferson's constitutional scruples doubled the size of the United States.</div>
+                  <div class="ca">Read article →</div>
+                </div>
+                <div class="card" onclick="go('westward')">
+                  <div class="cn">Article VI</div>
+                  <div class="ct">Westward Expansion and Manifest Destiny, 1803–1850</div>
+                  <div class="cd">The ideology of continental empire, the cost paid by Indigenous peoples, and the geographic transformation of the young Republic.</div>
+                  <div class="ca">Read article →</div>
+                </div>
+                <div class="card" onclick="go('primary')">
+                  <div class="cn">Reference</div>
+                  <div class="ct">Primary Sources and Further Reading</div>
+                  <div class="cd">A curated guide to essential documents, edited collections, and scholarly works for deeper study of the founding era.</div>
+                  <div class="ca">View sources →</div>
+                </div>
+                <div class="card" onclick="go('figures')">
+                  <div class="cn">Reference</div>
+                  <div class="ct">Key Figures of the Founding Era</div>
+                  <div class="cd">Biographical summaries of the statesmen, soldiers, thinkers, and often-overlooked individuals who shaped the Republic's earliest decades.</div>
+                  <div class="ca">View figures →</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- EXPLORATION -->
+          <div class="pg" id="pg-exploration">
+            <div class="pi">
+              <div class="ah">
+                <div class="an">Article I</div>
+                <h2 class="at">Early European Exploration of North America, 1492–1607</h2>
+                <div class="aby">Nebula Historical Society Research Division · Last revised 2024</div>
+                <div class="a-tags"><span class="a-tag">Exploration</span><span class="a-tag">Columbian Exchange</span><span class="a-tag">Colonization</span><span class="a-tag">1492–1607</span></div>
+              </div>
+              <div class="ab cf">
+                <div class="fb">
+                  <div class="fbt">Key Dates</div>
+                  <p><strong>1492</strong> — Columbus reaches the Bahamas<br><br><strong>1497</strong> — Cabot reaches Newfoundland<br><br><strong>1513</strong> — Ponce de León explores Florida<br><br><strong>1519–21</strong> — Cortés conquers the Aztec Empire<br><br><strong>1534–35</strong> — Cartier charts the St. Lawrence<br><br><strong>1539–42</strong> — De Soto crosses the Mississippi<br><br><strong>1585</strong> — Roanoke colony, first English attempt<br><br><strong>1607</strong> — Jamestown established</p>
+                </div>
+                <p>The story of what became the United States begins not with parchment and ink but with the collision of two worlds that had been separated for approximately fifteen thousand years. When Christopher Columbus made landfall at San Salvador in October 1492, sailing under the patronage of the Spanish crown, he initiated a sequence of consequences that neither he nor his sponsors could have anticipated. The land he encountered was no vacant wilderness — North and South America together were home to an estimated fifty to one hundred million people speaking thousands of distinct languages, organized into political structures ranging from small kinship bands to sophisticated urban civilizations that rivaled anything then existing in Europe.</p>
+                <p>Spain moved with extraordinary speed to consolidate its advantage. The Treaty of Tordesillas in 1494 divided the non-European world between Spain and Portugal along a meridian in the Atlantic. Spanish expeditions fanned out across the Caribbean and then the mainland: Vasco Núñez de Balboa crossed the Isthmus of Panama to reach the Pacific in 1513, the same year Juan Ponce de León explored the Florida coast. Hernán Cortés destroyed the Aztec capital of Tenochtitlán between 1519 and 1521, opening the vast silver wealth of Mexico to Spanish extraction. Francisco Pizarro followed in Peru. The scale of wealth flowing back to Castile was unlike anything in European history.</p>
+                <div class="pq">
+                  <p>"They are very gentle and without knowledge of what is evil; nor do they murder or steal. They love their neighbors as themselves, and they have the sweetest talk in the world."</p>
+                  <cite>— Christopher Columbus, describing the Taíno people of the Caribbean, journal entry, 1492</cite>
+                </div>
+                <p>North of Mexico, Spanish explorers found no obvious wealth but conducted important reconnaissance. Hernando de Soto's expedition of 1539–1542 was the most ambitious: entering at Tampa Bay, it cut north through the Appalachians, west to the Mississippi River, and into what is now Arkansas before de Soto died of fever on the river's bank. Juan Rodríguez Cabrillo sailed the California coast in 1542. Francisco Vásquez de Coronado spent two years searching the Southwest for the mythical golden cities of Cíbola, reaching as far as present-day Kansas without finding them.</p>
+                <div class="sdiv">· · ·</div>
+                <h3 class="h3">England's Slow Start</h3>
+                <p>England's claim to North America rested legally on the voyages of John Cabot, a Venetian navigator who reached Newfoundland in 1497. Jamestown, founded in May 1607 by the Virginia Company of London, became England's first permanent settlement in North America. Of the roughly 500 colonists who arrived in the first years, fewer than 60 survived the "starving time" of winter 1609–1610. The colony stabilized after John Rolfe introduced a commercially viable strain of tobacco around 1612, creating the economic model — a single export crop cultivated by unfree labor — that would define the Chesapeake for two centuries.</p>
+                <h3 class="h3">The Columbian Exchange and Its Consequences</h3>
+                <p>The term "Columbian Exchange," coined by historian Alfred Crosby in 1972, describes the transfer of plants, animals, diseases, and people between the Eastern and Western hemispheres that followed 1492. Demographic historians estimate that between fifty and ninety percent of the Indigenous population of the Americas died within a century of sustained European contact — a loss of somewhere between 25 and 55 million people.</p>
+              </div>
+              <div class="art-nav">
+                <div class="art-nav-btn" onclick="go('home')"><div class="art-nav-dir">← Back</div><div class="art-nav-title">All Articles</div></div>
+                <div class="art-nav-btn" onclick="go('revolution')"><div class="art-nav-dir">Next →</div><div class="art-nav-title">The Road to Revolution</div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- REVOLUTION -->
+          <div class="pg" id="pg-revolution">
+            <div class="pi">
+              <div class="ah">
+                <div class="an">Article II</div>
+                <h2 class="at">The Road to Revolution, 1763–1776</h2>
+                <div class="aby">The thirteen years that turned colonial subjects into American citizens</div>
+                <div class="a-tags"><span class="a-tag">Revolution</span><span class="a-tag">Taxation</span><span class="a-tag">Colonial Resistance</span><span class="a-tag">1763–1776</span></div>
+              </div>
+              <div class="ab cf">
+                <div class="fb">
+                  <div class="fbt">Key Events</div>
+                  <p><strong>1763</strong> — Treaty of Paris; Proclamation of 1763<br><br><strong>1765</strong> — Stamp Act; Sons of Liberty<br><br><strong>1770</strong> — Boston Massacre (March 5)<br><br><strong>1773</strong> — Boston Tea Party (Dec. 16)<br><br><strong>1774</strong> — Intolerable Acts; First Continental Congress<br><br><strong>1775</strong> — Lexington &amp; Concord (April 19)<br><br><strong>1776</strong> — Common Sense; Declaration adopted</p>
+                </div>
+                <p>The American Revolution did not begin in 1776. It began in 1763, with the end of the Seven Years' War — a conflict that reshaped the world's geopolitical order and inadvertently created the conditions for American independence. Britain emerged victorious but deeply in debt, having spent colossal sums to defend its North American colonies from French encroachment. The reasonable but fatally mistaken conclusion reached in London was that the colonies ought to contribute to the cost of their own defence.</p>
+                <p>The Stamp Act of 1765, imposing a direct tax on paper goods, was the first British attempt to tax the colonies without their consent. The colonial reaction was immediate and furious. "No taxation without representation" encapsulated the constitutional argument: Parliament, in which the colonies had no seats, had no right to tax them. The Sons of Liberty formed and used intimidation and boycotts to force the Act's repeal in 1766.</p>
+                <div class="pq">
+                  <p>"The die is now cast; the colonies must either submit or triumph."</p>
+                  <cite>— King George III, letter to Lord North, September 11, 1774</cite>
+                </div>
+                <p>The Boston Massacre of March 5, 1770, in which British soldiers fired into a crowd killing five civilians, was transformed by colonial propagandists — notably Paul Revere — into a symbol of British tyranny. The Boston Tea Party of December 16, 1773, destroyed 342 chests of East India Company tea in Boston Harbor. Britain's response, the Coercive Acts of 1774 (known in the colonies as the Intolerable Acts), closed Boston Harbor and restructured Massachusetts's government.</p>
+                <p>The war began on April 19, 1775, when British regulars marched from Boston to seize colonial arms stored at Concord. Minutemen met them at Lexington Green; shots were fired — "the shot heard round the world" in Emerson's phrase. Thomas Paine's <em>Common Sense</em>, published January 1776, made the case for independence in plain language accessible to ordinary readers. It sold perhaps 500,000 copies in a country of 2.5 million.</p>
+              </div>
+              <div class="art-nav">
+                <div class="art-nav-btn" onclick="go('exploration')"><div class="art-nav-dir">← Previous</div><div class="art-nav-title">Early Exploration</div></div>
+                <div class="art-nav-btn" onclick="go('declaration')"><div class="art-nav-dir">Next →</div><div class="art-nav-title">The Declaration</div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- DECLARATION -->
+          <div class="pg" id="pg-declaration">
+            <div class="pi">
+              <div class="ah">
+                <div class="an">Article III</div>
+                <h2 class="at">The Declaration of Independence, 1776</h2>
+                <div class="aby">Origins, composition, and the enduring significance of the founding document</div>
+                <div class="a-tags"><span class="a-tag">Declaration</span><span class="a-tag">Jefferson</span><span class="a-tag">Independence</span><span class="a-tag">1776</span></div>
+              </div>
+              <div class="ab cf">
+                <div class="fb">
+                  <div class="fbt">The Document</div>
+                  <p><strong>Adopted:</strong> July 4, 1776<br><br><strong>Primary author:</strong> Thomas Jefferson (Va.)<br><br><strong>Committee:</strong> Jefferson, Adams, Franklin, Sherman, Livingston<br><br><strong>Signatories:</strong> 56 delegates from 13 colonies<br><br><strong>Oldest signer:</strong> Franklin, age 70<br><br><strong>Youngest:</strong> Rutledge, age 26<br><br><strong>Location:</strong> National Archives, Washington D.C.</p>
+                </div>
+                <p>By the summer of 1776, events had overtaken politics. The Continental Army was in the field; British troops occupied Boston before being expelled, and now threatened New York. Richard Henry Lee of Virginia moved on June 7 that the colonies "are, and of right ought to be, free and independent States." The Committee of Five — Jefferson, Adams, Franklin, Roger Sherman, and Robert Livingston — was appointed June 11 to draft a formal declaration.</p>
+                <p>Jefferson was thirty-three years old and already known for the quality of his prose. Adams later recalled that Jefferson was selected partly for strategic reasons and partly on merit: "you can write ten times better than I can." Jefferson worked in rented rooms on Market Street in Philadelphia over approximately seventeen days, consulting no books, drawing instead on a tradition of political thought stretching back through Locke to the ancient world.</p>
+                <div class="pq">
+                  <p>"We hold these truths to be self-evident, that all men are created equal, that they are endowed by their Creator with certain unalienable Rights, that among these are Life, Liberty and the pursuit of Happiness."</p>
+                  <cite>— Declaration of Independence, second paragraph, as adopted July 4, 1776</cite>
+                </div>
+                <p>Jefferson's draft was not adopted unaltered. The Congress made eighty-six changes over two and a half days of revision, cutting approximately a quarter of his text. The most significant deletion was a passage blaming King George for imposing slavery on the colonies. The contradiction embedded in a declaration of universal human equality issued by slaveholders has been debated ever since.</p>
+                <div class="tl">
+                  <div class="tli"><div class="tly">June 7, 1776</div><div class="tlt">Lee's resolution moves that the colonies are "free and independent States."</div></div>
+                  <div class="tli"><div class="tly">June 11, 1776</div><div class="tlt">Committee of Five appointed; Jefferson begins drafting.</div></div>
+                  <div class="tli"><div class="tly">June 28, 1776</div><div class="tlt">Jefferson's draft submitted to Congress; revision begins.</div></div>
+                  <div class="tli"><div class="tly">July 2, 1776</div><div class="tlt">Lee's independence resolution passes 12–0.</div></div>
+                  <div class="tli"><div class="tly">July 4, 1776</div><div class="tlt">The revised Declaration adopted and sent to printer John Dunlap.</div></div>
+                  <div class="tli"><div class="tly">August 2, 1776</div><div class="tlt">The formal signing on parchment by 56 delegates.</div></div>
+                </div>
+              </div>
+              <div class="art-nav">
+                <div class="art-nav-btn" onclick="go('revolution')"><div class="art-nav-dir">← Previous</div><div class="art-nav-title">The Road to Revolution</div></div>
+                <div class="art-nav-btn" onclick="go('constitution')"><div class="art-nav-dir">Next →</div><div class="art-nav-title">The Constitution</div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- CONSTITUTION -->
+          <div class="pg" id="pg-constitution">
+            <div class="pi">
+              <div class="ah">
+                <div class="an">Article IV</div>
+                <h2 class="at">The Constitutional Convention and the Formation of Government, 1787</h2>
+                <div class="aby">Philadelphia, summer 1787 — the men who invented American government</div>
+                <div class="a-tags"><span class="a-tag">Constitution</span><span class="a-tag">Madison</span><span class="a-tag">Federalism</span><span class="a-tag">1787</span></div>
+              </div>
+              <div class="ab cf">
+                <div class="fb">
+                  <div class="fbt">Convention Facts</div>
+                  <p><strong>Dates:</strong> May 25 – Sept. 17, 1787<br><br><strong>Location:</strong> Independence Hall, Philadelphia<br><br><strong>States:</strong> 12 represented (RI refused)<br><br><strong>Delegates:</strong> 55 attended; 39 signed<br><br><strong>President:</strong> George Washington<br><br><strong>Absent:</strong> Adams (London); Jefferson (Paris)<br><br><strong>Ratified:</strong> June 21, 1788</p>
+                </div>
+                <p>The Articles of Confederation had been the United States' governing framework since 1781, and they were failing. The central government could levy no taxes, could not regulate interstate or foreign commerce, and could not enforce its own laws. Shays' Rebellion, an armed uprising of Massachusetts debtors in 1786–1787, exposed the national government's impotence. The convention convened in May 1787, with George Washington in the chair.</p>
+                <p>The Virginia Plan, drafted primarily by Madison, proposed a strong national government with proportional representation. The New Jersey Plan proposed to preserve state equality. The resulting Connecticut Compromise created the House with proportional representation and the Senate with equal representation per state. The Three-Fifths Compromise counted each enslaved person as three-fifths of a free person for congressional apportionment.</p>
+                <div class="pq">
+                  <p>"A republic, if you can keep it."</p>
+                  <cite>— Benjamin Franklin, attributed, on exiting the Constitutional Convention, September 17, 1787</cite>
+                </div>
+                <p>Ratification required approval by nine of thirteen states, achieved in conventions. The Federalist Papers, eighty-five essays published by Hamilton, Madison, and Jay, provided the intellectual defense and remain the most important work of American political theory. The Bill of Rights — the first ten amendments — was ratified December 15, 1791.</p>
+              </div>
+              <div class="art-nav">
+                <div class="art-nav-btn" onclick="go('declaration')"><div class="art-nav-dir">← Previous</div><div class="art-nav-title">The Declaration</div></div>
+                <div class="art-nav-btn" onclick="go('louisiana')"><div class="art-nav-dir">Next →</div><div class="art-nav-title">Louisiana Purchase</div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- LOUISIANA PURCHASE -->
+          <div class="pg" id="pg-louisiana">
+            <div class="pi">
+              <div class="ah">
+                <div class="an">Article V</div>
+                <h2 class="at">The Louisiana Purchase, 1803</h2>
+                <div class="aby">How Napoleon's catastrophe and Jefferson's ambition doubled the size of the United States</div>
+                <div class="a-tags"><span class="a-tag">Louisiana Purchase</span><span class="a-tag">Jefferson</span><span class="a-tag">Expansion</span><span class="a-tag">1803</span></div>
+              </div>
+              <div class="ab cf">
+                <p>In April 1803, American minister Robert Livingston and special envoy James Monroe concluded a negotiation that neither had been authorized to conduct. Jefferson had sent them to Paris to purchase New Orleans. What they agreed to purchase, at the staggering price of fifteen million dollars, was approximately 828,000 square miles of North America: the entire watershed of the Missouri River and its tributaries, stretching from the Gulf of Mexico to the Canadian border.</p>
+                <p>To understand why Napoleon sold, one must understand Saint-Domingue. The Haitian Revolution — the most successful slave uprising in history — had destroyed Napoleon's Caribbean army. By 1803, approximately fifty thousand French soldiers had died. Without Saint-Domingue, Louisiana was an expensive burden. Napoleon needed money for the renewed war with Britain. He offered the whole territory.</p>
+              </div>
+
+              <!-- NESTED PAGE-IN-PAGE — Louisiana Full Record -->
+              <div class="lp-wrap">
+                <div class="lp-bar">
+                  <div class="lp-dots"><div class="lp-dot lpd-r"></div><div class="lp-dot lpd-y"></div><div class="lp-dot lpd-g"></div></div>
+                  <div class="lp-url">nebula-historians.edu/louisiana-purchase/full-record</div>
+                </div>
+                <div class="lp-pg" id="lp-pg">
+                  <!-- Konami overlay — inside lp-pg -->
+                  <div id="ko">
+                    <div class="ko-box">
+                      <div class="ko-t">A door, hidden in plain sight.</div>
+                      <div class="ko-s">Just as Jefferson stretched the Constitution past its limits to complete the Purchase, you found a passage that wasn't supposed to be here.</div>
+                      <div class="ko-btns">
+                        <button class="ko-btn ko-p" onclick="launchNebula()">Enter Nebula</button>
+                        <button class="ko-btn ko-g" onclick="closeKo()">Return</button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="lp-cnt">
+                    <div class="lp-h">Louisiana Purchase — Full Historical Record</div>
+                    <div class="lp-s">Extended analysis and primary source documentation · Nebula Historical Society Archive, 2024</div>
+
+                    <div class="lp-grid">
+                      <div class="lp-gi"><strong>Date Signed</strong>April 30, 1803, Paris, France</div>
+                      <div class="lp-gi"><strong>Purchase Price</strong>$15 million (~$340M in 2024)</div>
+                      <div class="lp-gi"><strong>Area Acquired</strong>~828,000 square miles (2.14M km²)</div>
+                      <div class="lp-gi"><strong>Cost per Acre</strong>Approximately 3 cents</div>
+                      <div class="lp-gi"><strong>U.S. Negotiators</strong>Robert Livingston &amp; James Monroe</div>
+                      <div class="lp-gi"><strong>French Counterpart</strong>François Barbé-Marbois</div>
+                      <div class="lp-gi"><strong>Senate Vote</strong>October 20, 1803 — 24 to 7</div>
+                      <div class="lp-gi"><strong>Transfer Ceremony</strong>December 20, 1803, New Orleans</div>
+                      <div class="lp-gi"><strong>States Formed</strong>All or part of 15 present-day states</div>
+                      <div class="lp-gi"><strong>Explored by</strong>Lewis and Clark, 1804–1806</div>
+                    </div>
+
+                    <p>Jefferson's constitutional crisis was real. He had spent his career arguing that the federal government possessed only enumerated powers. Neither Article IV nor Article II spoke to the acquisition of foreign territory. Jefferson drafted a constitutional amendment then abandoned it when delay threatened the deal. He privately confided that he had stretched constitutional doctrine "till it cracked."</p>
+
+                    <div class="lp-q">
+                      <p>"We have lived long, but this is the noblest work of our whole lives."</p>
+                      <cite>— Robert Livingston, after signing the Louisiana Purchase treaty, Paris, April 30, 1803</cite>
+                    </div>
+
+                    <div class="lp-h3">The Lewis and Clark Expedition, 1804–1806</div>
+                    <p>Meriwether Lewis and William Clark commanded the Corps of Discovery, departing Camp Dubois near St. Louis on May 14, 1804. Sacagawea, a Shoshone woman, joined at Fort Mandan and proved indispensable as interpreter, guide, and diplomatic intermediary. The expedition reached the Pacific in November 1805, catalogued hundreds of species, made contact with twenty-four distinct Indigenous nations, and returned to St. Louis in September 1806 — approximately 8,000 miles in two and a half years.</p>
+
+                    <div class="lp-tl">
+                      <div class="lp-tli"><div class="lp-tly">Oct. 1800</div><div class="lp-tlt">Spain secretly cedes Louisiana to France via the Treaty of San Ildefonso.</div></div>
+                      <div class="lp-tli"><div class="lp-tly">1801–1803</div><div class="lp-tlt">Haitian Revolution destroys Napoleon's army in the Caribbean.</div></div>
+                      <div class="lp-tli"><div class="lp-tly">Apr. 11, 1803</div><div class="lp-tlt">Talleyrand shocks Livingston by asking if the U.S. wants all of Louisiana.</div></div>
+                      <div class="lp-tli"><div class="lp-tly">Apr. 30, 1803</div><div class="lp-tlt">Purchase treaty signed in Paris.</div></div>
+                      <div class="lp-tli"><div class="lp-tly">Oct. 20, 1803</div><div class="lp-tlt">U.S. Senate ratifies treaty 24–7.</div></div>
+                      <div class="lp-tli"><div class="lp-tly">Dec. 20, 1803</div><div class="lp-tlt">Transfer ceremony in New Orleans: French tricolor lowered, American flag raised.</div></div>
+                      <div class="lp-tli"><div class="lp-tly">May 1804</div><div class="lp-tlt">Lewis and Clark depart Camp Dubois.</div></div>
+                    </div>
+
+                    <div class="lp-h3">Legacy and Consequences</div>
+                    <p>The Louisiana Purchase provided the geographic foundation for fifteen present-day states. It transformed the United States from a coastal nation into a continental power. It also set constitutional precedents of lasting consequence: the implied power of the federal government to acquire and govern territory. For the peoples who had inhabited the purchased territory for centuries — the Osage, Mandan, Lakota, Pawnee, and dozens of others — the transaction represented the incorporation of their homelands into a distant empire without their knowledge or consent.</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="ab" style="margin-top:1.1rem">
+                <p>The Louisiana Purchase also transformed the politics of slavery. The Missouri Crisis of 1819–1821 was the first major national confrontation over the extension of slavery into the territories acquired from France. Thomas Jefferson, now seventy-six years old, wrote that the Missouri question "like a fire bell in the night, awakened and filled me with terror."</p>
+              </div>
+              <div class="art-nav">
+                <div class="art-nav-btn" onclick="go('constitution')"><div class="art-nav-dir">← Previous</div><div class="art-nav-title">The Constitution</div></div>
+                <div class="art-nav-btn" onclick="go('westward')"><div class="art-nav-dir">Next →</div><div class="art-nav-title">Westward Expansion</div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- WESTWARD EXPANSION -->
+          <div class="pg" id="pg-westward">
+            <div class="pi">
+              <div class="ah">
+                <div class="an">Article VI</div>
+                <h2 class="at">Westward Expansion and Manifest Destiny, 1803–1850</h2>
+                <div class="aby">The ideology and consequences of a continental nation</div>
+                <div class="a-tags"><span class="a-tag">Manifest Destiny</span><span class="a-tag">Expansion</span><span class="a-tag">Indian Removal</span><span class="a-tag">1803–1850</span></div>
+              </div>
+              <div class="ab cf">
+                <div class="fb">
+                  <div class="fbt">Major Milestones</div>
+                  <p><strong>1804–06</strong> — Lewis &amp; Clark Expedition<br><br><strong>1812–15</strong> — War of 1812<br><br><strong>1819</strong> — Adams-Onís Treaty (Florida)<br><br><strong>1820</strong> — Missouri Compromise<br><br><strong>1830</strong> — Indian Removal Act<br><br><strong>1836</strong> — Texas declares independence<br><br><strong>1845</strong> — Texas annexation<br><br><strong>1846–48</strong> — Mexican-American War<br><br><strong>1848</strong> — Gold at Sutter's Mill<br><br><strong>1850</strong> — Compromise of 1850</p>
+                </div>
+                <p>The phrase "Manifest Destiny" was coined by the journalist John L. O'Sullivan in an 1845 editorial arguing for the annexation of Texas: it was "our manifest destiny to overspread the continent allotted by Providence." The phrase crystallized an expansionist ideology drawing on European ideas of civilizational hierarchy and the racial superiority of white Protestant settlers. It would be invoked to justify the annexation of Texas, the war with Mexico, and the forced removal of Indigenous peoples.</p>
+                <div class="pq">
+                  <p>"The far-reaching, the boundless future will be the era of American greatness."</p>
+                  <cite>— John L. O'Sullivan, "The Great Nation of Futurity," United States Democratic Review, 1839</cite>
+                </div>
+                <p>The annexation of Texas in 1845 provoked the Mexican-American War of 1846–1848, in which the United States captured Mexico City and compelled the Treaty of Guadalupe Hidalgo. Mexico ceded what are now California, Nevada, Utah, Arizona, and New Mexico. The Oregon Treaty of 1846 divided the Oregon Country with Britain along the 49th parallel. By 1854, the United States had attained approximately its current continental borders.</p>
+                <p>For the peoples who had lived in these territories, expansion was catastrophic. The Indian Removal Act of 1830 authorized the forced removal of the Five Civilized Tribes. The Trail of Tears — the forced march of sixteen thousand Cherokee in 1838–1839, during which some four thousand died — is the most remembered of these removals but was one of many. The expansion also brought the political crisis that would prove fatal to the Union: the question of whether slavery would extend into the western territories consumed American politics for the next fifteen years, and the Civil War came eight years after the Compromise of 1850.</p>
+              </div>
+              <div class="art-nav">
+                <div class="art-nav-btn" onclick="go('louisiana')"><div class="art-nav-dir">← Previous</div><div class="art-nav-title">Louisiana Purchase</div></div>
+                <div class="art-nav-btn" onclick="go('primary')"><div class="art-nav-dir">→</div><div class="art-nav-title">Primary Sources</div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- PRIMARY SOURCES -->
+          <div class="pg" id="pg-primary">
+            <div class="pi">
+              <div class="ah">
+                <div class="an">Reference</div>
+                <h2 class="at">Primary Sources and Further Reading</h2>
+                <div class="aby">A curated guide for deeper study of the American founding era</div>
+              </div>
+              <div class="ab">
+                <h3 class="h3">Essential Primary Documents</h3>
+                <h4 class="h4">The Federalist Papers (1787–88)</h4>
+                <p>Eighty-five essays by Hamilton, Madison, and Jay, published under the pseudonym "Publius." Federalist No. 10 (Madison, on faction) and No. 51 (Madison, on separation of powers) are the most studied. Available in full through the Library of Congress at <em>loc.gov</em>.</p>
+                <h4 class="h4">Jefferson's Draft of the Declaration (1776)</h4>
+                <p>Jefferson's original draft, with Congressional deletions marked, is held at the Library of Congress. The most significant deletion — the passage condemning the slave trade — is legible in the original manuscript. Julian Boyd's edition in <em>The Papers of Thomas Jefferson</em> (Princeton, 1950) provides the definitive scholarly text.</p>
+                <h4 class="h4">Madison's Notes on the Constitutional Convention (published 1840)</h4>
+                <p>The closest thing to a complete record of the convention's debates, kept by Madison throughout the summer of 1787. Not published until after his death to preserve confidentiality. Available in Max Farrand, ed., <em>The Records of the Federal Convention of 1787</em> (Yale, 1911).</p>
+                <h4 class="h4">Lewis and Clark Journals (1804–06)</h4>
+                <p>Published in full in <em>The Journals of the Lewis and Clark Expedition</em>, edited by Gary Moulton (University of Nebraska Press, 13 volumes, 1983–2001).</p>
+
+                <h3 class="h3">Recommended Scholarly Works</h3>
+                <p><strong>Gordon S. Wood, The Creation of the American Republic, 1776–1787 (1969)</strong> — The definitive account of American political thought between independence and the Constitution.</p>
+                <p><strong>Bernard Bailyn, The Ideological Origins of the American Revolution (1967)</strong> — Argues that the Revolution was driven primarily by a distinct political ideology rooted in the English opposition tradition.</p>
+                <p><strong>Annette Gordon-Reed, The Hemingses of Monticello: An American Family (2008)</strong> — Pulitzer Prize-winning examination of the enslaved Hemings family at Monticello, providing essential context for understanding the founding era's central contradiction.</p>
+                <p><strong>Roxanne Dunbar-Ortiz, An Indigenous Peoples' History of the United States (2014)</strong> — A systematic account of American history from Indigenous perspectives, essential for understanding the human cost of expansion.</p>
+                <p><strong>Jon Kukla, A Wilderness So Immense: The Louisiana Purchase and the Destiny of America (2003)</strong> — The most readable full account of the Louisiana Purchase.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- KEY FIGURES -->
+          <div class="pg" id="pg-figures">
+            <div class="pi">
+              <div class="ah">
+                <div class="an">Reference</div>
+                <h2 class="at">Key Figures of the Founding Era</h2>
+                <div class="aby">Biographical summaries of statesmen, soldiers, and essential figures</div>
+              </div>
+              <div class="ab">
+                <h3 class="h3">The Founders</h3>
+                <div class="fig-grid">
+                  <div class="fig-card">
+                    <div class="fig-name">George Washington</div>
+                    <div class="fig-dates">1732–1799</div>
+                    <div class="fig-desc">Commander-in-Chief of the Continental Army, president of the Constitutional Convention, and first President. His decision to retire after two terms established a precedent that held until FDR.</div>
+                  </div>
+                  <div class="fig-card">
+                    <div class="fig-name">Thomas Jefferson</div>
+                    <div class="fig-dates">1743–1826</div>
+                    <div class="fig-desc">Principal author of the Declaration of Independence, Governor of Virginia, and third President (1801–1809). His contradictions — the author of "all men are created equal" who enslaved approximately six hundred people — define the founding's central tension.</div>
+                  </div>
+                  <div class="fig-card">
+                    <div class="fig-name">James Madison</div>
+                    <div class="fig-dates">1751–1836</div>
+                    <div class="fig-desc">Principal architect of the Constitutional Convention's Virginia Plan, primary author of The Federalist Papers, and fourth President (1809–1817). Called the "Father of the Constitution."</div>
+                  </div>
+                  <div class="fig-card">
+                    <div class="fig-name">Alexander Hamilton</div>
+                    <div class="fig-dates">1755–1804</div>
+                    <div class="fig-desc">Washington's aide-de-camp, primary author of The Federalist Papers, and first Secretary of the Treasury. Architect of the American financial system. Killed in a duel with Vice President Aaron Burr in 1804.</div>
+                  </div>
+                  <div class="fig-card">
+                    <div class="fig-name">Benjamin Franklin</div>
+                    <div class="fig-dates">1706–1790</div>
+                    <div class="fig-desc">Printer, scientist, diplomat, and at eighty-one the oldest delegate to the Constitutional Convention. His diplomatic mission to France secured the alliance critical to American victory in the Revolution.</div>
+                  </div>
+                  <div class="fig-card">
+                    <div class="fig-name">John Adams</div>
+                    <div class="fig-dates">1735–1826</div>
+                    <div class="fig-desc">Massachusetts lawyer, second President (1797–1801). Indispensable to independence and often underrated. He and Jefferson reconciled in old age and died within hours of each other on July 4, 1826.</div>
+                  </div>
+                </div>
+                <h3 class="h3">Often Overlooked</h3>
+                <div class="fig-grid">
+                  <div class="fig-card">
+                    <div class="fig-name">Abigail Adams</div>
+                    <div class="fig-dates">1744–1818</div>
+                    <div class="fig-desc">John Adams's wife and intellectual equal. Her letters constitute one of the most important documentary records of the founding period. Her injunction to "remember the ladies" was not heeded.</div>
+                  </div>
+                  <div class="fig-card">
+                    <div class="fig-name">Toussaint Louverture</div>
+                    <div class="fig-dates">c. 1743–1803</div>
+                    <div class="fig-desc">Leader of the Haitian Revolution, whose military genius destroyed Napoleon's Caribbean ambitions and thereby made the Louisiana Purchase possible. Died in a French prison in April 1803 — the same month the treaty was signed.</div>
+                  </div>
+                  <div class="fig-card">
+                    <div class="fig-name">Sacagawea</div>
+                    <div class="fig-dates">c. 1788–1812 or 1884</div>
+                    <div class="fig-desc">Shoshone woman whose linguistic abilities, geographic knowledge, and presence as a diplomatic intermediary were essential to the success of the Lewis and Clark Expedition.</div>
+                  </div>
+                  <div class="fig-card">
+                    <div class="fig-name">Frederick Douglass</div>
+                    <div class="fig-dates">c. 1818–1895</div>
+                    <div class="fig-desc">Born into slavery, escaped north in 1838, and became the most important African American intellectual and activist of the nineteenth century. His 1852 speech "What to the Slave is the Fourth of July?" remains essential reading.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ABOUT -->
+          <div class="pg" id="pg-about">
+            <div class="pi">
+              <div class="ah">
+                <div class="an">About</div>
+                <h2 class="at">About the Nebula Historical Society</h2>
+                <div class="aby">Our mission, our team, and our approach to history</div>
+              </div>
+              <div class="ab">
+                <div class="about-hero">
+                  <h2>Rigorous History. Accessible Writing.</h2>
+                  <p>The Nebula Historical Society is a digital archive dedicated to preserving and communicating the history of the American founding era. Our editorial standards require peer review, primary source citation, and a commitment to presenting history in all its complexity — including the voices and perspectives that have often been silenced.</p>
+                </div>
+
+                <h3 class="h3">Our Mission</h3>
+                <p>We believe that history, rigorously researched and honestly told, is one of the most powerful tools for civic understanding. Our archive exists to make the best available scholarship accessible to students, educators, and curious readers without compromising on accuracy or intellectual seriousness. We cite our sources, acknowledge uncertainty where it exists, and try never to mistake myth for fact.</p>
+
+                <h3 class="h3">Editorial Standards</h3>
+                <p>All articles published in this archive are reviewed by at least two members of our research division before publication. We distinguish clearly between established historical consensus and interpretive claims. When scholars disagree — and historians often do — we say so. We update articles when new scholarship warrants it; all revision dates are noted.</p>
+
+                <h3 class="h3">Research Team</h3>
+                <div class="team-grid">
+                  <div class="team-card">
+                    <div class="tc-init">A</div>
+                    <div class="tc-name">Dr. A. Whitmore</div>
+                    <div class="tc-role">Editor-in-Chief · Early Republic</div>
+                    <div class="tc-bio">Specializes in the constitutional period and Federalist political thought. Author of three peer-reviewed monographs.</div>
+                  </div>
+                  <div class="team-card">
+                    <div class="tc-init">M</div>
+                    <div class="tc-name">Prof. M. Okafor</div>
+                    <div class="tc-role">Senior Editor · Colonial Period</div>
+                    <div class="tc-bio">Focuses on Indigenous history, the Columbian Exchange, and the Atlantic world. Contributing editor at <em>The Journal of Early American History</em>.</div>
+                  </div>
+                  <div class="team-card">
+                    <div class="tc-init">S</div>
+                    <div class="tc-name">Dr. S. Rivera</div>
+                    <div class="tc-role">Research Associate · Expansion Era</div>
+                    <div class="tc-bio">Specializes in westward expansion, Manifest Destiny, and the Mexican-American War. PhD from the University of Texas.</div>
+                  </div>
+                </div>
+
+                <h3 class="h3">Citing This Archive</h3>
+                <p>Articles from the Nebula Historical Society Digital Archive may be cited as follows:<br><br>
+                <em>"[Article Title]." Nebula Historical Society Digital Archive, Vol. III. Accessed [date]. nebula-historians.edu/american-history.</em><br><br>
+                We ask that anyone using our work for academic purposes verify our primary source citations independently, as we are an educational resource rather than a peer-reviewed journal.</p>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /.pages -->
+      </main>
+    </div><!-- /.site -->
+  </div><!-- /.win-body -->
+</div><!-- /.win -->
+
+<script>
+// ── Did You Know facts ──
+const DYK_FACTS = [
+  "The word \"democracy\" does not appear anywhere in the U.S. Constitution or the Declaration of Independence.",
+  "Benjamin Franklin was 70 years old when he signed the Declaration of Independence — the oldest signer.",
+  "Thomas Jefferson and John Adams both died on July 4, 1826 — exactly fifty years after the Declaration was adopted.",
+  "The original draft of the Declaration was written on hemp paper — a common writing material in the 18th century.",
+  "The Louisiana Purchase cost approximately 3 cents per acre in 1803 dollars.",
+  "George Washington's false teeth were NOT made of wood — they were carved from ivory, animal teeth, and human teeth.",
+  "The Federalist Papers were published under the pseudonym 'Publius' — the Roman statesman Publius Valerius Publicola.",
+  "Patrick Henry, who famously said 'Give me liberty or give me death,' refused to attend the Constitutional Convention, reportedly saying he 'smelled a rat.'",
+  "The Continental Congress nearly voted on a different national bird — the turkey, according to a letter from Benjamin Franklin.",
+  "The word 'slavery' does not appear in the original Constitution. Enslaved people are referred to as 'other persons.'",
+  "Toussaint Louverture's defeat of Napoleon's army in Haiti is what made Napoleon willing to sell Louisiana.",
+  "Sacagawea was approximately sixteen years old when she joined the Lewis and Clark Expedition.",
+];
+let dykIdx = 0;
+function cycleDYK() {
+  const el = document.getElementById('dyk-text');
+  if(!el) return;
+  el.textContent = DYK_FACTS[dykIdx % DYK_FACTS.length];
+  dykIdx++;
+}
+cycleDYK();
+setInterval(cycleDYK, 7000);
+
+// ── Search ──
+const SEARCH_INDEX = [
+  {id:'exploration', cat:'Article I', title:'Early European Exploration of North America, 1492–1607', excerpt:'Columbus, Cortés, Jamestown — the century of contact that transformed two hemispheres.', keywords:['columbus','exploration','jamestown','cortés','columbian exchange','spain','roanoke','cabot']},
+  {id:'revolution', cat:'Article II', title:'The Road to Revolution, 1763–1776', excerpt:'From the Seven Years\' War to Lexington and Concord — thirteen years of escalating conflict.', keywords:['revolution','stamp act','boston','tea party','sons of liberty','lexington','concord','paine','common sense']},
+  {id:'declaration', cat:'Article III', title:'The Declaration of Independence, 1776', excerpt:'Jefferson\'s seventeen days and the document that became the nation\'s founding promise.', keywords:['declaration','independence','jefferson','adams','franklin','july 4','all men are created equal','continental congress']},
+  {id:'constitution', cat:'Article IV', title:'The Constitutional Convention, 1787', excerpt:'Fifty-five men in Philadelphia who invented the framework of American government.', keywords:['constitution','convention','madison','hamilton','federalist','ratification','bill of rights','virginia plan','compromise']},
+  {id:'louisiana', cat:'Article V', title:'The Louisiana Purchase, 1803', excerpt:'How fifteen million dollars and Napoleon\'s catastrophe doubled the size of the United States.', keywords:['louisiana','purchase','napoleon','jefferson','lewis','clark','sacagawea','territory','mississippi']},
+  {id:'westward', cat:'Article VI', title:'Westward Expansion and Manifest Destiny, 1803–1850', excerpt:'The ideology of continental empire and the cost paid by Indigenous peoples.', keywords:['manifest destiny','expansion','texas','mexico','trail of tears','indian removal','oregon','california','gold rush']},
+  {id:'primary', cat:'Reference', title:'Primary Sources and Further Reading', excerpt:'Curated guide to essential documents and scholarly works.', keywords:['sources','books','bibliography','federalist papers','journals','reading']},
+  {id:'figures', cat:'Reference', title:'Key Figures of the Founding Era', excerpt:'Biographical summaries of the statesmen, soldiers, and thinkers who shaped the Republic.', keywords:['washington','jefferson','adams','hamilton','franklin','madison','sacagawea','douglass','louverture','abigail']},
+  {id:'about', cat:'About', title:'About the Nebula Historical Society', excerpt:'Our mission, editorial standards, and research team.', keywords:['about','mission','team','nhs','nebula','historical society']},
+];
+
+function doSearch(q) {
+  // Sync all search inputs
+  const v = q;
+  document.querySelectorAll('#win-search-inp,#nav-search-inp,#sb-search-inp').forEach(el => { if(el.value !== v) el.value = v; });
+
+  if(!q || q.trim().length < 2) {
+    if(cur === 'search') go('home');
+    return;
+  }
+  const term = q.trim().toLowerCase();
+  const results = SEARCH_INDEX.filter(item =>
+    item.title.toLowerCase().includes(term) ||
+    item.excerpt.toLowerCase().includes(term) ||
+    item.keywords.some(k => k.includes(term))
+  );
+  const list = document.getElementById('sr-list');
+  const title = document.getElementById('sr-title');
+  if(title) title.textContent = `${results.length} result${results.length !== 1 ? 's' : ''} for "${q.trim()}"`;
+  if(list) {
+    if(!results.length) {
+      list.innerHTML = `<div class="sr-none">No articles match your search. Try different keywords.</div>`;
+    } else {
+      list.innerHTML = results.map(r => `
+        <div class="sr-item" onclick="go('${r.id}')">
+          <div class="sr-item-cat">${r.cat}</div>
+          <div class="sr-item-title">${r.title}</div>
+          <div class="sr-item-excerpt">${r.excerpt}</div>
+        </div>`).join('');
+    }
+  }
+  go('search');
+}
+
+// ── Navigation ──
+const URLS = {
+  home:        'nebula-historians.edu/american-history',
+  exploration: 'nebula-historians.edu/american-history/exploration-1492-1607',
+  revolution:  'nebula-historians.edu/american-history/road-to-revolution-1763-1776',
+  declaration: 'nebula-historians.edu/american-history/declaration-of-independence-1776',
+  constitution:'nebula-historians.edu/american-history/constitutional-convention-1787',
+  louisiana:   'nebula-historians.edu/american-history/louisiana-purchase-1803',
+  westward:    'nebula-historians.edu/american-history/westward-expansion-manifest-destiny',
+  primary:     'nebula-historians.edu/american-history/primary-sources',
+  figures:     'nebula-historians.edu/american-history/key-figures',
+  about:       'nebula-historians.edu/about',
+  search:      'nebula-historians.edu/american-history/search',
+};
+const NAMES = {
+  exploration:'Early Exploration', revolution:'The Revolution',
+  declaration:'Declaration of Independence', constitution:'The Constitution',
+  louisiana:'Louisiana Purchase', westward:'Westward Expansion',
+  primary:'Primary Sources', figures:'Key Figures',
+  about:'About NHS', search:'Search Results',
+};
+const TAGS = {
+  home:'Overview', exploration:'1492–1607', revolution:'1763–1776',
+  declaration:'1776', constitution:'1787', louisiana:'1803',
+  westward:'1803–1850', primary:'Reference', figures:'Reference',
+  about:'Institution', search:'Search',
+};
+
+let cur = 'home';
+
+function go(id) {
+  document.querySelectorAll('.pg').forEach(p => p.classList.remove('on'));
+  document.querySelectorAll('.sb-item').forEach(n => n.classList.remove('on'));
+  document.getElementById('pg-' + id)?.classList.add('on');
+  document.querySelector(`[data-p="${id}"]`)?.classList.add('on');
+  document.getElementById('urlbar').textContent = URLS[id] || URLS.home;
+  document.getElementById('pg-' + id)?.scrollTo(0, 0);
+
+  const tag = document.getElementById('topbar-tag');
+  if(tag) tag.textContent = TAGS[id] || '';
+
+  const bc = document.getElementById('bc');
+  if(id === 'home') {
+    bc.innerHTML = '<span>Home</span>';
+  } else {
+    bc.innerHTML = `<span class="link" onclick="go('home')">Home</span><span class="sep2"> › </span><span>${NAMES[id] || id}</span>`;
+  }
+
+  if(id !== 'louisiana') konamiProg = 0;
+  cur = id;
+
+  // Clear search input if navigating away from search
+  if(id !== 'search') {
+    document.querySelectorAll('#win-search-inp,#nav-search-inp,#sb-search-inp').forEach(el => { if(el !== document.activeElement) el.value = ''; });
+  }
+}
+
+function setNavActive(el) {
+  document.querySelectorAll('.snl').forEach(x=>x.classList.remove('active'));
+  el.classList.add('active');
+}
+
+// ── Konami Code ──
+const SEQ = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
+let konamiProg = 0;
+let koOpen = false;
+let launched = false;
+
+document.addEventListener('keydown', e => {
+  if(cur !== 'louisiana') { konamiProg = 0; return; }
+  if(koOpen) { if(e.key === 'Escape') closeKo(); return; }
+  if(e.key === SEQ[konamiProg]) {
+    konamiProg++;
+    if(konamiProg === SEQ.length) { konamiProg = 0; openKo(); }
+  } else {
+    konamiProg = 0;
+    if(e.key === SEQ[0]) konamiProg = 1;
+  }
+});
+
+function openKo() {
+  koOpen = true;
+  document.getElementById('ko').classList.add('on');
+  const lp = document.getElementById('lp-pg');
+  if(lp) lp.scrollTop = lp.scrollHeight;
+}
+function closeKo() {
+  koOpen = false; konamiProg = 0;
+  document.getElementById('ko').classList.remove('on');
+}
+window.closeKo = closeKo;
+
+function launchNebula() {
+  if(launched) return;
+  launched = true;
+  closeKo();
+  fetch('main.html').then(r=>r.text()).then(html=>{
+    const w = window.open('about:blank','_blank');
+    if(!w) { launched=false; window.open('main.html','_blank'); return; }
+    w.document.open(); w.document.write(html); w.document.close();
+  }).catch(()=>{ launched=false; window.open('main.html','_blank'); });
+}
+window.launchNebula = launchNebula;
+</script>
+</body>
+</html>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=IM+Fell+English:ital@0;1&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap');
+
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
   --p:#f5ecda;--pd:#e9d5ae;--pm:#f0e1c0;--ink:#18110a;--inkl:#3a2a1c;
   --inkf:#6a4b34;--sep:#8b6812;--sepl:#c4993a;--rs:#7a1818;
   --bdr:#58391a;--sh:rgba(24,17,8,.16);

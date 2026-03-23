@@ -12,7 +12,8 @@ const firebaseConfig = {
   projectId: "nebulav2",
   storageBucket: "nebulav2.firebasestorage.app",
   messagingSenderId: "742942256780",
-  appId: "1:742942256780:web:6a231d1480045cedaa95a9"
+  appId: "1:742942256780:web:6a231d1480045cedaa95a9",
+  databaseURL: "https://nebulav2-default-rtdb.firebaseio.com"
 };
 
 const app = initializeApp(firebaseConfig);

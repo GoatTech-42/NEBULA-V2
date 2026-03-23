@@ -8,7 +8,7 @@ import {
   createUserWithEmailAndPassword, signInWithEmailAndPassword,
   signOut, onAuthStateChanged, writeBatch
 } from './firebase.js';
-import { getDatabase, ref as rtRef, set as rtSet, onValue, onDisconnect, serverTimestamp as rtServerTimestamp, remove } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { getDatabase, ref as rtRef, set as rtSet, get as rtGet, onValue, onDisconnect, serverTimestamp as rtServerTimestamp, remove, update as rtUpdate } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 import { updateEmail, updatePassword, EmailAuthProvider, reauthenticateWithCredential } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { initGoatCoin, setActivity, cleanupGoatCoin, getGoatCoinData, renderGoatCoinTab } from './goatcoin.js';
 import { renderBadgeRow, openProfileModal, renderOwnProfile, checkAutoAwards, BADGE_DEFS, checkAdblocker } from './profile.js';
@@ -576,11 +576,32 @@ function setupPresence() {
 function trackVisits() {
   const el = document.getElementById('visits-count');
   if(!el) return;
-  const ref = doc(db,'meta','visits');
-  updateDoc(ref, { count: increment(1) }).catch(() => setDoc(ref, { count: 1 }, { merge: true }));
-  visitsUnsub = onSnapshot(ref, snap => {
-    if(snap.exists()) el.textContent = (snap.data().count || 0).toLocaleString();
-  });
+  // Use RTDB for visit counter — much cheaper than Firestore
+  if(_rtdb) {
+    const visitsRef = rtRef(_rtdb, 'meta/visits');
+    rtGet(visitsRef).then(snap => {
+      const cur = (snap.val() || 0) + 1;
+      rtSet(visitsRef, cur).catch(()=>{});
+      el.textContent = cur.toLocaleString();
+    }).catch(() => {
+      // fallback to Firestore if RTDB fails
+      const ref = doc(db,'meta','visits');
+      updateDoc(ref, { count: increment(1) }).catch(() => setDoc(ref, { count: 1 }, { merge: true }));
+      visitsUnsub = onSnapshot(ref, snap => {
+        if(snap.exists()) el.textContent = (snap.data().count || 0).toLocaleString();
+      });
+    });
+    // Listen for realtime updates
+    onValue(visitsRef, snap => {
+      if(snap.val() !== null) el.textContent = (snap.val() || 0).toLocaleString();
+    });
+  } else {
+    const ref = doc(db,'meta','visits');
+    updateDoc(ref, { count: increment(1) }).catch(() => setDoc(ref, { count: 1 }, { merge: true }));
+    visitsUnsub = onSnapshot(ref, snap => {
+      if(snap.exists()) el.textContent = (snap.data().count || 0).toLocaleString();
+    });
+  }
 }
 
 // ── Channel message pruning ──
@@ -790,13 +811,14 @@ function appendMsg(id, data, container) {
   const canDelete = data.uid === currentUser.uid || canModerate(currentUserData.rank);
 
   if(isFirst) {
+    const badgeHtml = renderBadgeRow(data.badges||[], true);
     el.innerHTML = `
       <div class="msg-ava-wrap"><div class="msg-ava" style="background:${color};cursor:pointer" onclick="window._openProfile('${data.uid}')">${avatarHtml(data.icon,data.username,"60%")}</div></div>
       <div class="msg-content">
         <div class="msg-header">
           <span class="msg-name" style="color:${color};cursor:pointer" onclick="window._openProfile('${data.uid}')">${escHtml(data.username)}</span>
           <span class="rbadge ${data.rank||'planetary'}">${data.rank||'planetary'}</span>
-          ${renderBadgeRow(data.badges||[], true)}
+          ${badgeHtml ? `<span class="msg-badge-row">${badgeHtml}</span>` : ''}
           <span class="msg-ts">${tsStr}</span>
         </div>
         <div class="msg-text">${formatMsg(data.text||'')}</div>
@@ -843,12 +865,13 @@ function updateMsgEl(el, data) {
     if(ava) ava.innerHTML = avatarHtml(data.icon, data.username, '60%');
     const rankEl = el.querySelector('.rbadge');
     if(rankEl && data.rank) { rankEl.className=`rbadge ${data.rank}`; rankEl.textContent=data.rank; }
-    el.querySelectorAll('.msg-badges').forEach(b=>b.remove());
-    const bRow = renderBadgeRow(data.badges||[], true);
-    if(bRow && rankEl) {
+    // Remove old badge row
+    el.querySelector('.msg-badge-row')?.remove();
+    const bHtml = renderBadgeRow(data.badges||[], true);
+    if(bHtml && rankEl) {
       const span = document.createElement('span');
-      span.className = 'msg-badges';
-      span.innerHTML = bRow;
+      span.className = 'msg-badge-row';
+      span.innerHTML = bHtml;
       rankEl.insertAdjacentElement('afterend', span);
     }
   }
@@ -928,7 +951,7 @@ function _updateDMListBadges() {
 }
 function _updateChannelListBadges() {
   Object.entries(_unreadChannels).forEach(([chId, count]) => {
-    const item = document.querySelector(`#channel-list .titem[data-chid="${chId}"]`);
+    const item = document.querySelector(`#channel-list .titem[data-cid="${chId}"]`);
     if(!item) return;
     let badge = item.querySelector('.titem-badge');
     if(count > 0) {
@@ -1111,10 +1134,11 @@ function loadMembers(ch) {
   );
 
   let presUnsub = null;
+  const renderTimer = setInterval(renderMembers, 30000);
   if(_rtdb) {
     // Listen to RTDB presence — single listener, very cheap
     const presRef = rtRef(_rtdb, 'presence');
-    onValue(presRef, snap => {
+    const rtPresOff = onValue(presRef, snap => {
       presenceMap = {};
       snap.forEach(child => {
         const d = child.val();
@@ -1122,15 +1146,14 @@ function loadMembers(ch) {
       });
       renderMembers();
     });
+    membersUnsub = () => { userUnsub(); rtPresOff(); clearInterval(renderTimer); };
   } else {
     presUnsub = onSnapshot(collection(db,'presence'), snap => {
       snap.docs.forEach(d => { presenceMap[d.id] = d.data(); });
       renderMembers();
     });
+    membersUnsub = () => { userUnsub(); if(presUnsub) presUnsub(); clearInterval(renderTimer); };
   }
-
-  const renderTimer = setInterval(renderMembers, 30000);
-  membersUnsub = () => { userUnsub(); if(presUnsub) presUnsub(); clearInterval(renderTimer); };
 }
 
 // ── Create Channel Modal ──
@@ -2017,8 +2040,48 @@ async function buildChannelNotifList() {
 // ── Admin Panel ──
 async function setupAdmin() {
   const d = currentUserData;
-  const title = document.getElementById('admin-page-title');
-  if(title) title.textContent = d.rank==='goat' ? 'Goat Console' : 'Mod Panel';
+  const isGoat = d.rank === 'goat';
+
+  // Rebuild the entire admin section HTML
+  const adminSection = document.getElementById('section-admin');
+  if(!adminSection) return;
+
+  adminSection.innerHTML = `
+  <div class="pad admin-full">
+    <div class="admin-header-row">
+      <div>
+        <div class="pg-title">${isGoat ? '⚙️ Goat Console' : '🛡️ Mod Panel'}</div>
+        <div class="pg-sub">${isGoat ? 'Full system access — user management, data cleanup, moderation' : 'Approve members and manage the community'}</div>
+      </div>
+      <div class="admin-stats-row" id="admin-stats-row">
+        <div class="admin-stat-pill" id="adm-stat-pending"><span id="adm-cnt-pending">…</span> Pending</div>
+        <div class="admin-stat-pill" id="adm-stat-members"><span id="adm-cnt-members">…</span> Members</div>
+        <div class="admin-stat-pill" id="adm-stat-banned"><span id="adm-cnt-banned">…</span> Banned</div>
+      </div>
+    </div>
+    <div class="admin-tabs" id="admin-tabs">
+      <button class="adm-tab active" data-tab="pending">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Pending
+      </button>
+      <button class="adm-tab" data-tab="members">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+        Members
+      </button>
+      <button class="adm-tab" data-tab="banned">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+        Banned
+      </button>
+      ${isGoat ? `<button class="adm-tab" data-tab="cleanup">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+        DB Cleanup
+      </button>` : ''}
+    </div>
+    <div class="adm-panel active" id="ap-pending"><div class="adm-loading">Loading…</div></div>
+    <div class="adm-panel" id="ap-members"><div class="adm-loading">Loading…</div></div>
+    <div class="adm-panel" id="ap-banned"><div class="adm-loading">Loading…</div></div>
+    ${isGoat ? '<div class="adm-panel" id="ap-cleanup"><div class="adm-loading">Loading…</div></div>' : ''}
+  </div>`;
 
   document.querySelectorAll('.adm-tab').forEach(t => {
     t.addEventListener('click', () => {
@@ -2030,69 +2093,357 @@ async function setupAdmin() {
     });
   });
 
+  // Load counts + first tab
+  loadAdminCounts();
   loadAdminPanel('pending');
+}
+
+async function loadAdminCounts() {
+  try {
+    const snap = await getDocs(collection(db,'users'));
+    const users = snap.docs.map(d=>d.data());
+    const pending = users.filter(u=>u.status==='pending').length;
+    const members = users.filter(u=>u.status==='approved').length;
+    const banned = users.filter(u=>u.status==='banned').length;
+    const pendEl = document.getElementById('adm-cnt-pending');
+    const membEl = document.getElementById('adm-cnt-members');
+    const banEl = document.getElementById('adm-cnt-banned');
+    if(pendEl) { pendEl.textContent = pending; document.getElementById('adm-stat-pending')?.classList.toggle('adm-stat-alert', pending > 0); }
+    if(membEl) membEl.textContent = members;
+    if(banEl) banEl.textContent = banned;
+  } catch(e) {}
 }
 
 async function loadAdminPanel(tab) {
   const container = document.getElementById('ap-'+tab);
   if(!container) return;
-  container.innerHTML = '<div style="color:var(--text-faint);font-size:.78rem">Loading...</div>';
+  container.innerHTML = '<div class="adm-loading">Loading…</div>';
+
+  if(tab === 'cleanup') {
+    renderDBCleanup(container);
+    return;
+  }
 
   const snap = await getDocs(collection(db,'users'));
   const users = snap.docs.map(d=>d.data());
 
   if(tab==='pending') {
     const pending = users.filter(u=>u.status==='pending');
-    if(!pending.length) { container.innerHTML='<div class="adm-empty">No pending accounts</div>'; return; }
+    if(!pending.length) { container.innerHTML='<div class="adm-empty"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg><span>All caught up! No pending accounts.</span></div>'; return; }
     container.innerHTML = pending.map(u=>`
       <div class="adm-row">
-        <div class="adm-ava" style="background:${u.color||avatarColor(u.uid)}" onclick="window._openProfile('${u.uid}')" title="View profile">${avatarHtml(u.icon,u.username,"60%")}</div>
+        <div class="adm-ava" style="background:${u.color||avatarColor(u.uid)}" onclick="window._openProfile('${u.uid}')">${avatarHtml(u.icon,u.username,"60%")}</div>
         <div class="adm-info">
-          <span class="adm-name">${escHtml(u.username)}</span>
-          ${u.fullName ? `<span class="adm-meta" style="color:var(--text-muted);font-size:.72rem">${escHtml(u.fullName)}</span>` : ''}
-          <span class="adm-email">${u.email||''}</span>
-          <span class="adm-meta">Joined ${u.createdAt?.toDate?u.createdAt.toDate().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'?'}</span>
+          <div class="adm-name">${escHtml(u.username)}${u.fullName?` <span style="font-weight:400;color:var(--text-faint);font-size:.72rem">(${escHtml(u.fullName)})</span>`:''}</div>
+          <div class="adm-meta">${u.email||'No email'} · Requested ${u.createdAt?.toDate?u.createdAt.toDate().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'Unknown'}</div>
         </div>
         <div class="adm-actions">
           <button class="ta-btn ta-ghost" onclick="window._openProfile('${u.uid}')">Profile</button>
-          <button class="ta-btn ta-green" onclick="window.approveUser('${u.uid}')">Approve</button>
-          <button class="ta-btn ta-red" onclick="window.denyUser('${u.uid}','${escHtml(u.username)}')">Deny</button>
+          <button class="ta-btn ta-green" onclick="window.approveUser('${u.uid}')">✓ Approve</button>
+          <button class="ta-btn ta-red" onclick="window.denyUser('${u.uid}','${escHtml(u.username)}')">✗ Deny</button>
         </div>
       </div>`).join('');
   } else if(tab==='members') {
     const members = users.filter(u=>u.status==='approved');
     members.sort((a,b)=>rankOf(b.rank)-rankOf(a.rank));
-    container.innerHTML = members.length ? members.map(u=>`
-      <div class="adm-row">
-        <div class="adm-ava" style="background:${u.color||avatarColor(u.uid)}" onclick="window._openProfile('${u.uid}')" title="View profile">${avatarHtml(u.icon,u.username,"60%")}</div>
-        <div class="adm-info">
-          <span class="adm-name">${escHtml(u.username)}</span>
-          <span class="adm-email">${u.email||''}</span>
-        </div>
-        <div class="adm-actions">
-          <span class="rbadge ${u.rank}">${u.rank}</span>
-          <button class="ta-btn ta-ghost" onclick="window._openProfile('${u.uid}')">Profile</button>
-          ${canChangeRank(u) ? `<button class="ta-btn ta-blue" onclick="window.changeRank('${u.uid}','${u.rank}','${escHtml(u.username)}')">Rank</button>` : ''}
-          ${canBan(u) ? `<button class="ta-btn ta-red" onclick="window.banUser('${u.uid}','${escHtml(u.username)}')">Ban</button>` : ''}
-        </div>
-      </div>`).join('') : '<div class="adm-empty">No members</div>';
+    if(!members.length) { container.innerHTML='<div class="adm-empty">No approved members yet</div>'; return; }
+
+    // Add search bar
+    container.innerHTML = `
+      <div class="adm-search-row">
+        <input type="text" id="adm-member-search" class="field-input" placeholder="Search by username or email…" style="max-width:340px">
+      </div>
+      <div id="adm-members-list"></div>`;
+
+    const renderMemberList = (filter='') => {
+      const filtered = members.filter(u => !filter || u.username?.toLowerCase().includes(filter) || u.email?.toLowerCase().includes(filter));
+      const listEl = document.getElementById('adm-members-list');
+      if(!listEl) return;
+      listEl.innerHTML = filtered.length ? filtered.map(u=>`
+        <div class="adm-row">
+          <div class="adm-ava" style="background:${u.color||avatarColor(u.uid)}" onclick="window._openProfile('${u.uid}')">${avatarHtml(u.icon,u.username,"60%")}</div>
+          <div class="adm-info">
+            <div class="adm-name">${escHtml(u.username)}</div>
+            <div class="adm-meta">${u.email||'No email'} · Joined ${u.createdAt?.toDate?u.createdAt.toDate().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'?'}</div>
+          </div>
+          <div class="adm-actions">
+            <span class="rbadge ${u.rank}">${u.rank}</span>
+            <button class="ta-btn ta-ghost" onclick="window._openProfile('${u.uid}')">Profile</button>
+            ${canChangeRank(u) ? `<button class="ta-btn ta-blue" onclick="window.changeRank('${u.uid}','${u.rank}','${escHtml(u.username)}')">Rank</button>` : ''}
+            ${canBan(u) ? `<button class="ta-btn ta-red" onclick="window.banUser('${u.uid}','${escHtml(u.username)}')">Ban</button>` : ''}
+          </div>
+        </div>`).join('') : '<div class="adm-empty">No members match search</div>';
+    };
+    renderMemberList();
+    setTimeout(() => {
+      document.getElementById('adm-member-search')?.addEventListener('input', e => renderMemberList(e.target.value.trim().toLowerCase()));
+    }, 50);
   } else if(tab==='banned') {
     const banned = users.filter(u=>u.status==='banned');
     container.innerHTML = banned.length ? banned.map(u=>`
       <div class="adm-row">
-        <div class="adm-ava" style="background:${u.color||avatarColor(u.uid)}" onclick="window._openProfile('${u.uid}')" title="View profile">${avatarHtml(u.icon,u.username,"60%")}</div>
+        <div class="adm-ava" style="background:${u.color||avatarColor(u.uid)}" onclick="window._openProfile('${u.uid}')">${avatarHtml(u.icon,u.username,"60%")}</div>
         <div class="adm-info">
-          <span class="adm-name">${escHtml(u.username)}</span>
-          <span class="adm-email">${u.email||''}</span>
+          <div class="adm-name">${escHtml(u.username)}</div>
+          <div class="adm-meta">${u.email||'No email'}</div>
         </div>
         <div class="adm-actions">
           <button class="ta-btn ta-ghost" onclick="window._openProfile('${u.uid}')">Profile</button>
           <button class="ta-btn ta-green" onclick="window.unbanUser('${u.uid}')">Unban</button>
           ${currentUserData.rank==='goat'?`<button class="ta-btn ta-red" onclick="window.deleteAccount('${u.uid}','${escHtml(u.username)}')">Delete</button>`:''}
         </div>
-      </div>`).join('') : '<div class="adm-empty">No banned accounts</div>';
+      </div>`).join('') : '<div class="adm-empty"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg><span>No banned users</span></div>';
   }
 }
+
+// ── DB Cleanup Panel (Goat-only) ──
+async function renderDBCleanup(container) {
+  container.innerHTML = `
+  <div class="cleanup-panel">
+    <div class="cleanup-warning">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      <span><strong>Danger Zone</strong> — All destructive actions are irreversible. Be certain before wiping anything.</span>
+    </div>
+
+    <div class="cleanup-section">
+      <div class="cleanup-section-hdr">GoatCoin</div>
+      <div class="cleanup-actions">
+        <div class="cleanup-action-card">
+          <div class="cac-title">Wipe All GoatCoin Balances</div>
+          <div class="cac-desc">Resets every user's coin balance, weekly stats, and BJ win counts to zero. Keeps the documents.</div>
+          <button class="btn btn-danger btn-sm" onclick="window.cleanupWipeAllCoins()">Wipe All Coins</button>
+        </div>
+        <div class="cleanup-action-card">
+          <div class="cac-title">Reset Weekly Stats Only</div>
+          <div class="cac-desc">Resets weekCoins, weekChatMins, weekGameMins, weekBJWins for all users without touching balances.</div>
+          <button class="btn btn-danger btn-sm" onclick="window.cleanupResetWeeklyStats()">Reset Weekly Stats</button>
+        </div>
+        <div class="cleanup-action-card">
+          <div class="cac-title">Delete GoatCoin Document</div>
+          <div class="cac-desc">Remove a specific user's GoatCoin document entirely. Enter their UID below.</div>
+          <div style="display:flex;gap:6px;margin-top:.6rem">
+            <input id="cleanup-gc-uid" class="field-input" placeholder="User UID…" style="flex:1;font-size:.78rem">
+            <button class="btn btn-danger btn-sm" onclick="window.cleanupDeleteUserGC()">Delete</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cleanup-section">
+      <div class="cleanup-section-hdr">Messages</div>
+      <div class="cleanup-actions">
+        <div class="cleanup-action-card">
+          <div class="cac-title">Wipe Channel Messages</div>
+          <div class="cac-desc">Delete all messages in a specific channel. The channel itself remains.</div>
+          <div style="display:flex;gap:6px;margin-top:.6rem">
+            <select id="cleanup-ch-sel" class="field-input" style="flex:1;font-size:.78rem"><option value="">Loading channels…</option></select>
+            <button class="btn btn-danger btn-sm" onclick="window.cleanupWipeChannel()">Wipe</button>
+          </div>
+        </div>
+        <div class="cleanup-action-card">
+          <div class="cac-title">Wipe All DMs</div>
+          <div class="cac-desc">Delete all direct message threads and their messages. This affects every user.</div>
+          <button class="btn btn-danger btn-sm" onclick="window.cleanupWipeDMs()">Wipe All DMs</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="cleanup-section">
+      <div class="cleanup-section-hdr">Presence & Stale Data</div>
+      <div class="cleanup-actions">
+        <div class="cleanup-action-card">
+          <div class="cac-title">Clear Offline Presence</div>
+          <div class="cac-desc">Remove all Firestore presence documents where online = false. RTDB presence is auto-managed.</div>
+          <button class="btn btn-ghost btn-sm" onclick="window.cleanupClearOfflinePresence()">Clear Offline Presence</button>
+        </div>
+        <div class="cleanup-action-card">
+          <div class="cac-title">Purge Stale BJ Games</div>
+          <div class="cac-desc">Delete all blackjack games stuck in gameDone or older than 24 hours.</div>
+          <button class="btn btn-ghost btn-sm" onclick="window.cleanupPurgeBJGames()">Purge Stale Games</button>
+        </div>
+        <div class="cleanup-action-card">
+          <div class="cac-title">Clear BJ Challenges</div>
+          <div class="cac-desc">Delete all pending, declined, and cancelled blackjack challenge documents.</div>
+          <button class="btn btn-ghost btn-sm" onclick="window.cleanupClearBJChallenges()">Clear Challenges</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="cleanup-section">
+      <div class="cleanup-section-hdr">Visit Counter</div>
+      <div class="cleanup-actions">
+        <div class="cleanup-action-card">
+          <div class="cac-title">Reset Visit Counter</div>
+          <div class="cac-desc">Set the total visit count back to 0. Affects both RTDB and Firestore counters.</div>
+          <button class="btn btn-ghost btn-sm" onclick="window.cleanupResetVisits()">Reset Visits</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="cleanup-log" class="cleanup-log"></div>
+  </div>`;
+
+  // Load channels into dropdown
+  try {
+    const snap = await getDocs(collection(db,'channels'));
+    const sel = document.getElementById('cleanup-ch-sel');
+    if(sel) {
+      sel.innerHTML = '<option value="">-- Select channel --</option>' +
+        ['general','admin'].map(id=>`<option value="${id}">#${id} (hardcoded)</option>`).join('') +
+        snap.docs.map(d=>`<option value="${d.id}">#${escHtml(d.data().name||d.id)}</option>`).join('');
+    }
+  } catch(e) {}
+}
+
+function _cleanupLog(msg, type='info') {
+  const log = document.getElementById('cleanup-log');
+  if(!log) { toast(msg, type); return; }
+  const entry = document.createElement('div');
+  entry.className = `cleanup-log-entry cleanup-log-${type}`;
+  entry.innerHTML = `<span class="cleanup-log-ts">${new Date().toLocaleTimeString()}</span> ${escHtml(msg)}`;
+  log.appendChild(entry);
+  log.scrollTop = log.scrollHeight;
+  toast(msg, type);
+}
+
+window.cleanupWipeAllCoins = function() {
+  showModal(`
+    <h3>Wipe ALL GoatCoin Balances?</h3>
+    <p class="modal-p">This will set <strong>every user's</strong> coins, weekCoins, totalCoins, and all stats to 0. This is permanent.</p>
+    <div class="modal-actions">
+      <button class="btn btn-ghost btn-sm" onclick="document.getElementById('modal-overlay').click()">Cancel</button>
+      <button class="btn btn-danger btn-sm" id="confirm-wipe-coins">Yes, Wipe All Coins</button>
+    </div>`);
+  document.getElementById('confirm-wipe-coins').onclick = async () => {
+    closeModal();
+    try {
+      const snap = await getDocs(collection(db,'goatcoin'));
+      let count = 0;
+      const batch = writeBatch(db);
+      const reset = { coins:0, weekCoins:0, totalCoins:0, weekSiteMins:0, weekChatMins:0, weekGameMins:0, totalSiteMins:0, totalChatMins:0, totalGameMins:0, weekBJWins:0, totalBJWins:0 };
+      snap.docs.forEach(d => { batch.update(d.ref, reset); count++; });
+      await batch.commit();
+      _cleanupLog(`Wiped GoatCoin balances for ${count} users.`, 'success');
+    } catch(e) { _cleanupLog('Failed: '+e.message, 'error'); }
+  };
+};
+
+window.cleanupResetWeeklyStats = function() {
+  showModal(`
+    <h3>Reset Weekly Stats?</h3>
+    <p class="modal-p">Resets weekCoins, weekChatMins, weekGameMins, and weekBJWins for all users. Does not touch balances.</p>
+    <div class="modal-actions">
+      <button class="btn btn-ghost btn-sm" onclick="document.getElementById('modal-overlay').click()">Cancel</button>
+      <button class="btn btn-danger btn-sm" id="confirm-reset-weekly">Reset Weekly Stats</button>
+    </div>`);
+  document.getElementById('confirm-reset-weekly').onclick = async () => {
+    closeModal();
+    try {
+      const snap = await getDocs(collection(db,'goatcoin'));
+      let count = 0;
+      const batch = writeBatch(db);
+      const reset = { weekCoins:0, weekSiteMins:0, weekChatMins:0, weekGameMins:0, weekBJWins:0 };
+      snap.docs.forEach(d => { batch.update(d.ref, reset); count++; });
+      await batch.commit();
+      _cleanupLog(`Reset weekly stats for ${count} users.`, 'success');
+    } catch(e) { _cleanupLog('Failed: '+e.message, 'error'); }
+  };
+};
+
+window.cleanupDeleteUserGC = async function() {
+  const uid = document.getElementById('cleanup-gc-uid')?.value.trim();
+  if(!uid) { toast('Enter a UID','warning'); return; }
+  showModal(`<h3>Delete GoatCoin for UID?</h3><p class="modal-p">UID: <code>${escHtml(uid)}</code><br>This permanently removes their GoatCoin document.</p><div class="modal-actions"><button class="btn btn-ghost btn-sm" onclick="document.getElementById('modal-overlay').click()">Cancel</button><button class="btn btn-danger btn-sm" id="confirm-del-gc">Delete</button></div>`);
+  document.getElementById('confirm-del-gc').onclick = async () => {
+    closeModal();
+    try { await deleteDoc(doc(db,'goatcoin',uid)); _cleanupLog(`Deleted GoatCoin doc for ${uid}.`, 'success'); }
+    catch(e) { _cleanupLog('Failed: '+e.message, 'error'); }
+  };
+};
+
+window.cleanupWipeChannel = function() {
+  const chId = document.getElementById('cleanup-ch-sel')?.value;
+  if(!chId) { toast('Select a channel first','warning'); return; }
+  showModal(`<h3>Wipe #${chId}?</h3><p class="modal-p">Deletes all messages in <strong>#${escHtml(chId)}</strong>. Cannot be undone.</p><div class="modal-actions"><button class="btn btn-ghost btn-sm" onclick="document.getElementById('modal-overlay').click()">Cancel</button><button class="btn btn-danger btn-sm" id="confirm-wipe-ch">Wipe Channel</button></div>`);
+  document.getElementById('confirm-wipe-ch').onclick = async () => {
+    closeModal();
+    try {
+      const snap = await getDocs(collection(db, `channels/${chId}/messages`));
+      if(!snap.size) { _cleanupLog(`#${chId} is already empty.`,'info'); return; }
+      const batchSize = 499; let batch = writeBatch(db), count = 0;
+      for(const d of snap.docs) { batch.delete(d.ref); count++; if(count%batchSize===0){await batch.commit();batch=writeBatch(db);} }
+      if(count%batchSize!==0) await batch.commit();
+      _cleanupLog(`Wiped ${snap.size} messages from #${chId}.`,'success');
+    } catch(e) { _cleanupLog('Failed: '+e.message,'error'); }
+  };
+};
+
+window.cleanupWipeDMs = function() {
+  showModal(`<h3>Wipe ALL Direct Messages?</h3><p class="modal-p">This deletes every DM thread and all messages inside them, for every user. Permanent.</p><div class="modal-actions"><button class="btn btn-ghost btn-sm" onclick="document.getElementById('modal-overlay').click()">Cancel</button><button class="btn btn-danger btn-sm" id="confirm-wipe-dms">Wipe All DMs</button></div>`);
+  document.getElementById('confirm-wipe-dms').onclick = async () => {
+    closeModal();
+    try {
+      const dmsSnap = await getDocs(collection(db,'dms'));
+      let totalMsgs = 0;
+      for(const dmDoc of dmsSnap.docs) {
+        const msgsSnap = await getDocs(collection(db,`dms/${dmDoc.id}/messages`));
+        if(msgsSnap.size) { const batch=writeBatch(db); msgsSnap.docs.forEach(d=>batch.delete(d.ref)); await batch.commit(); totalMsgs+=msgsSnap.size; }
+        await deleteDoc(dmDoc.ref);
+      }
+      _cleanupLog(`Wiped ${dmsSnap.size} DM threads (${totalMsgs} messages).`,'success');
+    } catch(e) { _cleanupLog('Failed: '+e.message,'error'); }
+  };
+};
+
+window.cleanupClearOfflinePresence = async function() {
+  try {
+    const snap = await getDocs(collection(db,'presence'));
+    const offline = snap.docs.filter(d=>!d.data().online);
+    if(!offline.length) { _cleanupLog('No offline presence docs found.','info'); return; }
+    const batch = writeBatch(db);
+    offline.forEach(d=>batch.delete(d.ref));
+    await batch.commit();
+    _cleanupLog(`Cleared ${offline.length} offline presence docs.`,'success');
+  } catch(e) { _cleanupLog('Failed: '+e.message,'error'); }
+};
+
+window.cleanupPurgeBJGames = async function() {
+  try {
+    const cutoff = Date.now() - 24*60*60*1000;
+    const snap = await getDocs(collection(db,'bj_games'));
+    const toDel = snap.docs.filter(d => {
+      const data = d.data();
+      if(data.phase==='gameDone') return true;
+      const ts = data.createdAt?.toMillis ? data.createdAt.toMillis() : 0;
+      return ts && ts < cutoff;
+    });
+    if(!toDel.length) { _cleanupLog('No stale BJ games found.','info'); return; }
+    await Promise.all(toDel.map(d=>deleteDoc(d.ref)));
+    _cleanupLog(`Purged ${toDel.length} stale BJ game(s).`,'success');
+  } catch(e) { _cleanupLog('Failed: '+e.message,'error'); }
+};
+
+window.cleanupClearBJChallenges = async function() {
+  try {
+    const snap = await getDocs(collection(db,'bj_challenges'));
+    if(!snap.size) { _cleanupLog('No BJ challenges found.','info'); return; }
+    await Promise.all(snap.docs.map(d=>deleteDoc(d.ref)));
+    _cleanupLog(`Cleared ${snap.size} BJ challenge(s).`,'success');
+  } catch(e) { _cleanupLog('Failed: '+e.message,'error'); }
+};
+
+window.cleanupResetVisits = async function() {
+  try {
+    // Reset RTDB
+    if(_rtdb) { await rtSet(rtRef(_rtdb,'meta/visits'), 0).catch(()=>{}); }
+    // Reset Firestore
+    await setDoc(doc(db,'meta','visits'), { count: 0 }, { merge: true }).catch(()=>{});
+    _cleanupLog('Visit counter reset to 0.','success');
+    // Update display
+    const el = document.getElementById('visits-count');
+    if(el) el.textContent = '0';
+  } catch(e) { _cleanupLog('Failed: '+e.message,'error'); }
+};
 
 function canChangeRank(targetUser) {
   const me = currentUserData;
