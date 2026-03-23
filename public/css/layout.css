@@ -1597,3 +1597,59 @@ body.layout-bottombar #main { flex: 1; overflow: hidden; min-height: 0; }
   .auth-form-panel { flex: 1; padding: 1.5rem 1.2rem 2.5rem; }
   .auth-fields-row { grid-template-columns: 1fr; }
 }
+/* ══════════════════════════════════════════
+   LAYOUT.CSS ADDITIONS
+   Paste these at the bottom of layout.css
+══════════════════════════════════════════ */
+
+/* ── Leaderboard polished ── */
+.lb-rank { display:flex; align-items:center; justify-content:center; min-width:26px; }
+.lb-rank-num { font-size:.7rem; font-weight:800; color:var(--text-faint); }
+.lb-name-col { display:flex; flex-direction:column; gap:1px; flex:1; min-width:0; }
+.lb-name-col .lb-name { font-size:.78rem; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.lb-tabs { display:flex; gap:4px; flex-wrap:wrap; margin-bottom:.75rem; }
+.lb-tab { display:inline-flex; align-items:center; gap:4px; padding:.28rem .65rem; border-radius:var(--r); border:1.5px solid var(--border2); background:transparent; cursor:pointer; font-size:.66rem; font-weight:700; color:var(--text-muted); font-family:var(--font-body); transition:all var(--tm); }
+.lb-tab:hover { border-color:var(--accent); color:var(--text); }
+.lb-tab.active { border-color:var(--accent); color:var(--accent); background:var(--nav-active-bg); }
+.lb-tab svg { flex-shrink:0; }
+
+/* ── Members — online/offline distinction ── */
+.ms-ava-online { box-shadow: 0 0 0 2px var(--success); }
+.ms-item-offline { opacity: .62; }
+.ms-item-offline .ms-ava { opacity: .75; }
+.ms-item-offline .ms-name { color: var(--text-faint); }
+
+/* ── Wipe thread button polish ── */
+.wipe-thread-btn { display:flex; align-items:center; gap:.3rem; font-size:.62rem; padding:.28rem .62rem; }
+.wipe-thread-btn svg { flex-shrink:0; }
+
+/* ── Admin info block ── */
+.adm-info { display:flex; flex-direction:column; gap:1px; flex:1; min-width:0; }
+.adm-meta { font-size:.62rem; color:var(--text-faint); }
+
+/* ── Leaderboard row name column ── */
+.lb-name-col .rbadge { margin-top:1px; }
+
+/* ── DM typing bar ── */
+#dm-typing-bar { height:22px; flex-shrink:0; padding:0 1.1rem; display:flex; align-items:center; gap:.4rem; font-size:.65rem; color:var(--text-muted); }
+
+/* ── Auth pass eye icon ── */
+.auth-pass-toggle svg { width:15px; height:15px; }
+
+/* ── Battery SVG in stats ── */
+#battery-wrap svg { flex-shrink:0; color:var(--text-muted); }
+
+/* ── General polish: smoother lb rows ── */
+.lb-row { transition:border-color var(--t), background var(--t); }
+.lb-row:hover { border-color:var(--border); }
+
+/* ── Admin row: overflow fix for long emails ── */
+.adm-row { overflow:hidden; }
+.adm-email { max-width:160px; font-size:.62rem; color:var(--text-faint); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex-shrink:0; }
+
+/* ── GoatCoin tab panel: make lb-col always fill ── */
+.gc-lb-col { display:flex; flex-direction:column; }
+#gc-leaderboard-content { flex:1; }
+
+/* ── Presence: smooth opacity on render ── */
+.ms-item { transition:background var(--t), opacity var(--t); }

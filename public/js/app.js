@@ -6,8 +6,9 @@ import {
   doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs,
   onSnapshot, orderBy, limit, serverTimestamp, increment, deleteDoc, addDoc,
   createUserWithEmailAndPassword, signInWithEmailAndPassword,
-  signOut, onAuthStateChanged
+  signOut, onAuthStateChanged, writeBatch
 } from './firebase.js';
+import { getDatabase, ref as rtRef, set as rtSet, onValue, onDisconnect, serverTimestamp as rtServerTimestamp, remove } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 import { updateEmail, updatePassword, EmailAuthProvider, reauthenticateWithCredential } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { initGoatCoin, setActivity, cleanupGoatCoin, getGoatCoinData, renderGoatCoinTab } from './goatcoin.js';
 import { renderBadgeRow, openProfileModal, renderOwnProfile, checkAutoAwards, BADGE_DEFS, checkAdblocker } from './profile.js';
@@ -19,15 +20,21 @@ let currentChannel = null;
 let currentDM = null;
 let channelUnsub = null;
 let dmUnsub = null;
+let _typingUnsub = null; // RTDB typing listener unsub
 let membersUnsub = null;
 let typingTimeout = null;
 let editingMsgId = null;
 let visitsUnsub = null;
 let _pendingSignup = false;
-const _userCache = {}; // uid -> userData, short-lived cache
-const _unreadChannels = {}; // channelId -> count
-const _unreadDMs = {};      // dmId -> count
-let _unreadEnabled = true;  // setting toggle
+let _rtdb = null; // Realtime Database instance
+const _userCache = {};
+const _unreadChannels = {};
+const _unreadDMs = {};
+let _unreadEnabled = true;
+
+// Channel message limit — prune when exceeded
+const CHANNEL_MSG_LIMIT = 100;
+const CHANNEL_MSG_PRUNE_TO = 80;
 
 // ── Rank utils ──
 export const RANKS = { earthbound:0, planetary:1, solar:2, galactic:3, universal:4, goat:5 };
@@ -39,11 +46,9 @@ export const RANK_COLORS = {
   galactic:'#a855f7', universal:'#e2e8f0', goat:'#fde68a'
 };
 
-// ── Avatar colors ──
 const AV_COLORS = ['#ef4444','#f97316','#eab308','#22c55e','#14b8a6','#3b82f6','#8b5cf6','#ec4899','#06b6d4','#84cc16'];
 export function avatarColor(uid) { let h=0; for(let c of uid) h=(h<<5)-h+c.charCodeAt(0); return AV_COLORS[Math.abs(h)%AV_COLORS.length]; }
 export function avatarInitial(u) { return (u||'?')[0].toUpperCase(); }
-
 
 // ── Toast ──
 export function toast(msg, type='info', dur=3000) {
@@ -85,76 +90,35 @@ function closeModal(cb) {
 
 // ── Theme ──
 const THEME_FILES = { 'og':'og.css','dark':'dark.css','light':'light.css','synthwave':'synthwave.css','aurora':'aurora.css','crimson':'crimson.css','midnight':'midnight.css','slate':'slate.css','forest':'forest.css','ocean':'ocean.css','rose':'rose.css','solar':'solar.css','void':'void.css','neon':'neon.css','blush':'blush.css','ice':'ice.css' };
-
 let _themeTransitioning = false;
 
 function applyTheme(name, animate = true) {
   const file = THEME_FILES[name] || 'og.css';
   document.cookie = `nebula_theme=${name};path=/;max-age=31536000`;
-
-  // Respect theme-anim setting
   const themeAnimOn = localStorage.getItem('neb_notif_theme-anim') !== 'false';
-
-  // On boot (no animation), just swap the href directly
   if (!animate || _themeTransitioning || !themeAnimOn) {
     let link = document.getElementById('theme-stylesheet');
-    if (!link) {
-      link = document.createElement('link');
-      link.rel = 'stylesheet';
-      link.id = 'theme-stylesheet';
-      document.head.appendChild(link);
-    }
+    if (!link) { link = document.createElement('link'); link.rel='stylesheet'; link.id='theme-stylesheet'; document.head.appendChild(link); }
     link.href = `css/themes/${file}?v=${Date.now()}`;
     return;
   }
-
-  // Check if theme animation is disabled
-  const themeAnimOff = localStorage.getItem('neb_notif_theme-anim') === 'false';
-  if(themeAnimOff) {
-    let link = document.getElementById('theme-stylesheet');
-    if(!link) { link = document.createElement('link'); link.rel='stylesheet'; link.id='theme-stylesheet'; document.head.appendChild(link); }
-    link.href = `css/themes/${file}?v=${Date.now()}`;
-    return;
-  }
-
   _themeTransitioning = true;
-
-  // Create overlay that covers the whole screen
   const overlay = document.createElement('div');
   overlay.id = 'theme-transition-overlay';
   document.body.appendChild(overlay);
-
-  // Force reflow so the initial state is painted before animating
   overlay.getBoundingClientRect();
-
-  // Animate in (cover)
   overlay.classList.add('tto-in');
-
-  // Once covered, swap the stylesheet
   overlay.addEventListener('animationend', () => {
     let link = document.getElementById('theme-stylesheet');
-    if (!link) {
-      link = document.createElement('link');
-      link.rel = 'stylesheet';
-      link.id = 'theme-stylesheet';
-      document.head.appendChild(link);
-    }
-
-    // When new stylesheet loads, animate out (reveal)
+    if (!link) { link = document.createElement('link'); link.rel='stylesheet'; link.id='theme-stylesheet'; document.head.appendChild(link); }
     const revealAndClean = () => {
       overlay.classList.remove('tto-in');
       overlay.classList.add('tto-out');
-      overlay.addEventListener('animationend', () => {
-        overlay.remove();
-        _themeTransitioning = false;
-      }, { once: true });
+      overlay.addEventListener('animationend', () => { overlay.remove(); _themeTransitioning = false; }, { once: true });
     };
-
     link.onload = revealAndClean;
     link.href = `css/themes/${file}?v=${Date.now()}`;
-    // Fallback if onload doesn't fire (already cached)
     setTimeout(revealAndClean, 300);
-
   }, { once: true });
 }
 function loadTheme() {
@@ -165,37 +129,23 @@ function loadTheme() {
 
 // ── Layout ──
 const LAYOUTS = ['default', 'sidebar-right', 'topbar', 'bottombar'];
-function loadLayout() {
-  return localStorage.getItem('neb_layout') || 'default';
-}
+function loadLayout() { return localStorage.getItem('neb_layout') || 'default'; }
 function applyLayout(name) {
   LAYOUTS.forEach(l => document.body.classList.remove('layout-'+l));
   if(name !== 'default') document.body.classList.add('layout-'+name);
   localStorage.setItem('neb_layout', name);
-
   const isSidebar = name === 'default' || name === 'sidebar-right';
-
   if(!isSidebar) {
-    // Top/bottom: force labels off — sidebar becomes a horizontal bar
     document.body.classList.add('hide-nav-labels');
-    // Also remove compact-sidebar class — doesn't apply to horizontal bars
     document.body.classList.remove('compact-sidebar');
   } else {
-    // Restore user's real nav-labels preference (default ON)
-    // Note: nav-labels is never saved as 'false' by layout changes, only by user toggle
     const labelsStored = localStorage.getItem('neb_notif_nav-labels');
     const labelsOn = labelsStored === null || labelsStored === 'true';
     document.body.classList.toggle('hide-nav-labels', !labelsOn);
-
-    // Sync the toggle checkbox to match
     const labelsToggle = document.querySelector('.notif-toggle[data-key="nav-labels"]');
     if(labelsToggle) labelsToggle.checked = labelsOn;
-
-    // Restore compact-sidebar preference (default OFF)
     const compactStored = localStorage.getItem('neb_notif_compact-sidebar');
     document.body.classList.toggle('compact-sidebar', compactStored === 'true');
-
-    // Restore saved sidebar width explicitly — clears any inline override
     const savedW = localStorage.getItem('neb_sidebar_w') || '224';
     document.documentElement.style.setProperty('--sidebar-w', savedW + 'px');
   }
@@ -205,7 +155,6 @@ function applyLayout(name) {
 function requestNotifPermission() {
   if(!('Notification' in window)) return;
   if(Notification.permission === 'default') {
-    // Slight delay so it doesn't fire immediately on login
     setTimeout(() => {
       Notification.requestPermission().then(perm => {
         if(perm === 'granted') toast('Notifications are on.', 'success');
@@ -228,7 +177,6 @@ function hideSkeleton() {
 }
 
 function setupAuth() {
-  // Password visibility toggle
   document.getElementById('auth-pass-eye')?.addEventListener('click', () => {
     const inp = document.getElementById('auth-pass');
     const icon = document.getElementById('eye-icon');
@@ -271,7 +219,6 @@ function setupAuth() {
         if(!username || username.length < 3) { err.textContent='Username too short (min 3)'; btn.disabled=false; btn.textContent='REQUEST ACCESS'; return; }
         if(username.length > 20) { err.textContent='Username too long (max 20)'; btn.disabled=false; btn.textContent='REQUEST ACCESS'; return; }
         if(!/^[a-zA-Z0-9_]+$/.test(username)) { err.textContent='Username: letters, numbers, underscores only'; btn.disabled=false; btn.textContent='REQUEST ACCESS'; return; }
-        // Flag prevents onAuthStateChanged from running initApp before doc is written
         _pendingSignup = true;
         let cred;
         try {
@@ -280,7 +227,6 @@ function setupAuth() {
           _pendingSignup = false;
           throw ex2;
         }
-        // Check username uniqueness (now authenticated for the Firestore query)
         const usnap = await getDocs(query(collection(db,'users'), where('username','==',username)));
         if(!usnap.empty) {
           _pendingSignup = false;
@@ -296,9 +242,8 @@ function setupAuth() {
           createdAt: serverTimestamp(), color: avatarColor(cred.user.uid)
         });
         _pendingSignup = false;
-        // Manually call initApp now that the Firestore doc is guaranteed written
         await initApp(cred.user);
-        return; // prevent onAuthStateChanged from double-firing initApp
+        return;
       }
     } catch(ex) {
       const msgs = {
@@ -315,22 +260,19 @@ function setupAuth() {
       err.textContent = msgs[ex.code] || ex.message;
       btn.disabled = false;
       btn.textContent = mode==='login' ? 'ENTER' : 'REQUEST ACCESS';
-
     }
   });
 }
 
 // ── Main App Init ──
 async function initApp(user) {
-  // If a signup write is still in flight, bail — the signup handler calls us manually once done
   if(_pendingSignup) return;
   const snap = await getDoc(doc(db,'users',user.uid));
   if(!snap.exists()) {
-    // Doc may not exist yet for brand new accounts — wait briefly and retry once
     await new Promise(r => setTimeout(r, 1200));
     const snap2 = await getDoc(doc(db,'users',user.uid));
     if(!snap2.exists()) { await signOut(auth); showAuth(); return; }
-    return initApp(user); // retry with fresh read
+    return initApp(user);
   }
   const data = snap.data();
   currentUser = user; currentUserData = data;
@@ -339,7 +281,6 @@ async function initApp(user) {
     document.getElementById('auth-screen').classList.add('hidden');
     document.getElementById('pending-screen').classList.remove('hidden');
     document.getElementById('app').classList.add('hidden');
-    // Sign out but stay on pending screen
     return;
   }
   if(data.status === 'banned') {
@@ -363,6 +304,14 @@ async function initApp(user) {
   document.getElementById('pending-screen').classList.add('hidden');
   document.getElementById('app').classList.remove('hidden');
 
+  // Init Realtime Database
+  try {
+    _rtdb = getDatabase();
+  } catch(e) {
+    console.warn('RTDB init failed, falling back to Firestore for presence/typing:', e);
+    _rtdb = null;
+  }
+
   buildSidebar();
   setupNav();
   applyLayout(loadLayout());
@@ -375,8 +324,7 @@ async function initApp(user) {
   if(canModerate(data.rank)) setupAdmin();
   trackVisits();
   setupPresence();
-  initGoatCoin(user, data);
-  // Refresh profile stats whenever goatcoin data updates
+  initGoatCoin(user, data, _rtdb);
   window._onGCUpdate = () => {
     const sec = document.getElementById('section-profile');
     if(sec?.classList.contains('active')) {
@@ -402,7 +350,6 @@ function buildSidebar() {
   rank.className = 'sp-rank';
   rank.style.color = RANK_COLORS[d.rank] || '#38bdf8';
 
-  // Show/hide admin nav
   const adminNav = document.getElementById('nav-admin');
   if(adminNav) adminNav.classList.toggle('hidden', !canModerate(d.rank));
 
@@ -411,16 +358,12 @@ function buildSidebar() {
     if(dmUnsub)      { dmUnsub();      dmUnsub=null; }
     if(membersUnsub) { membersUnsub(); membersUnsub=null; }
     cleanupGoatCoin();
-    // Reset all state
     currentUser=null; currentUserData=null; currentChannel=null; currentDM=null;
-    // Hide app, show auth
     document.getElementById('app').classList.add('hidden');
     document.getElementById('pending-screen').classList.add('hidden');
     document.getElementById('auth-screen').classList.remove('hidden');
-    // Clear auth form
     const ef=document.getElementById('auth-err'); if(ef) ef.textContent='';
     const pf=document.getElementById('auth-pass'); if(pf) pf.value='';
-    // Sign out from Firebase (won't reload page)
     await signOut(auth);
   });
 }
@@ -438,12 +381,8 @@ function navigate(section) {
   const sec = document.getElementById('section-'+section);
   if(sec) sec.classList.add('active');
   document.querySelectorAll(`[data-section="${section}"]`).forEach(i=>i.classList.add('active'));
-  // Track activity context for GoatCoin earning
   setActivity(section === 'chat' ? 'chat' : section === 'games' ? 'game' : 'site');
-  // GoatCoin tab needs an explicit render trigger since Firestore won't re-fire
   if(section === 'goatcoin') renderGoatCoinTab();
-
-  // Close mobile drawer if open
   document.getElementById('mobile-drawer-overlay')?.remove();
   document.getElementById('mobile-drawer')?.remove();
 }
@@ -453,7 +392,6 @@ const TOOLTIPS_RAW = [
   "nebula never dies", "disable your adblocker for goatcoin", "lock in gng", "stfu fleece", "dm me for tooltip suggestions", "now with more customization", "plz dont hack", "find the tabernacle", "is ts peak", "goattech is better", "proxies dont take the internet", "no goofy ahh minecraft kids", "defenitley not vibe coded", "join hackclub", "67 67 676767 hahahhahahah", "great uncle tup tup never dies", "lightsped", "why are you reading this", "in the big 26", "touch grass gng", "lets go gambling", "all on red", "ask not what nebula can do for you", "imagine not having the goat rank", "goatcoin > bitcoin",
 ];
 
-// Fisher-Yates shuffle
 function shuffleArray(arr) {
   const a = [...arr];
   for(let i = a.length-1; i > 0; i--) {
@@ -465,7 +403,6 @@ function shuffleArray(arr) {
 
 let _tooltipInterval = null;
 function initHome() {
-  // Tooltips with shuffle
   const wrap = document.getElementById('tt-wrap');
   if(wrap) {
     wrap.innerHTML = '';
@@ -492,8 +429,6 @@ function initHome() {
     cycle();
     if(_tooltipInterval) clearInterval(_tooltipInterval);
     _tooltipInterval = setInterval(cycle, 4200);
-
-    // Fix tooltip overlap on tab return — clear any stale elements
     document.addEventListener('visibilitychange', () => {
       if(!document.hidden) {
         wrap.querySelectorAll('.tt-el').forEach((el, i) => { if(i > 0) el.remove(); });
@@ -501,7 +436,6 @@ function initHome() {
     });
   }
 
-  // Real parallax — layers move with mouse
   const layers = [
     document.getElementById('neb-1'),
     document.getElementById('neb-2'),
@@ -526,12 +460,9 @@ function initHome() {
   }
   animateParallax();
 
-  // FPS
   setupFPS();
-  // Battery
   setupBattery();
 
-  // Nav card clicks
   document.querySelectorAll('.home-card[data-goto]').forEach(c => {
     c.addEventListener('click', () => navigate(c.dataset.goto));
   });
@@ -540,16 +471,12 @@ function initHome() {
 function setupFPS() {
   let frames=0, last=performance.now(), fps=0;
   const el = document.getElementById('fps-val');
-  const meter = document.getElementById('home-fps');
   function tick(t) {
     frames++;
     if(t-last>=1000) {
       fps = Math.round(frames*1000/(t-last));
       frames=0; last=t;
       if(el) el.textContent = fps;
-      if(meter) {
-        meter.className = fps>=55?'fps-good':fps>=30?'fps-warn':'fps-bad';
-      }
     }
     requestAnimationFrame(tick);
   }
@@ -564,13 +491,12 @@ async function setupBattery() {
     function updateBatt() {
       const pct = Math.round(batt.level*100);
       const charging = batt.charging;
-      const svgId = charging?'batt-charging':pct>60?'batt-full':pct>20?'batt-mid':'batt-low';
       el.innerHTML = `
-        <svg id="${svgId}" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
           ${charging ? `<path d="M5 18H3a2 2 0 01-2-2V8a2 2 0 012-2h3.19M15 6h2a2 2 0 012 2v8a2 2 0 01-2 2h-3.19M23 13v-2M11 6l-4 6h6l-4 6"/>` :
           `<rect x="2" y="7" width="18" height="10" rx="2"/><line x1="22" y1="11" x2="22" y2="13"/><rect x="4" y="9" width="${Math.round(pct/100*13)}" height="6" rx="1" fill="currentColor" stroke="none"/>`}
         </svg>
-        <span style="font-size:.78rem;font-weight:700;color:${pct<=20?'var(--danger)':pct<=50?'var(--warn)':'var(--success)'};">${charging?'⚡':''} ${pct}%</span>
+        <span style="font-size:.78rem;font-weight:700;color:${pct<=20?'var(--danger)':pct<=50?'var(--warn)':'var(--success)'};">${charging?'<svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>':''} ${pct}%</span>
       `;
     }
     updateBatt();
@@ -581,33 +507,69 @@ async function setupBattery() {
   }
 }
 
-// ── Presence ──
+// ── Presence — uses Realtime Database if available ──
 let _presenceInterval = null;
 function setupPresence() {
   const uid = currentUser.uid;
-  const ref = doc(db, 'presence', uid);
-  function beat() {
-    setDoc(ref, {
+
+  if(_rtdb) {
+    // Use RTDB for low-latency, low-cost presence
+    const presRef = rtRef(_rtdb, `presence/${uid}`);
+    const presData = {
       uid, username: currentUserData.username,
       color: currentUserData.color||avatarColor(uid),
       rank: currentUserData.rank,
-      lastSeen: serverTimestamp(), online: true
-    }, { merge: true }).catch(()=>{});
+      icon: currentUserData.icon||'',
+      online: true, lastSeen: Date.now()
+    };
+    rtSet(presRef, presData).catch(()=>{});
+    // Auto-mark offline on disconnect
+    onDisconnect(presRef).update({ online: false, lastSeen: Date.now() });
+
+    // Heartbeat every 30s to keep lastSeen fresh
+    if(_presenceInterval) clearInterval(_presenceInterval);
+    _presenceInterval = setInterval(() => {
+      rtSet(rtRef(_rtdb, `presence/${uid}`), {...presData, lastSeen: Date.now(), online: true}).catch(()=>{});
+    }, 30000);
+  } else {
+    // Fallback: Firestore presence
+    const ref = doc(db, 'presence', uid);
+    function beat() {
+      setDoc(ref, {
+        uid, username: currentUserData.username,
+        color: currentUserData.color||avatarColor(uid),
+        rank: currentUserData.rank,
+        lastSeen: serverTimestamp(), online: true
+      }, { merge: true }).catch(()=>{});
+    }
+    beat();
+    if(_presenceInterval) clearInterval(_presenceInterval);
+    _presenceInterval = setInterval(beat, 30000);
+    window.addEventListener('beforeunload', () => {
+      setDoc(ref, { online: false, lastSeen: serverTimestamp() }, { merge: true }).catch(()=>{});
+    });
   }
-  beat();
-  if(_presenceInterval) clearInterval(_presenceInterval);
-  _presenceInterval = setInterval(beat, 30000); // heartbeat every 30s
 
-  // Mark offline on unload
-  window.addEventListener('beforeunload', () => {
-    setDoc(ref, { online: false, lastSeen: serverTimestamp() }, { merge: true }).catch(()=>{});
-    clearInterval(_presenceInterval);
-  });
-
-  // Pause heartbeat when tab hidden, resume on focus
   document.addEventListener('visibilitychange', () => {
     if(document.hidden) { clearInterval(_presenceInterval); }
-    else { beat(); _presenceInterval = setInterval(beat, 30000); }
+    else {
+      if(_rtdb) {
+        rtSet(rtRef(_rtdb, `presence/${uid}`), {
+          uid, username: currentUserData.username,
+          color: currentUserData.color||avatarColor(uid),
+          rank: currentUserData.rank, icon: currentUserData.icon||'',
+          online: true, lastSeen: Date.now()
+        }).catch(()=>{});
+        _presenceInterval = setInterval(() => {
+          rtSet(rtRef(_rtdb, `presence/${uid}`), {
+            uid, username: currentUserData.username,
+            color: currentUserData.color||avatarColor(uid),
+            rank: currentUserData.rank, icon: currentUserData.icon||'',
+            online: true, lastSeen: Date.now()
+          }).catch(()=>{});
+        }, 30000);
+      }
+    }
   });
 }
 
@@ -615,22 +577,26 @@ function trackVisits() {
   const el = document.getElementById('visits-count');
   if(!el) return;
   const ref = doc(db,'meta','visits');
-  // Increment on every page load
   updateDoc(ref, { count: increment(1) }).catch(() => setDoc(ref, { count: 1 }, { merge: true }));
-  // Live listener
   visitsUnsub = onSnapshot(ref, snap => {
     if(snap.exists()) el.textContent = (snap.data().count || 0).toLocaleString();
   });
 }
 
-// ── Award a badge to current user ──
-async function awardBadge(key) {
-  if(!currentUser || !currentUserData) return;
-  const existing = currentUserData.badges || [];
-  if(existing.includes(key)) return;
-  const newBadges = [...existing, key];
-  currentUserData.badges = newBadges;
-  await updateDoc(doc(db,'users',currentUser.uid), { badges: newBadges }).catch(()=>{});
+// ── Channel message pruning ──
+async function pruneChannelIfNeeded(channelId) {
+  try {
+    const msgsRef = collection(db, `channels/${channelId}/messages`);
+    const countSnap = await getDocs(query(msgsRef, orderBy('ts','asc')));
+    if(countSnap.size <= CHANNEL_MSG_LIMIT) return;
+    // Delete oldest messages to bring count down to CHANNEL_MSG_PRUNE_TO
+    const toDelete = countSnap.docs.slice(0, countSnap.size - CHANNEL_MSG_PRUNE_TO);
+    const batch = writeBatch(db);
+    toDelete.forEach(d => batch.delete(d.ref));
+    await batch.commit();
+  } catch(e) {
+    console.warn('Prune failed:', e);
+  }
 }
 
 // ── Chat ──
@@ -648,12 +614,10 @@ async function loadChannelsList() {
   const list = document.getElementById('channel-list');
   if(!list) return;
 
-  // Build from hardcoded + db
   let channels = [...HARDCODED_CHANNELS];
   const customSnap = await getDocs(query(collection(db,'channels'), orderBy('createdAt','asc')));
   customSnap.forEach(s => channels.push({id:s.id, ...s.data()}));
 
-  // Filter by access
   channels = channels.filter(ch => {
     if(ch.adminOnly) return canModerate(d.rank);
     return rankOf(d.rank) >= rankOf(ch.minRank||'planetary');
@@ -670,7 +634,6 @@ async function loadChannelsList() {
     list.appendChild(el);
   });
 
-  // Add channel button for universal+
   if(canModerate(d.rank)) {
     const addBtn = document.getElementById('ts-add-channel');
     if(addBtn) { addBtn.classList.remove('hidden'); addBtn.addEventListener('click', showCreateChannelModal); }
@@ -678,7 +641,6 @@ async function loadChannelsList() {
 }
 
 async function openChannel(ch) {
-  // Password check for protected channels
   if(ch.passwordProtected && ch.password) {
     const isGoat = currentUserData.rank === 'goat';
     if(!isGoat) {
@@ -701,31 +663,65 @@ async function openChannel(ch) {
   const annBadge = document.getElementById('chat-announce-badge');
   annBadge.classList.toggle('hidden', !ch.announce);
 
+  // Wipe thread button — goat only
+  const ctbRight = document.querySelector('#chat-window .ctb-right');
+  if(ctbRight) {
+    const existingWipe = ctbRight.querySelector('.wipe-thread-btn');
+    if(existingWipe) existingWipe.remove();
+    if(currentUserData.rank === 'goat') {
+      const wipeBtn = document.createElement('button');
+      wipeBtn.className = 'wipe-thread-btn btn btn-danger btn-sm';
+      wipeBtn.style.cssText = 'font-size:.62rem;padding:.28rem .6rem;gap:.3rem;display:flex;align-items:center';
+      wipeBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>Wipe Thread`;
+      wipeBtn.addEventListener('click', () => wipeThread(ch.id, ch.name));
+      ctbRight.appendChild(wipeBtn);
+    }
+  }
+
   const msgsWrap = document.getElementById('messages-wrap');
   msgsWrap.innerHTML = '<div class="messages" id="messages"></div>';
   if(channelUnsub) channelUnsub();
 
   loadMembers(ch);
   subscribeChannel(ch.id);
-  // Clear unread for this channel
   _unreadChannels[ch.id] = 0;
   _updateChatBadge();
   _updateChannelListBadges();
 
-  // Announce-only input lock
   const isAnnounce = ch.announce && !canModerate(currentUserData.rank);
   document.getElementById('chat-input').disabled = isAnnounce;
   document.getElementById('chat-send-btn').disabled = isAnnounce;
   document.getElementById('chat-input').placeholder = isAnnounce ? 'Announcements only' : `Message #${ch.name}`;
+
+  // Prune in background — won't block UI
+  setTimeout(() => pruneChannelIfNeeded(ch.id), 2000);
 }
 
 function subscribeChannel(channelId) {
   const msgsRef = collection(db, `channels/${channelId}/messages`);
   let initialized = false;
-  // Reset group tracking per channel
   lastMsgSender = null; lastMsgTime = null;
+
+  // Use typing from RTDB if available, else Firestore — unsub previous listener first
+  if(_typingUnsub) { _typingUnsub(); _typingUnsub = null; }
+  if(_rtdb) {
+    const typingRef = rtRef(_rtdb, `typing/${channelId}`);
+    const rtTypingOff = onValue(typingRef, snap => {
+      const data = snap.val() || {};
+      const typists = Object.entries(data).filter(([uid, v]) => {
+        if(uid === currentUser.uid) return false;
+        return (Date.now() - (v?.ts || 0)) < 4000;
+      }).map(([_, v]) => v.username);
+      const bar = document.getElementById('typing-bar');
+      if(typists.length && bar) {
+        bar.innerHTML = `<div class="typing-dots"><span></span><span></span><span></span></div><span>${typists.join(', ')} ${typists.length===1?'is':'are'} typing...</span>`;
+      } else if(bar) bar.innerHTML='';
+    });
+    _typingUnsub = () => rtTypingOff();
+  }
+
   channelUnsub = onSnapshot(
-    query(msgsRef, orderBy('ts','asc'), limit(100)),
+    query(msgsRef, orderBy('ts','asc'), limit(CHANNEL_MSG_LIMIT)),
     snap => {
       const msgs = document.getElementById('messages');
       if(!msgs) return;
@@ -739,7 +735,6 @@ function subscribeChannel(channelId) {
           if(change.type==='added') {
             appendMsg(change.doc.id, change.doc.data(), msgs);
             scrollToBottom();
-            // Count unread if not currently viewing this channel
             const isActive = document.getElementById('section-chat')?.classList.contains('active');
             if(!isActive && _unreadEnabled) {
               _unreadChannels[channelId] = (_unreadChannels[channelId]||0)+1;
@@ -757,20 +752,22 @@ function subscribeChannel(channelId) {
     }
   );
 
-  // Typing listener
-  onSnapshot(doc(db, `channels/${channelId}/typing`, 'status'), snap => {
-    if(!snap.exists()) return;
-    const data = snap.data();
-    const typists = Object.entries(data).filter(([uid,v]) => {
-      if(uid === currentUser.uid) return false;
-      const ms = v?.ts?.toMillis ? v.ts.toMillis() : (typeof v?.ts === 'number' ? v.ts : 0);
-      return (Date.now() - ms) < 4000;
-    }).map(([_,v]) => v.username);
-    const bar = document.getElementById('typing-bar');
-    if(typists.length && bar) {
-      bar.innerHTML = `<div class="typing-dots"><span></span><span></span><span></span></div><span>${typists.join(', ')} ${typists.length===1?'is':'are'} typing...</span>`;
-    } else if(bar) bar.innerHTML='';
-  });
+  // Firestore typing fallback
+  if(!_rtdb) {
+    onSnapshot(doc(db, `channels/${channelId}/typing`, 'status'), snap => {
+      if(!snap.exists()) return;
+      const data = snap.data();
+      const typists = Object.entries(data).filter(([uid,v]) => {
+        if(uid === currentUser.uid) return false;
+        const ms = v?.ts?.toMillis ? v.ts.toMillis() : (typeof v?.ts === 'number' ? v.ts : 0);
+        return (Date.now() - ms) < 4000;
+      }).map(([_,v]) => v.username);
+      const bar = document.getElementById('typing-bar');
+      if(typists.length && bar) {
+        bar.innerHTML = `<div class="typing-dots"><span></span><span></span><span></span></div><span>${typists.join(', ')} ${typists.length===1?'is':'are'} typing...</span>`;
+      } else if(bar) bar.innerHTML='';
+    });
+  }
 }
 
 let lastMsgSender = null, lastMsgTime = null;
@@ -841,13 +838,11 @@ function updateMsgEl(el, data) {
   if(data.edited && !editEl) {
     el.querySelector('.msg-text').insertAdjacentHTML('afterend','<span class="msg-edited">(edited)</span>');
   }
-  // Dynamically refresh avatar icon, rank badge, badges row
   if(el.classList.contains('first-in-group')) {
     const ava = el.querySelector('.msg-ava');
     if(ava) ava.innerHTML = avatarHtml(data.icon, data.username, '60%');
     const rankEl = el.querySelector('.rbadge');
     if(rankEl && data.rank) { rankEl.className=`rbadge ${data.rank}`; rankEl.textContent=data.rank; }
-    // Refresh badge row — remove old, insert new after rank badge
     el.querySelectorAll('.msg-badges').forEach(b=>b.remove());
     const bRow = renderBadgeRow(data.badges||[], true);
     if(bRow && rankEl) {
@@ -891,7 +886,6 @@ async function toggleReaction(msgId, emoji) {
 
 function formatMsg(text) {
   const escaped = escHtml(text);
-  // linkify URLs (after escaping so we don't double-escape)
   const linked = escaped.replace(
     /(https?:\/\/[^\s<>"]+)/g,
     '<a href="$1" target="_blank" rel="noopener noreferrer" class="msg-link">$1</a>'
@@ -905,7 +899,6 @@ export function escHtml(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-// ── Unread badge helpers ──
 function _updateChatBadge() {
   if(!_unreadEnabled) { document.getElementById('chat-badge')?.classList.add('hidden'); return; }
   const total = Object.values(_unreadChannels).reduce((a,b)=>a+b,0);
@@ -976,8 +969,16 @@ let typingDebounce = null;
 async function sendTyping() {
   clearTimeout(typingDebounce);
   typingDebounce = setTimeout(async ()=>{
-    const ref = doc(db, `channels/${currentChannel.id}/typing`,'status');
-    await setDoc(ref, { [currentUser.uid]: { username: currentUserData.username, ts: serverTimestamp() } }, {merge:true});
+    if(_rtdb && currentChannel) {
+      // Use RTDB for typing — much cheaper
+      const typRef = rtRef(_rtdb, `typing/${currentChannel.id}/${currentUser.uid}`);
+      rtSet(typRef, { username: currentUserData.username, ts: Date.now() }).catch(()=>{});
+      // Auto-clear after 4s
+      setTimeout(() => remove(typRef).catch(()=>{}), 4000);
+    } else if(currentChannel) {
+      const ref = doc(db, `channels/${currentChannel.id}/typing`,'status');
+      await setDoc(ref, { [currentUser.uid]: { username: currentUserData.username, ts: serverTimestamp() } }, {merge:true});
+    }
   }, 300);
 }
 
@@ -992,13 +993,17 @@ async function sendMessage() {
   input.value = '';
   document.getElementById('char-ctr').textContent = '500';
   btn.disabled = true;
-  try { await addDoc(collection(db, `channels/${currentChannel.id}/messages`), {
-    uid: currentUser.uid, username: currentUserData.username,
-    rank: currentUserData.rank, color: currentUserData.color,
-    icon: currentUserData.icon||'',
-    badges: currentUserData.badges||[],
-    text, ts: serverTimestamp(), edited: false, reactions: {}
-  }); } catch(e) { toast('Message failed to send.','error'); input.value = text; }
+  try {
+    await addDoc(collection(db, `channels/${currentChannel.id}/messages`), {
+      uid: currentUser.uid, username: currentUserData.username,
+      rank: currentUserData.rank, color: currentUserData.color,
+      icon: currentUserData.icon||'',
+      badges: currentUserData.badges||[],
+      text, ts: serverTimestamp(), edited: false, reactions: {}
+    });
+    // Check if pruning needed after send
+    pruneChannelIfNeeded(currentChannel.id);
+  } catch(e) { toast('Message failed to send.','error'); input.value = text; }
   finally { btn.disabled = false; }
 }
 
@@ -1064,15 +1069,14 @@ window.addReaction = function(msgId) {
   setTimeout(()=>document.addEventListener('click',()=>picker.remove(),{once:true}),10);
 };
 
-// ── Members ──
-let _presenceData = {}; // uid -> {lastSeen, online}
+// ── Members — uses RTDB presence if available ──
 function loadMembers(ch) {
   const list = document.getElementById('members-list');
   if(!list) return;
   if(membersUnsub) membersUnsub();
 
   let users = [], presenceMap = {};
-  const ACTIVE_THRESHOLD = 75000; // 75s - covers 30s heartbeat + slack
+  const ACTIVE_THRESHOLD = 75000;
 
   function renderMembers() {
     const now = Date.now();
@@ -1081,7 +1085,9 @@ function loadMembers(ch) {
       if(!ch.adminOnly && !canChat(u.rank)) return;
       if(ch.adminOnly && !canModerate(u.rank)) return;
       const p = presenceMap[u.uid];
-      const lastSeen = p?.lastSeen?.toMillis ? p.lastSeen.toMillis() : 0;
+      // lastSeen: number (ms) from RTDB, or Firestore Timestamp from fallback
+      const rawLS = p?.lastSeen;
+      const lastSeen = typeof rawLS === 'number' ? rawLS : (rawLS?.toMillis ? rawLS.toMillis() : 0);
       const isOnline = p?.online && (now - lastSeen) < ACTIVE_THRESHOLD;
       (isOnline ? online : offline).push({ ...u, isOnline });
     });
@@ -1099,20 +1105,32 @@ function loadMembers(ch) {
     list.innerHTML = html || '<div class="ms-section-label">No members</div>';
   }
 
-  // Users snapshot
   const userUnsub = onSnapshot(
     query(collection(db,'users'), where('status','==','approved')),
     snap => { users = snap.docs.map(d=>d.data()); renderMembers(); }
   );
-  // Presence snapshot
-  const presUnsub = onSnapshot(collection(db,'presence'), snap => {
-    snap.docs.forEach(d => { presenceMap[d.id] = d.data(); });
-    renderMembers();
-  });
-  // Re-render every 30s to catch stale presences
-  const renderTimer = setInterval(renderMembers, 30000);
 
-  membersUnsub = () => { userUnsub(); presUnsub(); clearInterval(renderTimer); };
+  let presUnsub = null;
+  if(_rtdb) {
+    // Listen to RTDB presence — single listener, very cheap
+    const presRef = rtRef(_rtdb, 'presence');
+    onValue(presRef, snap => {
+      presenceMap = {};
+      snap.forEach(child => {
+        const d = child.val();
+        presenceMap[child.key] = d;
+      });
+      renderMembers();
+    });
+  } else {
+    presUnsub = onSnapshot(collection(db,'presence'), snap => {
+      snap.docs.forEach(d => { presenceMap[d.id] = d.data(); });
+      renderMembers();
+    });
+  }
+
+  const renderTimer = setInterval(renderMembers, 30000);
+  membersUnsub = () => { userUnsub(); if(presUnsub) presUnsub(); clearInterval(renderTimer); };
 }
 
 // ── Create Channel Modal ──
@@ -1136,7 +1154,7 @@ function showCreateChannelModal() {
       <input type="checkbox" id="m-chann"> <label for="m-chann" style="font-size:.78rem">Announce only (Universal+ posts, others view)</label>
     </div>
     <div class="field-group" style="display:flex;align-items:center;gap:.5rem">
-      <input type="checkbox" id="m-chpwd" onchange="document.getElementById('m-pwdfield').classList.toggle('hidden',!this.checked)"> 
+      <input type="checkbox" id="m-chpwd" onchange="document.getElementById('m-pwdfield').classList.toggle('hidden',!this.checked)">
       <label for="m-chpwd" style="font-size:.78rem">Password protected</label>
     </div>
     <div id="m-pwdfield" class="field-group hidden"><label class="field-label">Password</label><input id="m-chpwdval" class="field-input" type="text" placeholder="Channel password"></div>
@@ -1147,6 +1165,37 @@ function showCreateChannelModal() {
     </div>
   `);
 }
+
+// ── Wipe Thread (goat only) ──
+window.wipeThread = function(channelId, channelName) {
+  if(currentUserData?.rank !== 'goat') return;
+  showModal(`
+    <h3>Wipe #${channelName}?</h3>
+    <p class="modal-p">This permanently deletes <strong>all messages</strong> in this channel. The channel itself stays. This cannot be undone.</p>
+    <div class="modal-actions">
+      <button class="btn btn-ghost btn-sm" onclick="document.getElementById('modal-overlay').click()">Cancel</button>
+      <button class="btn btn-danger btn-sm" id="confirm-wipe-btn">Wipe All Messages</button>
+    </div>
+  `);
+  document.getElementById('confirm-wipe-btn').onclick = async () => {
+    try {
+      const msgsRef = collection(db, 'channels/' + channelId + '/messages');
+      const snap = await getDocs(msgsRef);
+      if(snap.empty) { closeModal(); toast('No messages to wipe.', 'info'); return; }
+      // Firestore batches max 500 ops
+      const batchSize = 499;
+      let batch = writeBatch(db);
+      let count = 0;
+      for(const d of snap.docs) {
+        batch.delete(d.ref);
+        count++;
+        if(count % batchSize === 0) { await batch.commit(); batch = writeBatch(db); }
+      }
+      if(count % batchSize !== 0) await batch.commit();
+      closeModal(() => toast('Wiped ' + snap.size + ' messages from #' + channelName + '.', 'success'));
+    } catch(e) { toast('Wipe failed: '+e.message, 'error'); }
+  };
+};
 
 window.deleteChannel = function(id, name) {
   showModal(`
@@ -1200,13 +1249,12 @@ function initDMs() {
     matches.slice(0,6).forEach(u => {
       const item = document.createElement('div');
       item.className = 'dm-search-result-item';
-      item.innerHTML = `<div class="ms-ava" style="background:${u.color||avatarColor(u.uid)};width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:800;color:#fff;flex-shrink:0">${avatarInitial(u.username)}</div><span>${escHtml(u.username)}</span><span class="rbadge ${u.rank}" style="margin-left:auto">${u.rank}</span>`;
+      item.innerHTML = `<div class="ms-ava" style="background:${u.color||avatarColor(u.uid)};width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:800;color:#fff;flex-shrink:0">${avatarHtml(u.icon,u.username,'60%')}</div><span>${escHtml(u.username)}</span><span class="rbadge ${u.rank}" style="margin-left:auto">${u.rank}</span>`;
       item.addEventListener('click', () => { openDM(u); searchInp.value=''; searchResults.remove(); searchResults=null; });
       searchResults.appendChild(item);
     });
   });
 
-  // Load existing DM conversations
   loadDMList();
 }
 
@@ -1228,14 +1276,14 @@ async function loadDMList() {
     const item = document.createElement('div');
     item.className = 'titem';
     item.dataset.dmid = d.id;
-    const ava = document.createElement('div'); ava.className='titem-ava'; ava.style.background=other.color||avatarColor(other.uid||''); ava.innerHTML=avatarHtml(other.icon,other.username,'60%'); item.appendChild(ava); const nm=document.createElement('span'); nm.className='titem-name'; nm.textContent=other.username; item.appendChild(nm);
+    const ava = document.createElement('div'); ava.className='titem-ava'; ava.style.background=other.color||avatarColor(other.uid||''); ava.innerHTML=avatarHtml(other.icon,other.username,'60%'); item.appendChild(ava);
+    const nm=document.createElement('span'); nm.className='titem-name'; nm.textContent=other.username; item.appendChild(nm);
     item.addEventListener('click', ()=>openDM(other, d.id));
     list.appendChild(item);
   }
 }
 
 async function openDM(otherUser, existingDmId) {
-  // Find or create DM
   let dmId = existingDmId;
   if(!dmId) {
     const q1 = query(collection(db,'dms'), where('participants','array-contains',currentUser.uid));
@@ -1247,12 +1295,10 @@ async function openDM(otherUser, existingDmId) {
         participants:[currentUser.uid,otherUser.uid], lastTs:serverTimestamp()
       });
       dmId = ref.id;
-      // Refresh DM list to show the new conversation
       await loadDMList();
     }
   }
   currentDM = {id:dmId, otherUser};
-  // Clear unread for this DM
   _unreadDMs[dmId] = 0;
   _updateDMBadge(); _updateDMListBadges();
 
@@ -1268,6 +1314,23 @@ async function openDM(otherUser, existingDmId) {
   msgsWrap.innerHTML = '<div class="messages" id="dm-messages"></div>';
 
   if(dmUnsub) dmUnsub();
+  // Unsub previous DM typing listener and set up per-DM typing via RTDB
+  if(_typingUnsub) { _typingUnsub(); _typingUnsub = null; }
+  if(_rtdb) {
+    const dmTypingRef = rtRef(_rtdb, 'typing_dm/' + dmId);
+    const rtDmOff = onValue(dmTypingRef, snap => {
+      const data = snap.val() || {};
+      const typists = Object.entries(data).filter(([uid, v]) => {
+        if(uid === currentUser.uid) return false;
+        return (Date.now() - (v?.ts || 0)) < 4000;
+      }).map(([_, v]) => v.username);
+      const bar = document.getElementById('dm-typing-bar');
+      if(typists.length && bar) {
+        bar.innerHTML = '<div class="typing-dots"><span></span><span></span><span></span></div><span>' + typists.join(', ') + ' ' + (typists.length===1?'is':'are') + ' typing...</span>';
+      } else if(bar) bar.innerHTML = '';
+    });
+    _typingUnsub = () => rtDmOff();
+  }
   let dmInitialized = false;
   let dmLastSender = null, dmLastTime = null;
   dmUnsub = onSnapshot(
@@ -1290,7 +1353,6 @@ async function openDM(otherUser, existingDmId) {
             appendDMMsg(change.doc.id, change.doc.data(), msgs, dmLastSender, dmLastTime);
             dmLastSender = change.doc.data().uid; dmLastTime = change.doc.data().ts?.toMillis()||Date.now();
             scrollToDMBottom();
-            // Count unread if DM not focused
             const isDMActive = document.getElementById('section-dms')?.classList.contains('active');
             const isThisDM = currentDM?.id === dmId;
             if((!isDMActive || !isThisDM) && _unreadEnabled) {
@@ -1306,7 +1368,6 @@ async function openDM(otherUser, existingDmId) {
   );
 
   document.getElementById('dm-input').placeholder = `Message ${otherUser.username}`;
-  // Don't reload DM list — just update active state
 }
 
 function appendDMMsg(id, data, container, prevSender=null, prevTime=null) {
@@ -1355,6 +1416,17 @@ function setupDMInput() {
   if(!input||!sendBtn) return;
   input.addEventListener('keydown', e => { if(e.key==='Enter'&&!e.shiftKey) { e.preventDefault(); sendDM(); } });
   sendBtn.addEventListener('click', sendDM);
+  // DM typing indicator (RTDB) — per DM thread
+  let dmTypingDebounce = null;
+  input.addEventListener('input', () => {
+    if(!currentDM || !_rtdb) return;
+    clearTimeout(dmTypingDebounce);
+    dmTypingDebounce = setTimeout(() => {
+      const typRef = rtRef(_rtdb, 'typing_dm/' + currentDM.id + '/' + currentUser.uid);
+      rtSet(typRef, { username: currentUserData.username, ts: Date.now() }).catch(()=>{});
+      setTimeout(() => remove(typRef).catch(()=>{}), 4000);
+    }, 300);
+  });
 }
 
 async function sendDM() {
@@ -1379,16 +1451,6 @@ function setupProfile() {
   renderProfileEdit();
 }
 
-function renderProfileDisplay() {
-  // Profile display is now handled by renderOwnProfile() from profile.js
-  // This stub updates just the dynamic parts after an edit
-  const d = currentUserData;
-  const gc = getGoatCoinData();
-  renderOwnProfile(currentUser, d, gc);
-  // Re-inject edit panels since renderOwnProfile clears them
-  setTimeout(() => renderProfileEdit(), 0);
-}
-
 export const SVG_ICONS = {
     star:    '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',
     bolt:    '<path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>',
@@ -1400,43 +1462,75 @@ export const SVG_ICONS = {
     moon:    '<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>',
     sun:     '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>',
     rainbow: '<path d="M22 17a10 10 0 00-20 0"/><path d="M6 17a6 6 0 0112 0"/><path d="M10 17a2 2 0 014 0"/>',
-    lion:    '<circle cx="12" cy="12" r="4"/><path d="M12 2a10 10 0 000 20"/><path d="M12 2a10 10 0 010 20"/><path d="M2 12h20"/>',
-    wolf:    '<path d="M10.5 2.5c-.4 1.5-1 3-2 4L4 9l2 4-4 3 5-1 1 4 4-3 4 3 1-4 5 1-4-3 2-4-4.5-2.5c-1-.5-1.5-1.5-2-3l-2-1z"/>',
+    skull:   '<circle cx="12" cy="11" r="5"/><path d="M9 11v2"/><path d="M15 11v2"/><path d="M9 16c0 1 .5 1.5 1.5 1.5h3c1 0 1.5-.5 1.5-1.5v-1H9v1z"/><path d="M7 8c-1-2 0-5 3-5s3 2 3 2 1-2 3-2 4 3 3 5"/>',
     shield:  '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
     crown:   '<path d="M2 4l3 12h14l3-12-6 7-4-7-4 7-6-7z"/><path d="M5 20h14"/>',
-    skull:   '<circle cx="12" cy="11" r="5"/><path d="M9 11v2"/><path d="M15 11v2"/><path d="M9 16c0 1 .5 1.5 1.5 1.5h3c1 0 1.5-.5 1.5-1.5v-1H9v1z"/><path d="M7 8c-1-2 0-5 3-5s3 2 3 2 1-2 3-2 4 3 3 5"/>',
-    sword:   '<polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5"/><line x1="13" y1="19" x2="19" y2="13"/><line x1="16" y1="16" x2="20" y2="20"/><line x1="19" y1="21" x2="21" y2="19"/>',
-    trophy:  '<path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4H4v7a8 8 0 0016 0V4h-3"/><path d="M7 4h10"/><path d="M7 4c0 6-3 8-3 8"/><path d="M17 4c0 6 3 8 3 8"/>',
+    trophy:  '<path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4H4v7a8 8 0 0016 0V4h-3"/><path d="M7 4h10"/>',
     controller:'<rect x="2" y="6" width="20" height="12" rx="2"/><path d="M7 10v4"/><line x1="5" y1="12" x2="9" y2="12"/><circle cx="15" cy="11" r="1" fill="currentColor"/><circle cx="17" cy="13" r="1" fill="currentColor"/>',
     dice:    '<rect x="2" y="2" width="20" height="20" rx="2"/><circle cx="8" cy="8" r="1.5" fill="currentColor"/><circle cx="16" cy="16" r="1.5" fill="currentColor"/><circle cx="8" cy="16" r="1.5" fill="currentColor"/><circle cx="16" cy="8" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/>',
     planet:  '<circle cx="12" cy="12" r="7"/><path d="M21.17 8.17C22.87 5.52 23.1 3.16 22 2.06c-1.1-1.1-3.46-.87-6.11.83"/><path d="M2.83 15.83C1.13 18.48.9 20.84 2 21.94c1.1 1.1 3.46.87 6.11-.83"/>',
-    galaxy:  '<path d="M12 2a10 10 0 010 20"/><path d="M12 2a10 10 0 000 20"/><circle cx="12" cy="12" r="2"/><line x1="2" y1="12" x2="22" y2="12"/>',
-    snowflake:'<line x1="12" y1="2" x2="12" y2="22"/><path d="M17 7l-5 5-5-5"/><path d="M17 17l-5-5-5 5"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M7 7l5 5 5-5"/><path d="M7 17l5-5 5 5"/>',
-    clover:  '<path d="M12 2a4 4 0 000 8 4 4 0 000-8z"/><path d="M12 14a4 4 0 000 8 4 4 0 000-8z"/><path d="M6 8a4 4 0 00-4 4 4 4 0 004 4"/><path d="M18 8a4 4 0 014 4 4 4 0 01-4 4"/><line x1="12" y1="2" x2="12" y2="22"/>',
-    crystal: '<polygon points="12 2 20 8 20 16 12 22 4 16 4 8 12 2"/>',
+    heart:   '<path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>',
     eye:     '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>',
     infinity:'<path d="M12 12c-2-2.5-4-4-6-4a4 4 0 000 8c2 0 4-1.5 6-4z"/><path d="M12 12c2 2.5 4 4 6 4a4 4 0 000-8c-2 0-4 1.5-6 4z"/>',
-    heart:   '<path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>',
-    ghost:   '<path d="M9 10h.01M15 10h.01M12 2C6.48 2 2 6.48 2 12v10l3-3 2 2 2-2 2 2 2-2 2 2 3-3V12c0-5.52-4.48-10-10-10z"/>',
+    compass: '<circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/>',
     feather: '<path d="M20.24 12.24a6 6 0 00-8.49-8.49L5 10.5V19h8.5z"/><line x1="16" y1="8" x2="2" y2="22"/><line x1="17.5" y1="15" x2="9" y2="15"/>',
     music:   '<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>',
-    compass: '<circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/>',
-    zap2:    '<circle cx="12" cy="12" r="10"/><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>',
+    ghost:   '<path d="M9 10h.01M15 10h.01M12 2C6.48 2 2 6.48 2 12v10l3-3 2 2 2-2 2 2 2-2 2 2 3-3V12c0-5.52-4.48-10-10-10z"/>',
+    anchor:  '<circle cx="12" cy="5" r="3"/><line x1="12" y1="22" x2="12" y2="8"/><path d="M5 12H2a10 10 0 0020 0h-3"/>',
+    activity:'<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>',
     lock:    '<rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>',
     key:     '<path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 11-7.778 7.778 5.5 5.5 0 017.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>',
-    anchor:  '<circle cx="12" cy="5" r="3"/><line x1="12" y1="22" x2="12" y2="8"/><path d="M5 12H2a10 10 0 0020 0h-3"/>',
-    aperture:'<circle cx="12" cy="12" r="10"/><line x1="14.31" y1="8" x2="20.05" y2="17.94"/><line x1="9.69" y1="8" x2="21.17" y2="8"/><line x1="7.38" y1="12" x2="13.12" y2="2.06"/><line x1="9.69" y1="16" x2="3.95" y2="6.06"/><line x1="14.31" y1="16" x2="2.83" y2="16"/><line x1="16.62" y1="12" x2="10.88" y2="21.94"/>',
-    activity:'<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>',
 };
 
-// Helper: render avatar inner HTML for any user
 export function avatarHtml(iconKey, username, size='100%') {
   if(!iconKey) return `<span style="font-weight:900">${avatarInitial(username)}</span>`;
   const paths = SVG_ICONS[iconKey];
   if(paths) return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${paths}</svg>`;
-  // goat SVG
   if(iconKey === 'goat') return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 9V7a2 2 0 0 0-2-2h-1a2 2 0 0 0-2 2v1"/><path d="M4 9V7a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v1"/><path d="M8 9h8"/><ellipse cx="12" cy="13" rx="5" ry="4"/><path d="M9 17v2"/><path d="M15 17v2"/></svg>`;
   return `<span style="font-weight:900">${avatarInitial(username)}</span>`;
+}
+
+// ── Propagate profile changes (username/color/icon/badges) to all existing messages ──
+window.propagateProfileToMessages = propagateProfileToMessages;
+async function propagateProfileToMessages(uid, updates) {
+  // Update channel messages
+  try {
+    const channelDocs = [...Object.keys(Object.fromEntries(
+      (await getDocs(collection(db,'channels'))).docs.map(d=>[d.id,true])
+    ))];
+    const hardcoded = ['general','admin'];
+    const allChannels = [...new Set([...hardcoded, ...channelDocs])];
+
+    for(const chId of allChannels) {
+      const msgsSnap = await getDocs(
+        query(collection(db,`channels/${chId}/messages`), where('uid','==',uid))
+      );
+      if(msgsSnap.empty) continue;
+      const batch = writeBatch(db);
+      msgsSnap.docs.forEach(d => batch.update(d.ref, updates));
+      await batch.commit();
+    }
+  } catch(e) {
+    console.warn('Propagate to channels failed:', e);
+  }
+
+  // Update DM messages
+  try {
+    const dmsSnap = await getDocs(
+      query(collection(db,'dms'), where('participants','array-contains',uid))
+    );
+    for(const dm of dmsSnap.docs) {
+      const msgsSnap = await getDocs(
+        query(collection(db,`dms/${dm.id}/messages`), where('uid','==',uid))
+      );
+      if(msgsSnap.empty) continue;
+      const batch = writeBatch(db);
+      msgsSnap.docs.forEach(d => batch.update(d.ref, updates));
+      await batch.commit();
+    }
+  } catch(e) {
+    console.warn('Propagate to DMs failed:', e);
+  }
 }
 
 function renderProfileEdit() {
@@ -1444,11 +1538,9 @@ function renderProfileEdit() {
   const section = document.getElementById('prof-edit-section');
   if(!section) return;
 
-  // Username cooldown check
   const lastChange = d.lastUsernameChange?.toDate ? d.lastUsernameChange.toDate() : null;
   const canChangeUsername = !lastChange || (Date.now() - lastChange.getTime()) > 7*24*60*60*1000;
   const cooldownDays = lastChange ? Math.ceil((7*24*60*60*1000 - (Date.now()-lastChange.getTime())) / (24*60*60*1000)) : 0;
-
 
   section.innerHTML = `
     <div class="prof-panel" id="prof-color-section">
@@ -1509,30 +1601,27 @@ function renderProfileEdit() {
     const sw = document.createElement('div');
     sw.className = 'color-swatch' + (color === (d.color||avatarColor(d.uid)) ? ' selected' : '');
     sw.style.background = color;
-    sw.title = color;
     sw.addEventListener('click', async () => {
       document.querySelectorAll('.color-swatch').forEach(s=>s.classList.remove('selected'));
       sw.classList.add('selected');
       await updateDoc(doc(db,'users',currentUser.uid), {color});
       currentUserData.color = color;
-      // Update sidebar avatar + profile avatar
       const spAva = document.getElementById('sp-ava');
       if(spAva) spAva.style.background = color;
       const profAva = document.getElementById('prof-ava');
       if(profAva) profAva.style.background = color;
-      // Update all visible message avatars and names for this user
       document.querySelectorAll(`.msg[data-uid="${currentUser.uid}"] .msg-ava`).forEach(el => el.style.background = color);
       document.querySelectorAll(`.msg[data-uid="${currentUser.uid}"] .msg-name`).forEach(el => el.style.color = color);
+      // Propagate to old messages in background
+      propagateProfileToMessages(currentUser.uid, { color }).catch(()=>{});
       toast('Avatar color updated.','success');
-      awardBadge('customized');
     });
     swatchWrap.appendChild(sw);
   });
 
-  // Icon grid — SVG icons
+  // Icon grid
   const iconGrid = document.getElementById('ava-icon-grid');
   if(iconGrid) {
-    // Letter/initial option first
     const letterOpt = document.createElement('div');
     letterOpt.className = 'ava-icon-opt' + (!d.icon ? ' selected' : '');
     letterOpt.title = 'Use your initial';
@@ -1542,12 +1631,12 @@ function renderProfileEdit() {
       letterOpt.classList.add('selected');
       await updateDoc(doc(db,'users',currentUser.uid), {icon:''});
       currentUserData.icon = '';
-      _updateAvaDisplay('', d.color||avatarColor(d.uid));
-      toast('Looking good.','success');
+      _updateAvaDisplay('');
+      propagateProfileToMessages(currentUser.uid, { icon: '' }).catch(()=>{});
+      toast('Avatar updated.','success');
     });
     iconGrid.appendChild(letterOpt);
 
-    // Goat icon — exclusive to goat rank
     if(d.rank === 'goat') {
       const goatPaths = '<path d="M20 9V7a2 2 0 0 0-2-2h-1a2 2 0 0 0-2 2v1"/><path d="M4 9V7a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v1"/><path d="M8 9h8"/><ellipse cx="12" cy="13" rx="5" ry="4"/><path d="M9 17v2"/><path d="M15 17v2"/>';
       const goatOpt = document.createElement('div');
@@ -1559,8 +1648,9 @@ function renderProfileEdit() {
         goatOpt.classList.add('selected');
         await updateDoc(doc(db,'users',currentUser.uid), {icon:'goat'});
         currentUserData.icon = 'goat';
-        _updateAvaDisplay('goat', d.color||avatarColor(d.uid));
-        toast('Looking good.','success');
+        _updateAvaDisplay('goat');
+        propagateProfileToMessages(currentUser.uid, { icon: 'goat' }).catch(()=>{});
+        toast('Avatar updated.','success');
       });
       iconGrid.appendChild(goatOpt);
     }
@@ -1575,24 +1665,20 @@ function renderProfileEdit() {
         opt.classList.add('selected');
         await updateDoc(doc(db,'users',currentUser.uid), {icon:key});
         currentUserData.icon = key;
-        _updateAvaDisplay(key, d.color||avatarColor(d.uid));
-        toast('Looking good.','success');
+        _updateAvaDisplay(key);
+        propagateProfileToMessages(currentUser.uid, { icon: key }).catch(()=>{});
+        toast('Avatar updated.','success');
       });
       iconGrid.appendChild(opt);
     });
   }
 
-  function _updateAvaDisplay(iconKey, color) {
+  function _updateAvaDisplay(iconKey) {
     const html = avatarHtml(iconKey, d.username, '60%');
-    document.getElementById('sp-ava').innerHTML = html;
+    const sp = document.getElementById('sp-ava');
+    if(sp) sp.innerHTML = html;
     const profAva = document.getElementById('prof-ava');
     if(profAva) profAva.innerHTML = avatarHtml(iconKey, d.username, '55%');
-    document.querySelectorAll(`.msg[data-uid="${currentUser.uid}"] .msg-ava`).forEach(el => { el.innerHTML = svgContent; });
-  }
-
-  function _isLight(hex) {
-    const r=parseInt(hex.slice(1,3),16), g=parseInt(hex.slice(3,5),16), b=parseInt(hex.slice(5,7),16);
-    return (r*299+g*587+b*114)/1000 > 160;
   }
 
   // Username save
@@ -1605,7 +1691,6 @@ function renderProfileEdit() {
     if(newName.length > 20) { err.textContent='Max 20 characters'; return; }
     if(!/^[a-zA-Z0-9_]+$/.test(newName)) { err.textContent='Letters, numbers, underscores only'; return; }
     if(newName === d.username) { err.textContent='Same as current username'; return; }
-    // Check taken
     const snap = await getDocs(query(collection(db,'users'), where('username','==',newName)));
     if(!snap.empty) { err.textContent='Username already taken'; return; }
     try {
@@ -1614,8 +1699,9 @@ function renderProfileEdit() {
       _userCache[currentUser.uid] = currentUserData;
       document.getElementById('sp-name').textContent = newName;
       const pn=document.getElementById('prof-name'); if(pn) pn.textContent=newName;
-      const pu=document.getElementById('prof-username'); if(pu) pu.textContent='@'+newName;
-      toast('Username updated.','success');
+      toast('Username updated. Propagating to messages...','success');
+      // Propagate username change to all old messages
+      propagateProfileToMessages(currentUser.uid, { username: newName }).catch(()=>{});
       renderProfileEdit();
     } catch(e) { err.textContent = e.message; }
   });
@@ -1682,7 +1768,6 @@ function renderProfileEdit() {
 
 // ── Settings ──
 function setupSettings() {
-  // Tab switching
   document.querySelectorAll('.stab').forEach(t => {
     t.addEventListener('click', () => {
       document.querySelectorAll('.stab').forEach(x => x.classList.remove('active'));
@@ -1692,7 +1777,6 @@ function setupSettings() {
     });
   });
 
-  // Themes
   const currentTheme = loadTheme();
   document.querySelectorAll('.theme-card').forEach(card => {
     card.classList.toggle('selected', card.dataset.theme === currentTheme);
@@ -1704,7 +1788,6 @@ function setupSettings() {
     });
   });
 
-  // ── Defaults for every toggle key ──
   const DEFAULTS = {
     compact: false, parallax: true, 'ts-hover': false, 'msg-anim': true,
     'compact-sidebar': false, 'show-rank': true, 'reduce-motion': false,
@@ -1714,7 +1797,6 @@ function setupSettings() {
     'theme-anim': true, 'high-contrast': false, 'line-spacing': false, 'focus-mode': false,
   };
 
-  // ── Restore all saved values ──
   document.querySelectorAll('.notif-toggle').forEach(toggle => {
     const k = toggle.dataset.key;
     const stored = localStorage.getItem('neb_notif_' + k);
@@ -1722,11 +1804,9 @@ function setupSettings() {
     toggle.checked = stored !== null ? stored === 'true' : def;
   });
 
-  // ── Apply all on boot ──
   applyAllToggles();
   syncDepSettings();
 
-  // ── Wire change events (single source of truth) ──
   document.querySelectorAll('.notif-toggle').forEach(toggle => {
     toggle.addEventListener('change', () => {
       const k = toggle.dataset.key;
@@ -1736,9 +1816,6 @@ function setupSettings() {
     });
   });
 
-  // ── Pickers ──
-
-  // Font size
   const savedSize = localStorage.getItem('neb_fontsize') || '15';
   document.querySelectorAll('.size-opt').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.size === savedSize);
@@ -1751,7 +1828,6 @@ function setupSettings() {
   });
   document.documentElement.style.setProperty('--base-font-size', savedSize + 'px');
 
-  // Blur
   const savedBlur = localStorage.getItem('neb_blur') || '20';
   document.querySelectorAll('.blur-opt').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.blur === savedBlur);
@@ -1764,7 +1840,6 @@ function setupSettings() {
   });
   document.documentElement.style.setProperty('--ui-blur', savedBlur + 'px');
 
-  // Sidebar width
   const savedSidebarW = localStorage.getItem('neb_sidebar_w') || '224';
   document.querySelectorAll('.sidebar-w-opt').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.w === savedSidebarW);
@@ -1777,7 +1852,6 @@ function setupSettings() {
   });
   document.documentElement.style.setProperty('--sidebar-w', savedSidebarW + 'px');
 
-  // Parallax speed
   const savedSpeed = localStorage.getItem('neb_parallax_speed') || '0.03';
   document.querySelectorAll('.parallax-speed-opt').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.speed === savedSpeed);
@@ -1790,7 +1864,6 @@ function setupSettings() {
   });
   window._parallaxSpeed = parseFloat(savedSpeed);
 
-  // Message grouping time
   const savedGroup = localStorage.getItem('neb_group_mins') || '5';
   window._groupMins = parseInt(savedGroup);
   document.querySelectorAll('.group-time-opt').forEach(btn => {
@@ -1803,7 +1876,6 @@ function setupSettings() {
     });
   });
 
-  // Layout picker — also handles auto-disabling nav-labels for top/bottom
   const currentLayout = loadLayout();
   document.querySelectorAll('.layout-opt').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.layout === currentLayout);
@@ -1812,23 +1884,19 @@ function setupSettings() {
       btn.classList.add('active');
       const layout = btn.dataset.layout;
       applyLayout(layout);
-      // Auto-force nav labels off for top/bottom (layout side-effect, NOT saved as user pref)
       const noLabels = layout === 'topbar' || layout === 'bottombar';
       const labelsToggle = document.querySelector('.notif-toggle[data-key="nav-labels"]');
       if(labelsToggle) {
         if(noLabels) {
           labelsToggle.checked = false;
-          // Do NOT save to localStorage — this is forced by layout, not user choice
           applyToggle('nav-labels', false);
         } else {
-          // Restore actual user pref when going back to sidebar layout
           const stored = localStorage.getItem('neb_notif_nav-labels');
           const on = stored === null || stored === 'true';
           labelsToggle.checked = on;
           applyToggle('nav-labels', on);
         }
       }
-      // Sidebar width + labels card only relevant for left/right
       const isSidebar = layout === 'default' || layout === 'sidebar-right';
       document.getElementById('sidebar-width-card')?.classList.toggle('setting-hidden', !isSidebar);
       document.getElementById('sidebar-options-label')?.classList.toggle('setting-hidden', !isSidebar);
@@ -1836,18 +1904,15 @@ function setupSettings() {
       syncDepSettings();
     });
   });
-  // Apply on load
   const noLabelsOnLoad = currentLayout === 'topbar' || currentLayout === 'bottombar';
   const isSidebarOnLoad = currentLayout === 'default' || currentLayout === 'sidebar-right';
   document.getElementById('sidebar-width-card')?.classList.toggle('setting-hidden', !isSidebarOnLoad);
   document.getElementById('sidebar-options-label')?.classList.toggle('setting-hidden', !isSidebarOnLoad);
   document.getElementById('nav-labels-card')?.classList.toggle('setting-grayed', noLabelsOnLoad);
 
-  // Channel notification list
   buildChannelNotifList();
 }
 
-// ── Apply a single toggle key to DOM ──
 function applyToggle(k, val) {
   if(k === 'unread-badges') {
     _unreadEnabled = val;
@@ -1870,14 +1935,13 @@ function applyToggle(k, val) {
     'focus-mode':         () => document.body.classList.toggle('focus-mode', val),
     'chat-ranks':         () => document.body.classList.toggle('hide-chat-ranks', !val),
     'typing-indicators':  () => document.body.classList.toggle('hide-typing', !val),
-    'link-previews':      () => { /* future */ },
+    'link-previews':      () => { },
     'char-counter':       () => { const c = document.getElementById('char-ctr'); if(c) c.style.display = val ? '' : 'none'; },
-    'theme-anim':         () => { /* handled in applyTheme */ },
+    'theme-anim':         () => { },
   };
   map[k]?.();
 }
 
-// ── Apply all toggles from localStorage on boot ──
 function applyAllToggles() {
   const get = k => localStorage.getItem('neb_notif_' + k);
   const layout = loadLayout();
@@ -1889,7 +1953,6 @@ function applyAllToggles() {
     'chat-ranks': true, 'char-counter': true, 'unread-badges': true,
   };
   for(const [k, def] of Object.entries(DEFAULTS)) {
-    // nav-labels is managed by applyLayout for horizontal layouts — skip it here
     if(k === 'nav-labels' && (layout === 'topbar' || layout === 'bottombar')) continue;
     const stored = get(k);
     const val = stored !== null ? stored === 'true' : def;
@@ -1897,35 +1960,29 @@ function applyAllToggles() {
   }
 }
 
-// ── Show/hide dependent settings based on parent toggle state ──
 function syncDepSettings() {
-  // data-requires="key" → visible only if that key is ON
   document.querySelectorAll('.setting-dep[data-requires]').forEach(el => {
     const key = el.dataset.requires;
     const toggle = document.querySelector(`.notif-toggle[data-key="${key}"]`);
     const on = toggle ? toggle.checked : (localStorage.getItem('neb_notif_' + key) !== 'false');
     el.classList.toggle('setting-hidden', !on);
   });
-  // data-requires-off="key" → visible only if that key is OFF
   document.querySelectorAll('.setting-dep[data-requires-off]').forEach(el => {
     const key = el.dataset['requires-off'] || el.getAttribute('data-requires-off');
     const toggle = document.querySelector(`.notif-toggle[data-key="${key}"]`);
     const on = toggle ? toggle.checked : (localStorage.getItem('neb_notif_' + key) !== 'false');
     el.classList.toggle('setting-hidden', on);
   });
-  // Compact sidebar toggle only makes sense in left/right layouts
   const layout = loadLayout();
   const isSidebar = layout === 'default' || layout === 'sidebar-right';
   document.getElementById('setting-compact-sidebar-card')?.classList.toggle('setting-hidden', !isSidebar);
   document.getElementById('setting-show-rank-card')?.classList.toggle('setting-hidden', !isSidebar);
   document.getElementById('sidebar-width-card')?.classList.toggle('setting-hidden', !isSidebar);
   document.getElementById('sidebar-options-label')?.classList.toggle('setting-hidden', !isSidebar);
-
-  // nav-labels-card grayed when top/bottom
   const noLabels = layout === 'topbar' || layout === 'bottombar';
   document.getElementById('nav-labels-card')?.classList.toggle('setting-grayed', noLabels);
 }
-// ── Channel Notification Preferences ──
+
 async function buildChannelNotifList() {
   const container = document.getElementById('sp-channel-notifs');
   if(!container) return;
@@ -1992,6 +2049,7 @@ async function loadAdminPanel(tab) {
         <div class="adm-ava" style="background:${u.color||avatarColor(u.uid)}" onclick="window._openProfile('${u.uid}')" title="View profile">${avatarHtml(u.icon,u.username,"60%")}</div>
         <div class="adm-info">
           <span class="adm-name">${escHtml(u.username)}</span>
+          ${u.fullName ? `<span class="adm-meta" style="color:var(--text-muted);font-size:.72rem">${escHtml(u.fullName)}</span>` : ''}
           <span class="adm-email">${u.email||''}</span>
           <span class="adm-meta">Joined ${u.createdAt?.toDate?u.createdAt.toDate().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'?'}</span>
         </div>
@@ -2030,6 +2088,7 @@ async function loadAdminPanel(tab) {
         <div class="adm-actions">
           <button class="ta-btn ta-ghost" onclick="window._openProfile('${u.uid}')">Profile</button>
           <button class="ta-btn ta-green" onclick="window.unbanUser('${u.uid}')">Unban</button>
+          ${currentUserData.rank==='goat'?`<button class="ta-btn ta-red" onclick="window.deleteAccount('${u.uid}','${escHtml(u.username)}')">Delete</button>`:''}
         </div>
       </div>`).join('') : '<div class="adm-empty">No banned accounts</div>';
   }
@@ -2038,7 +2097,6 @@ async function loadAdminPanel(tab) {
 function canChangeRank(targetUser) {
   const me = currentUserData;
   if(me.rank==='goat') return targetUser.uid !== me.uid;
-  // Universal can't touch universal/goat, can't change self
   if(me.rank==='universal') return !canModerate(targetUser.rank) && targetUser.uid !== me.uid;
   return false;
 }
@@ -2060,7 +2118,6 @@ window.denyUser = async function(uid, username) {
   if(!confirm(`Remove ${username}'s account? This can't be undone.`)) return;
   try {
     await deleteDoc(doc(db,'users',uid));
-    // Also delete their goatcoin doc if it exists
     await deleteDoc(doc(db,'goatcoin',uid)).catch(()=>{});
     toast(`${username}'s application deleted`,'info');
     loadAdminPanel('pending');
@@ -2080,10 +2137,29 @@ window.unbanUser = async function(uid) {
   loadAdminPanel('banned');
 };
 
+window.deleteAccount = async function(uid, username) {
+  showModal(`
+    <h3>Permanently Delete Account</h3>
+    <p class="modal-p">This removes all data for <strong>${escHtml(username)}</strong>: profile, GoatCoin balance, and all history. The Firebase Auth account will remain (you'll need to delete it from the Firebase console). This cannot be undone.</p>
+    <div class="modal-actions">
+      <button class="btn btn-ghost btn-sm" onclick="document.getElementById('modal-overlay').click()">Cancel</button>
+      <button class="btn btn-danger btn-sm" id="confirm-delacc-btn">Delete Everything</button>
+    </div>
+  `);
+  document.getElementById('confirm-delacc-btn').onclick = async () => {
+    try {
+      await deleteDoc(doc(db,'users',uid)).catch(()=>{});
+      await deleteDoc(doc(db,'goatcoin',uid)).catch(()=>{});
+      await deleteDoc(doc(db,'presence',uid)).catch(()=>{});
+      closeModal(() => { loadAdminPanel('banned'); toast(`Account data for ${username} deleted.`, 'success'); });
+    } catch(e) { toast('Failed to delete: '+e.message, 'error'); }
+  };
+};
+
 window.changeRank = function(uid, currentRank, username) {
   const me = currentUserData;
   const availableRanks = ['earthbound','planetary','solar','galactic'];
-  if(me.rank==='goat') availableRanks.push('universal'); // Goat can promote to universal
+  if(me.rank==='goat') availableRanks.push('universal');
   showModal(`
     <h3>Change Rank: ${escHtml(username)}</h3>
     <p class="modal-p">Select a new rank for this user.</p>
@@ -2098,7 +2174,6 @@ window.applyRank = async function(uid, rank) {
 };
 
 // ── Game Vault ──
-// cleanHTML mirrors script.js ad/injector removal
 function cleanHTML(html) {
   html = html.replace(/#sidebarad1\s*,\s*\n?#sidebarad2[\s\S]*?\.sidebar-frame\s*\{[\s\S]*?\}/g, '');
   html = html.replace(/<div\s+id=["']sidebarad[12]["'][^>]*>[\s\S]*?<\/div>\s*(<\/div>)?/g, '');
@@ -2112,10 +2187,7 @@ window.openGameVault = function(url, name) {
   vault.style.display = 'flex';
   const frame = document.getElementById('game-frame');
   document.getElementById('game-name').textContent = name;
-  document.body.classList.add('game-cursor-hidden');
   setActivity('game');
-
-  // Use fetch+write so we can clean ads and avoid X-Frame-Options blocks
   frame.src = 'about:blank';
   fetch(url + '?t=' + Date.now())
     .then(r => r.text())
@@ -2123,16 +2195,10 @@ window.openGameVault = function(url, name) {
       html = cleanHTML(html);
       const doc = frame.contentDocument || frame.contentWindow?.document;
       if(doc) { doc.open(); doc.write(html); doc.close(); }
-      // Store url for close/reload
       frame._gameUrl = url;
       frame._gameName = name;
     })
-    .catch(() => {
-      // Fallback to direct src if fetch fails (e.g. CORS)
-      frame.src = url;
-    });
-
-  // Track for GoatCoin
+    .catch(() => { frame.src = url; });
   if(currentUser && currentUserData) {
     updateDoc(doc(db,'users',currentUser.uid), { gamesPlayed: increment(1) }).catch(()=>{});
   }
@@ -2142,10 +2208,8 @@ window.closeGameVault = function() {
   vault.style.display='none';
   setActivity('site');
   const frame = document.getElementById('game-frame');
-  // Revoke blob URL to free memory immediately
   if(frame._blobURL) { URL.revokeObjectURL(frame._blobURL); frame._blobURL = null; }
   frame.src='about:blank';
-  document.body.classList.remove('game-cursor-hidden');
 };
 window.fullscreenGame = function() {
   const frame = document.getElementById('game-frame');
@@ -2158,7 +2222,6 @@ window._openProfile = function(uid) {
   openProfileModal(uid, currentUserData);
 };
 
-// ── Open DM with uid (called from profile modal) ──
 window._openDMWithUid = async function(uid) {
   let other = _userCache[uid];
   if(!other) {
@@ -2179,7 +2242,6 @@ function boot() {
   setupDMInput();
 
   onAuthStateChanged(auth, async user => {
-    // Skip if signup is still writing the Firestore doc — signup handler calls initApp directly
     if(_pendingSignup) return;
     if(user) await initApp(user);
     else showAuth();

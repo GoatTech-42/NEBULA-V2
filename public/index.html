@@ -1,851 +1,674 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-3DNSV0WCYG"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>American Founding Era — Nebula Historical Society</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=IM+Fell+English:ital@0;1&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap');
 
-  gtag('config', 'G-3DNSV0WCYG');
-</script>
-    <meta charset="UTF-8">
-    <title>ERROR: EVERYTHING IS FINE</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@700&display=swap');
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --p:#f5ecda;--pd:#e9d5ae;--pm:#f0e1c0;--ink:#18110a;--inkl:#3a2a1c;
+  --inkf:#6a4b34;--sep:#8b6812;--sepl:#c4993a;--rs:#7a1818;
+  --bdr:#58391a;--sh:rgba(24,17,8,.16);
+  --h:100%;
+}
+html,body{height:var(--h);overflow:hidden}
+body{background:#16090200;font-family:'Crimson Text',Georgia,serif;color:var(--ink);display:flex;flex-direction:column;background:#190d04}
 
-        * { box-sizing: border-box; }
+/* ── Outer chrome ── */
+.win{flex:1;display:flex;flex-direction:column;overflow:hidden;padding:9px}
+.win-bar{background:#28150800;border-radius:9px 9px 0 0;border:1px solid var(--bdr);border-bottom:none;padding:6px 12px;display:flex;align-items:center;gap:9px;flex-shrink:0;background:#241100}
+.win-dots{display:flex;gap:5px}
+.win-dot{width:11px;height:11px;border-radius:50%}
+.wd-r{background:#ff5f57}.wd-y{background:#ffbd2e}.wd-g{background:#28c840}
+.win-url{flex:1;background:#1a0a00;border:1px solid var(--bdr);border-radius:4px;padding:3px 10px;font-size:.68rem;color:var(--sepl, #c4993a);font-family:monospace;letter-spacing:.3px}
+.win-body{flex:1;border:1px solid var(--bdr);border-top:none;border-radius:0 0 8px 8px;overflow:hidden;display:flex;flex-direction:column}
 
-        html {
-            cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Ctext y='24' font-size='24'%3E💀%3C/text%3E%3C/svg%3E") 16 16, auto;
-        }
+/* ── Site layout ── */
+.site{flex:1;display:flex;overflow:hidden}
 
-        body {
-            background-color: #cc00cc;
-            color: #00ff00;
-            font-family: "Comic Sans MS", "Comic Neue", cursive;
-            overflow-x: hidden;
-            margin: 0;
-            padding: 0;
-            min-height: 100vh;
-        }
+/* Sidebar */
+.sb{width:215px;flex-shrink:0;background:var(--pd);border-right:2px solid var(--bdr);display:flex;flex-direction:column;overflow:hidden}
+.sb-brand{padding:1.1rem 1rem .9rem;border-bottom:1px solid var(--bdr);text-align:center}
+.sb-brand-name{font-family:'Playfair Display',serif;font-size:.95rem;font-weight:900;color:var(--ink);line-height:1.18;margin-bottom:.15rem}
+.sb-brand-tag{font-size:.58rem;letter-spacing:1.8px;text-transform:uppercase;color:var(--sep)}
+.sb-nav{flex:1;overflow-y:auto;padding:.5rem 0}
+.sb-nav::-webkit-scrollbar{width:0}
+.sb-sec{font-size:.55rem;letter-spacing:2.2px;text-transform:uppercase;color:var(--sep);padding:.55rem 1rem .2rem;font-family:'IM Fell English',serif}
+.sb-item{display:flex;align-items:center;gap:.4rem;padding:.46rem 1rem;cursor:pointer;font-size:.86rem;color:var(--inkl);transition:background .12s,color .12s;border-left:3px solid transparent;line-height:1.3;user-select:none}
+.sb-item:hover{background:var(--pm);color:var(--ink)}
+.sb-item.on{background:var(--p);color:var(--rs);border-left-color:var(--rs);font-weight:600}
+.sb-item svg{flex-shrink:0;opacity:.65;transition:opacity .12s}
+.sb-item.on svg,.sb-item:hover svg{opacity:1}
+.sb-foot{padding:.65rem .9rem;border-top:1px solid var(--bdr);font-size:.6rem;font-style:italic;color:var(--inkf);line-height:1.55}
 
-        /* CRT scanlines — static, no flash */
-        .overlay {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: repeating-linear-gradient(
-                0deg,
-                rgba(0,0,0,0.07),
-                rgba(0,0,0,0.07) 1px,
-                transparent 1px,
-                transparent 3px
-            );
-            pointer-events: none;
-            z-index: 9999;
-        }
+/* Main */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--p)}
+.topbar{height:38px;flex-shrink:0;background:var(--pd);border-bottom:1px solid var(--bdr);display:flex;align-items:center;padding:0 1.2rem;gap:.45rem}
+.bc{font-size:.75rem;color:var(--inkf);display:flex;align-items:center;gap:.28rem}
+.bc .link{color:var(--rs);cursor:pointer}
+.bc .link:hover{text-decoration:underline}
+.bc .sep2{color:var(--sepl)}
 
-        /* Rainbow bar — slow slide */
-        .rainbow-bar {
-            width: 100%;
-            height: 10px;
-            background: linear-gradient(90deg, red, orange, yellow, green, blue, violet, red);
-            background-size: 200% 100%;
-            animation: barSlide 2s linear infinite;
-        }
-        @keyframes barSlide {
-            from { background-position: 0% 0; }
-            to   { background-position: 200% 0; }
-        }
+/* Pages */
+.pages{flex:1;overflow:hidden;position:relative}
+.pg{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;display:none}
+.pg.on{display:block}
+.pg::-webkit-scrollbar{width:5px}
+.pg::-webkit-scrollbar-thumb{background:var(--bdr);border-radius:3px}
+.pi{max-width:780px;margin:0 auto;padding:1.8rem 2.2rem 5rem}
 
-        /* Marquees */
-        marquee { font-weight: bold; }
-        marquee.top-marq  { font-size:26px; background:#111;     color:lime;   border:8px dashed yellow; }
-        marquee.mid-marq  { font-size:20px; background:navy;     color:yellow; border:6px dashed cyan; }
-        marquee.bot-marq  { font-size:18px; background:darkred;  color:white;  border:6px dashed orange; }
-        marquee.inner-marq1 { font-size:16px; background:black; color:lime;   border:none; }
-        marquee.inner-marq2 { font-size:14px; background:black; color:orange; border:none; }
-        marquee.inner-marq3 { font-size:13px; background:black; color:cyan;   border:none; }
+/* ── HOME ── */
+.hm{text-align:center;padding:1.8rem 1rem 1.4rem;border-bottom:2px solid var(--pd);margin-bottom:1.6rem;position:relative}
+.hm::before,.hm::after{content:'✦';position:absolute;top:1.8rem;color:var(--sepl);font-size:.85rem}
+.hm::before{left:0}.hm::after{right:0}
+.hm-org{font-family:'IM Fell English',serif;font-size:.67rem;letter-spacing:3px;text-transform:uppercase;color:var(--sep);margin-bottom:.5rem}
+.hm-title{font-family:'Playfair Display',serif;font-size:2rem;font-weight:900;color:var(--ink);line-height:1.12;margin-bottom:.3rem}
+.hm-sub{font-size:.92rem;font-style:italic;color:var(--inkf);margin-bottom:.9rem}
+.hm-rule{display:flex;align-items:center;gap:.55rem}
+.hm-rule::before,.hm-rule::after{content:'';flex:1;height:1px;background:var(--bdr)}
+.hm-rule span{color:var(--sep);font-size:.82rem}
 
-        /* Glitch text — slow enough, not strobing */
-        .glitch-container {
-            position: relative;
-            width: 100%;
-            text-align: center;
-            padding: 10px 0;
-        }
+.hm-intro{font-size:.95rem;line-height:1.78;color:var(--inkl);text-align:justify;hyphens:auto;margin-bottom:1.4rem}
 
-        .spam {
-            font-size: 52px;
-            font-weight: bold;
-            text-transform: uppercase;
-            text-shadow: 4px 4px 0 red, -4px -4px 0 blue, 8px 0 yellow;
-            display: inline-block;
-            animation: spamWobble 1.3s ease-in-out infinite alternate;
-        }
-        @keyframes spamWobble {
-            from { transform: skew(-3deg) scale(1); }
-            to   { transform: skew(3deg) scale(1.05); }
-        }
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin-bottom:.4rem}
+.card{background:var(--pm);border:1.5px solid var(--bdr);border-radius:2px;padding:.95rem 1.05rem;cursor:pointer;transition:background .13s,border-color .13s,transform .17s;display:flex;flex-direction:column;gap:.22rem}
+.card:hover{background:var(--p);border-color:var(--rs);transform:translateY(-2px)}
+.card.w{grid-column:1/-1}
+.cn{font-size:.57rem;letter-spacing:2px;text-transform:uppercase;color:var(--sep);font-family:'IM Fell English',serif}
+.ct{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:var(--ink);line-height:1.22}
+.cd{font-size:.8rem;color:var(--inkf);font-style:italic;line-height:1.42;margin-top:.08rem}
+.ca{margin-top:.3rem;font-size:.73rem;color:var(--rs);font-weight:600}
 
-        .spin-text {
-            font-size: 40px; font-weight: bold; color: yellow;
-            text-shadow: 3px 3px magenta;
-            animation: spin3d 2s linear infinite;
-            display: inline-block;
-        }
-        @keyframes spin3d { from { transform: rotateY(0deg); } to { transform: rotateY(360deg); } }
+/* ── ARTICLE ── */
+.ah{margin-bottom:1.2rem;border-bottom:1.5px solid var(--pd);padding-bottom:.95rem}
+.an{font-size:.59rem;letter-spacing:2.5px;text-transform:uppercase;color:var(--sep);font-family:'IM Fell English',serif;margin-bottom:.28rem}
+.at{font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:700;color:var(--ink);line-height:1.2;margin-bottom:.22rem}
+.aby{font-size:.77rem;font-style:italic;color:var(--inkf)}
 
-        .bounce-text {
-            font-size: 30px; color: cyan; display: inline-block;
-            animation: bounce 0.8s ease infinite alternate;
-        }
-        @keyframes bounce {
-            from { transform: translateY(0); }
-            to   { transform: translateY(-16px) rotate(5deg); }
-        }
+.ab p{font-size:.99rem;line-height:1.9;color:var(--inkl);text-align:justify;hyphens:auto;margin-bottom:.82rem}
+.ab p:first-of-type::first-letter{font-family:'Playfair Display',serif;font-size:2.9rem;font-weight:900;float:left;line-height:.82;margin:.04rem .1rem -.04rem 0;color:var(--ink)}
 
-        .zigzag-text {
-            font-size: 28px; font-weight: bold; color: orange; display: inline-block;
-            animation: zigzag 0.7s ease infinite alternate;
-        }
-        @keyframes zigzag {
-            from { transform: translateX(-15px); }
-            to   { transform: translateX(15px); }
-        }
+.pq{border-left:4px solid var(--sepl);margin:.2rem 0 .82rem;padding:.6rem 1.1rem;background:rgba(139,104,18,.055)}
+.pq p{font-style:italic;font-size:.98rem!important;color:var(--inkf)!important;text-align:left!important;margin-bottom:.12rem!important}
+.pq p::first-letter{all:unset!important}
+.pq cite{display:block;font-size:.72rem;color:var(--sep);font-style:normal}
 
-        /* Main content */
-        .main-content { margin-top: 10px; padding: 20px; position: relative; }
+.fb{float:right;width:195px;margin:0 0 .9rem 1.25rem;background:var(--pd);border:1.5px solid var(--bdr);padding:.8rem .9rem;clear:right}
+.fbt{font-family:'Playfair Display',serif;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--sep);border-bottom:1px solid var(--bdr);padding-bottom:.3rem;margin-bottom:.42rem}
+.fb p{font-size:.8rem!important;line-height:1.52!important;text-align:left!important;hyphens:none!important;color:var(--inkl)!important;margin-bottom:0!important}
+.fb p::first-letter{all:unset!important}
 
-        h1 {
-            font-size: 58px; text-align: center;
-            animation: wobble 1.5s ease-in-out infinite;
-            text-shadow: 5px 5px 0 blue, 10px 10px 0 red, 15px 15px 0 yellow;
-            color: #00ff00;
-        }
-        @keyframes wobble {
-            0%   { transform: rotate(-2deg) scale(1.05); }
-            50%  { transform: rotate(2deg) scale(0.97); }
-            100% { transform: rotate(-2deg) scale(1.05); }
-        }
+.sdiv{text-align:center;margin:.2rem 0 .82rem;color:var(--sepl);font-size:.83rem;letter-spacing:4px}
+.cf::after{content:'';display:table;clear:both}
 
-        p.body-text {
-            font-size: 20px; line-height: 1.6;
-            background: rgba(0,0,0,0.5); padding: 15px;
-            border: 5px double yellow; color: white;
-        }
+.tl{margin:.2rem 0 .82rem;border-left:2px solid var(--sepl);padding-left:1.2rem}
+.tli{margin-bottom:.6rem;position:relative}
+.tli::before{content:'';position:absolute;left:-1.46rem;top:.37rem;width:8px;height:8px;border-radius:50%;background:var(--sepl);border:2px solid var(--p)}
+.tly{font-family:'IM Fell English',serif;font-size:.68rem;letter-spacing:1.2px;text-transform:uppercase;color:var(--sep);margin-bottom:.07rem}
+.tlt{font-size:.84rem;line-height:1.58;color:var(--inkl)}
 
-        /* Elusive button */
-        #elusive-button {
-            position: fixed; padding: 18px 28px;
-            background: blue; color: white; font-size: 20px;
-            font-family: "Comic Sans MS", cursive; font-weight: bold;
-            border: 6px outset cyan; z-index: 10000; cursor: pointer;
-            animation: buttonPulse 1.5s ease infinite alternate;
-            transition: left 0.08s, top 0.08s;
-        }
-        @keyframes buttonPulse {
-            from { background: blue; transform: scale(1); box-shadow: 0 0 15px cyan; }
-            to   { background: #6600cc; transform: scale(1.08); box-shadow: 0 0 30px yellow; }
-        }
+.h3{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:var(--ink);margin:1rem 0 .5rem;border-bottom:1px solid var(--pd);padding-bottom:.3rem}
 
-        /* Win95 popups */
-        .popup {
-            position: fixed; background: #c0c0c0;
-            border: 3px outset white; padding: 0; z-index: 5000;
-            font-family: "Comic Sans MS", cursive;
-            min-width: 290px; max-width: 380px;
-            box-shadow: 5px 5px 0 black;
-            animation: popIn 0.15s ease-out;
-        }
-        @keyframes popIn { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        .popup-title {
-            background: linear-gradient(90deg, navy, #0055ff);
-            color: white; padding: 4px 8px; font-size: 13px; font-weight: bold;
-            display: flex; justify-content: space-between; align-items: center; user-select: none;
-        }
-        .popup-title .close-btn {
-            background: #c0c0c0; border: 2px outset white; color: black;
-            font-weight: bold; cursor: pointer; padding: 1px 6px; font-size: 12px; line-height: 1.2;
-        }
-        .popup-title .close-btn:hover { background: red; color: white; }
-        .popup-body { padding: 14px; font-size: 13px; text-align: center; color: black; }
-        .popup-body .popup-icon { font-size: 32px; margin-bottom: 8px; display: block; }
-        .popup-btn {
-            background: #c0c0c0; border: 2px outset white; padding: 4px 14px;
-            font-size: 13px; cursor: pointer; margin: 4px 3px;
-            font-family: "Comic Sans MS", cursive; white-space: nowrap;
-        }
-        .popup-btn:active { border-style: inset; }
-        .popup-btn:hover { background: #a0d0ff; }
+/* ── LOUISIANA nested page ── */
+.lp-wrap{margin:1.5rem 0 .9rem;border:2px solid var(--bdr);border-radius:3px;overflow:hidden;box-shadow:0 4px 16px var(--sh)}
+.lp-bar{background:#241100;padding:5px 11px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--bdr)}
+.lp-dots{display:flex;gap:4px}
+.lp-dot{width:9px;height:9px;border-radius:50%}
+.lpd-r{background:#ff5f57}.lpd-y{background:#ffbd2e}.lpd-g{background:#28c840}
+.lp-url{flex:1;background:#1a0a00;border:1px solid var(--bdr);border-radius:3px;padding:2px 8px;font-size:.63rem;color:#c4993a;font-family:monospace}
 
-        /* Text rain */
-        #text-rain-container {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            pointer-events: none; overflow: hidden; z-index: 1;
-        }
-        .rain-word {
-            position: absolute; font-weight: bold;
-            font-family: "Comic Sans MS", cursive;
-            animation: fall linear infinite; white-space: nowrap; opacity: 0.85;
-        }
-        @keyframes fall {
-            from { transform: translateY(-60px); opacity: 0.9; }
-            to   { transform: translateY(110vh); opacity: 0.4; }
-        }
+.lp-pg{height:440px;overflow-y:auto;overflow-x:hidden;background:#f8f1de;position:relative}
+.lp-pg::-webkit-scrollbar{width:4px}
+.lp-pg::-webkit-scrollbar-thumb{background:var(--bdr)}
 
-        /* Congrats zone */
-        .congrats-zone {
-            background: black; color: #ffcc00; border: 8px solid red;
-            padding: 18px; text-align: center; font-size: 26px;
-            margin: 15px; position: relative; overflow: hidden;
-            animation: congrBorder 2s ease infinite alternate;
-        }
-        @keyframes congrBorder {
-            from { border-color: red; color: #ffcc00; }
-            to   { border-color: lime; color: white; }
-        }
+.lp-cnt{padding:1.5rem 1.7rem 1.8rem;font-family:'Crimson Text',Georgia,serif}
+.lp-h{font-family:'Playfair Display',serif;font-size:1.35rem;font-weight:700;color:var(--ink);margin-bottom:.18rem;line-height:1.2}
+.lp-s{font-size:.74rem;font-style:italic;color:var(--inkf);margin-bottom:.85rem;border-bottom:1px solid var(--pd);padding-bottom:.6rem}
+.lp-cnt p{font-size:.93rem;line-height:1.84;color:var(--inkl);text-align:justify;hyphens:auto;margin-bottom:.72rem}
+.lp-cnt p:first-of-type::first-letter{font-family:'Playfair Display',serif;font-size:2.6rem;font-weight:900;float:left;line-height:.82;margin:.04rem .1rem 0 0;color:var(--ink)}
+.lp-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin:.65rem 0 .8rem;background:var(--pd);border:1px solid var(--bdr);padding:.7rem .8rem}
+.lp-gi{font-size:.77rem;color:var(--inkl);line-height:1.38}
+.lp-gi strong{color:var(--ink);font-size:.74rem;display:block;font-family:'IM Fell English',serif;letter-spacing:.3px}
+.lp-q{border-left:3px solid var(--sepl);margin:.25rem 0 .7rem;padding:.5rem .95rem;background:rgba(139,104,18,.055)}
+.lp-q p{font-style:italic;font-size:.88rem!important;margin-bottom:0!important;text-align:left!important}
+.lp-q p::first-letter{all:unset!important}
+.lp-q cite{display:block;font-size:.68rem;color:var(--sep);margin-top:.22rem;font-style:normal}
+.lp-tl{margin:.2rem 0 .7rem;border-left:2px solid var(--sepl);padding-left:1.1rem}
+.lp-tli{margin-bottom:.55rem;position:relative}
+.lp-tli::before{content:'';position:absolute;left:-1.38rem;top:.35rem;width:8px;height:8px;border-radius:50%;background:var(--sepl);border:2px solid #f8f1de}
+.lp-tly{font-family:'IM Fell English',serif;font-size:.66rem;letter-spacing:1.1px;text-transform:uppercase;color:var(--sep);margin-bottom:.06rem}
+.lp-tlt{font-size:.83rem;line-height:1.56;color:var(--inkl)}
+.lp-h3{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:var(--ink);margin:.8rem 0 .4rem;border-bottom:1px solid rgba(139,104,18,.2);padding-bottom:.25rem}
 
-        /* Visitor counter */
-        .visitor-counter {
-            font-size: 16px; text-align: center; color: yellow;
-            padding: 6px; letter-spacing: 2px; font-weight: bold;
-        }
+/* ── Konami overlay — inside lp-pg ── */
+#ko{display:none;position:absolute;inset:0;z-index:50;background:rgba(5,2,0,.95);align-items:center;justify-content:center;flex-direction:column;animation:fi .3s ease}
+#ko.on{display:flex}
+.ko-box{text-align:center;padding:1.1rem 1.4rem;animation:fu .4s cubic-bezier(.16,1,.3,1)}
+.ko-t{font-family:'Playfair Display',serif;font-size:1.22rem;font-weight:900;color:#4fc9ea;margin-bottom:.28rem}
+.ko-s{font-size:.78rem;color:rgba(220,235,244,.48);margin-bottom:1.1rem;font-style:italic;line-height:1.65;max-width:310px;margin-left:auto;margin-right:auto}
+.ko-btns{display:flex;gap:.6rem;justify-content:center;flex-wrap:wrap}
+.ko-btn{padding:.48rem 1.25rem;border-radius:6px;font-size:.78rem;font-weight:700;cursor:pointer;font-family:'Crimson Text',serif;text-decoration:none;display:inline-block;transition:all .15s;border:1px solid transparent}
+.ko-p{background:#4fc9ea;color:#020d1a}
+.ko-p:hover{background:#66e0ff;transform:translateY(-2px)}
+.ko-g{background:transparent;color:rgba(220,235,244,.6);border-color:rgba(79,201,234,.3)}
+.ko-g:hover{border-color:rgba(79,201,234,.6);color:#4fc9ea}
 
-        /* Spin zone */
-        .spin-zone {
-            display: flex; justify-content: center;
-            gap: 18px; flex-wrap: wrap; margin: 8px 0;
-        }
-        .rotating-img { font-size: 48px; animation: rotateIcon 2s linear infinite; display: inline-block; }
-        @keyframes rotateIcon { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        .ping-pong { font-size: 48px; animation: pingpong 0.9s ease infinite alternate; display: inline-block; }
-        @keyframes pingpong {
-            from { transform: translateX(-25px) scale(0.85); }
-            to   { transform: translateX(25px) scale(1.2); }
-        }
-        .float-icon { font-size: 48px; animation: floatUp 1.2s ease infinite alternate; display: inline-block; }
-        @keyframes floatUp {
-            from { transform: translateY(0); }
-            to   { transform: translateY(-18px); }
-        }
+@keyframes fi{from{opacity:0}to{opacity:1}}
+@keyframes fu{from{opacity:0;transform:translateY(13px)}to{opacity:1;transform:translateY(0)}}
 
-        /* Spam text */
-        .spam-text-block {
-            font-size: 9px; color: rgba(255,255,255,0.3);
-            line-height: 1.4; padding: 10px; letter-spacing: 3px; font-weight: bold;
-        }
-
-        /* Cursor canvas */
-        #cursor-canvas {
-            position: fixed; top: 0; left: 0;
-            width: 100%; height: 100%;
-            pointer-events: none; z-index: 9998;
-        }
-
-        /* Explosion */
-        .explosion {
-            position: fixed; pointer-events: none; font-size: 38px; z-index: 9997;
-            animation: explode 0.7s ease-out forwards;
-        }
-        @keyframes explode {
-            0%   { transform: scale(0.3) rotate(0deg); opacity: 1; }
-            60%  { transform: scale(2.2) rotate(30deg); opacity: 1; }
-            100% { transform: scale(3.5) rotate(60deg); opacity: 0; }
-        }
-
-        /* Gentle shake */
-        .shake-me { animation: shake 2s ease infinite; }
-        @keyframes shake {
-            0%,100% { transform: translate(0,0) rotate(0deg); }
-            10% { transform: translate(-2px,-1px) rotate(-0.5deg); }
-            20% { transform: translate(2px,1px) rotate(0.5deg); }
-            30% { transform: translate(-1px,2px) rotate(-0.3deg); }
-            40% { transform: translate(1px,-1px) rotate(0.4deg); }
-            50% { transform: translate(-2px,1px) rotate(-0.5deg); }
-            60% { transform: translate(2px,-2px) rotate(0.3deg); }
-            70% { transform: translate(-1px,1px) rotate(-0.4deg); }
-            80% { transform: translate(1px,2px) rotate(0.5deg); }
-            90% { transform: translate(-2px,-1px) rotate(-0.3deg); }
-        }
-
-        /* Bottom ticker */
-        .ticker-wrap {
-            position: fixed; bottom: 0; left: 0; width: 100%;
-            background: black; border-top: 3px solid red;
-            overflow: hidden; z-index: 9990; padding: 4px 0;
-        }
-        .ticker-inner {
-            display: inline-block; white-space: nowrap;
-            animation: tickerScroll 22s linear infinite;
-            font-size: 16px; color: lime; font-weight: bold;
-        }
-        @keyframes tickerScroll {
-            from { transform: translateX(100vw); }
-            to   { transform: translateX(-100%); }
-        }
-
-        /* Floating ad */
-        .float-ad {
-            position: fixed; border: 4px solid red;
-            padding: 10px 14px; font-size: 14px; font-weight: bold;
-            color: black; font-family: "Comic Sans MS", cursive;
-            cursor: pointer; z-index: 6000; box-shadow: 4px 4px 0 black;
-            animation: adBob 2s ease infinite alternate;
-            max-width: 200px; text-align: center;
-        }
-        @keyframes adBob {
-            from { transform: rotate(-2deg) scale(1); }
-            to   { transform: rotate(2deg) scale(1.05); }
-        }
-        .float-ad .ad-close {
-            position: absolute; top: -8px; right: -8px;
-            background: red; color: white; border-radius: 50%;
-            width: 20px; height: 20px; font-size: 12px;
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer; border: 2px solid black; font-weight: bold;
-        }
-
-        /* Progress bar */
-        .fake-progress-wrap {
-            background: #333; border: 3px inset #888;
-            height: 28px; margin: 10px 20px; position: relative; overflow: hidden;
-        }
-        .fake-progress-bar {
-            height: 100%;
-            background: linear-gradient(90deg, lime, yellow, lime);
-            background-size: 200%;
-            animation: progressAnim 1.5s linear infinite;
-            transition: width 0.8s ease;
-        }
-        @keyframes progressAnim { from { background-position: 0%; } to { background-position: 200%; } }
-        .fake-progress-label {
-            position: absolute; top: 50%; left: 50%;
-            transform: translate(-50%,-50%);
-            color: black; font-weight: bold; font-size: 14px;
-            font-family: "Comic Sans MS", cursive;
-            mix-blend-mode: difference; filter: invert(1);
-        }
-
-        /* Side banners */
-        .side-banner {
-            position: fixed; top: 50%; writing-mode: vertical-rl;
-            transform: translateY(-50%); background: black; color: yellow;
-            font-size: 13px; font-weight: bold; padding: 10px 6px;
-            border: 3px solid lime; z-index: 8000; letter-spacing: 2px;
-            animation: sidePulse 1.8s ease infinite alternate;
-        }
-        .side-banner.left  { left: 0; border-left: none; }
-        .side-banner.right { right: 0; border-right: none; }
-        @keyframes sidePulse {
-            from { background: black; color: yellow; }
-            to   { background: #003300; color: lime; }
-        }
-
-        /* Divider */
-        .divider {
-            height: 8px;
-            background: repeating-linear-gradient(90deg, red 0,red 20px,yellow 20px,yellow 40px,blue 40px,blue 60px,lime 60px,lime 80px);
-            margin: 8px 0;
-        }
-
-        /* Safe blink */
-        .blink-safe { animation: blinkSafe 1s step-end infinite; }
-        @keyframes blinkSafe { 0%,100% { opacity:1; } 50% { opacity:0; } }
-
-        /* Notif badge */
-        .notif-badge {
-            display: inline-block; background: red; color: white;
-            border-radius: 50%; padding: 2px 7px; font-size: 13px; font-weight: bold;
-            animation: badgePop 0.8s ease infinite alternate; margin-left: 4px;
-        }
-        @keyframes badgePop { from { transform: scale(1); } to { transform: scale(1.3); } }
-
-        /* Typewriter */
-        .typewriter-line {
-            font-size: 18px; color: lime; overflow: hidden;
-            white-space: nowrap; border-right: 3px solid lime;
-            font-weight: bold; padding: 4px 8px; min-height: 28px;
-        }
-
-        /* Inline ad zone */
-        #ad-zone { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin: 10px 0; }
-
-        .bottom-pad { padding-bottom: 45px; }
-    </style>
+/* responsive */
+@media(max-width:680px){
+  .sb{display:none}
+  .cards{grid-template-columns:1fr}
+  .fb{float:none;width:100%;margin:0 0 .8rem 0}
+  .lp-pg{height:360px}
+  .lp-grid{grid-template-columns:1fr}
+  .pi{padding:1.1rem .95rem 3rem}
+}
+</style>
 </head>
 <body>
-<canvas id="cursor-canvas"></canvas>
-<div class="overlay"></div>
-<div id="text-rain-container"></div>
 
-<!-- Side banners -->
-<div class="side-banner left">🌀 <a onclick="openMainInBlank()" style="color:inherit;text-decoration:none;cursor:url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2232%22 height=%2232%22%3E%3Ctext y=%2224%22 font-size=%2224%22%3E💀%3C/text%3E%3C/svg%3E') 16 16, auto;">DANGER ZONE</a> 🌀 probably fine 🌀 do not worry 🌀 nothing here 🌀 keep scrolling 🌀</div>
-<div class="side-banner right">👁️ we see you 👁️ hi 👁️ how are you 👁️ that's good 👁️ anyway 👁️ carry on 👁️</div>
+<div class="win">
+  <div class="win-bar">
+    <div class="win-dots"><div class="win-dot wd-r"></div><div class="win-dot wd-y"></div><div class="win-dot wd-g"></div></div>
+    <div class="win-url" id="urlbar">nebula-historians.edu/american-history</div>
+  </div>
+  <div class="win-body">
+    <div class="site">
 
-<!-- Bottom ticker -->
-<div class="ticker-wrap">
-    <div class="ticker-inner">
-        🖥️ your computer asked me to tell you it's tired &nbsp;|&nbsp; 🧦 one of your socks is slightly off-center &nbsp;|&nbsp; 📞 an unknown caller has been calling since 2004, they haven't left a message &nbsp;|&nbsp; 🌀 your WinRAR trial expired before you were born &nbsp;|&nbsp; 🐈 local cat seen hovering 3 inches off the ground. officials baffled &nbsp;|&nbsp; ☕ the coffee you made this morning is still out there. thinking about you &nbsp;|&nbsp; 💾 downloading more ram: eta unknown &nbsp;|&nbsp; 🤔 system32 has been deleted but it seems fine actually &nbsp;|&nbsp; 🍕 a pizza has been ordered to your address. you did not order a pizza &nbsp;|&nbsp; 📺 your screen is ON. very suspicious &nbsp;|&nbsp; 🧠 scanning for thoughts... found 3. two were yours &nbsp;&nbsp;&nbsp;
-    </div>
-</div>
+      <!-- SIDEBAR -->
+      <aside class="sb">
+        <div class="sb-brand">
+          <div class="sb-brand-name">Nebula Historical Society</div>
+          <div class="sb-brand-tag">American Founding Era</div>
+        </div>
+        <nav class="sb-nav">
+          <div class="sb-sec">Main</div>
+          <div class="sb-item on" data-p="home" onclick="go('home')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Overview
+          </div>
+          <div class="sb-sec">Articles</div>
+          <div class="sb-item" data-p="exploration" onclick="go('exploration')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>Early Exploration
+          </div>
+          <div class="sb-item" data-p="revolution" onclick="go('revolution')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.657 16.243l-1.414-1.414"/><path d="M2 12h3"/><path d="M19 12h3"/><path d="M12 2v3"/><path d="M12 19v3"/><circle cx="12" cy="12" r="7"/><path d="M9 9l1.5 1.5M13.5 13.5L15 15"/></svg>The Revolution
+          </div>
+          <div class="sb-item" data-p="declaration" onclick="go('declaration')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>Declaration, 1776
+          </div>
+          <div class="sb-item" data-p="constitution" onclick="go('constitution')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>The Constitution
+          </div>
+          <div class="sb-item" data-p="louisiana" onclick="go('louisiana')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h18v18H3z"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>Louisiana Purchase
+          </div>
+          <div class="sb-item" data-p="westward" onclick="go('westward')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"/></svg>Westward Expansion
+          </div>
+          <div class="sb-sec">Resources</div>
+          <div class="sb-item" data-p="primary" onclick="go('primary')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>Primary Sources
+          </div>
+          <div class="sb-item" data-p="figures" onclick="go('figures')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>Key Figures
+          </div>
+        </nav>
+        <div class="sb-foot">Nebula Historical Society · Vol. III · Educational Resource · All sources peer-reviewed</div>
+      </aside>
 
-<div class="rainbow-bar"></div>
-<div class="rainbow-bar" style="animation-delay:-1s; transform:scaleX(-1);"></div>
+      <!-- MAIN -->
+      <main class="main">
+        <div class="topbar">
+          <div class="bc" id="bc"><span>Home</span></div>
+        </div>
+        <div class="pages">
 
-<marquee class="top-marq" scrollamount="22">🚨 congratulations on having a screen 🚨 your mouse just moved and we clocked it 🚨 the Wi-Fi is stronger near the ceiling, please climb up there 🚨 you have been visited by the webpage 🚨 please do not read this marquee 🚨 okay you can read it a little 🚨 we are legally obligated to tell you this is a marquee 🚨</marquee>
+          <!-- HOME -->
+          <div class="pg on" id="pg-home">
+            <div class="pi">
+              <div class="hm">
+                <div class="hm-org">Nebula Historical Society — Digital Archive</div>
+                <h1 class="hm-title">The American Founding Era</h1>
+                <p class="hm-sub">Exploration, Revolution, and the Construction of a Republic, 1492–1850</p>
+                <div class="hm-rule"><span>⚜</span></div>
+              </div>
+              <p class="hm-intro">This archive presents a comprehensive survey of the formative period of American history, from the first European contact with the North American continent through the era of continental expansion. Drawing on primary sources, contemporary scholarship, and archival records held at the Nebula Historical Society, these articles are intended for students, educators, and readers seeking a rigorous but accessible account of the events that shaped the United States. Each article is accompanied by key dates, primary source excerpts, and analytical commentary situating events in their broader historical context.</p>
+              <div class="cards">
+                <div class="card w" onclick="go('exploration')">
+                  <div class="cn">Article I</div>
+                  <div class="ct">Early European Exploration of North America, 1492–1607</div>
+                  <div class="cd">From Columbus's landfall in the Caribbean through the establishment of Jamestown — the century of contact that irrevocably transformed two hemispheres and laid the groundwork for European colonization.</div>
+                  <div class="ca">Read article →</div>
+                </div>
+                <div class="card" onclick="go('revolution')">
+                  <div class="cn">Article II</div>
+                  <div class="ct">The Road to Revolution, 1763–1776</div>
+                  <div class="cd">Thirteen years of escalating conflict between Britain and its American colonies, from the end of the Seven Years' War to the first shots at Lexington and Concord.</div>
+                  <div class="ca">Read article →</div>
+                </div>
+                <div class="card" onclick="go('declaration')">
+                  <div class="cn">Article III</div>
+                  <div class="ct">The Declaration of Independence, 1776</div>
+                  <div class="cd">Jefferson's seventeen days and a document that became both the nation's founding promise and the enduring measure of its failures.</div>
+                  <div class="ca">Read article →</div>
+                </div>
+                <div class="card" onclick="go('constitution')">
+                  <div class="cn">Article IV</div>
+                  <div class="ct">The Constitutional Convention, 1787</div>
+                  <div class="cd">Fifty-five men in a sweltering Philadelphia summer — the compromises, conflicts, and political genius that produced America's foundational law.</div>
+                  <div class="ca">Read article →</div>
+                </div>
+                <div class="card" onclick="go('louisiana')">
+                  <div class="cn">Article V</div>
+                  <div class="ct">The Louisiana Purchase, 1803</div>
+                  <div class="cd">How fifteen million dollars, Napoleon's Caribbean catastrophe, and Jefferson's constitutional scruples doubled the size of the United States in a single transaction.</div>
+                  <div class="ca">Read article →</div>
+                </div>
+                <div class="card" onclick="go('westward')">
+                  <div class="cn">Article VI</div>
+                  <div class="ct">Westward Expansion and Manifest Destiny, 1803–1850</div>
+                  <div class="cd">The ideology of continental empire, the cost paid by Indigenous peoples and the enslaved, and the geographic transformation of the young Republic.</div>
+                  <div class="ca">Read article →</div>
+                </div>
+                <div class="card" onclick="go('primary')">
+                  <div class="cn">Reference</div>
+                  <div class="ct">Primary Sources and Further Reading</div>
+                  <div class="cd">A curated guide to essential documents, edited collections, and scholarly works for deeper study of the founding era.</div>
+                  <div class="ca">View sources →</div>
+                </div>
+                <div class="card" onclick="go('figures')">
+                  <div class="cn">Reference</div>
+                  <div class="ct">Key Figures of the Founding Era</div>
+                  <div class="cd">Biographical summaries of the statesmen, soldiers, thinkers, and often-overlooked individuals who shaped the Republic's earliest decades.</div>
+                  <div class="ca">View figures →</div>
+                </div>
+              </div>
+            </div>
+          </div>
 
-<div class="glitch-container">
-    <p class="spam">⚠️ something is definitely happening ⚠️</p>
-    <p class="spam" style="color:cyan; margin-left:30px;">🔄 have you tried restarting your life 🔄</p>
-    <p class="spam" style="color:yellow; margin-top:6px;">💾 LOADING... <span id="loading-pct">999</span>% 💾</p>
-    <div style="margin-top:8px;"><span class="spin-text">🌀 almost there buddy 🌀</span></div>
-    <div style="margin-top:8px;"><span class="bounce-text">your lucky numbers are: 4, 8, 15, 16, 23, 42 (do not use these)</span></div>
-    <div style="margin-top:6px;"><span class="zigzag-text">⏳ estimated time remaining: it's complicated ⏳</span></div>
-</div>
+          <!-- EXPLORATION -->
+          <div class="pg" id="pg-exploration">
+            <div class="pi">
+              <div class="ah">
+                <div class="an">Article I</div>
+                <h2 class="at">Early European Exploration of North America, 1492–1607</h2>
+                <div class="aby">Nebula Historical Society Research Division · Last revised 2024</div>
+              </div>
+              <div class="ab cf">
+                <div class="fb">
+                  <div class="fbt">Chronology</div>
+                  <p><strong>1492</strong> — Columbus reaches the Bahamas<br><br><strong>1497</strong> — Cabot reaches Newfoundland<br><br><strong>1513</strong> — Ponce de León explores Florida<br><br><strong>1519–21</strong> — Cortés conquers the Aztec Empire<br><br><strong>1534–35</strong> — Cartier charts the St. Lawrence<br><br><strong>1539–42</strong> — De Soto expedition crosses the Mississippi<br><br><strong>1585</strong> — Roanoke colony, first English attempt<br><br><strong>1607</strong> — Jamestown established</p>
+                </div>
+                <p>The story of what became the United States begins not with parchment and ink but with the collision of two worlds that had been separated for approximately fifteen thousand years. When Christopher Columbus made landfall at San Salvador in October 1492, sailing under the patronage of the Spanish crown, he initiated a sequence of consequences that neither he nor his sponsors could have anticipated. The land he encountered was no vacant wilderness — North and South America together were home to an estimated fifty to one hundred million people speaking thousands of distinct languages, organized into political structures ranging from small kinship bands to sophisticated urban civilizations that rivaled anything then existing in Europe.</p>
+                <p>Spain moved with extraordinary speed to consolidate its advantage. The Treaty of Tordesillas in 1494 divided the non-European world between Spain and Portugal along a meridian in the Atlantic. Spanish expeditions fanned out across the Caribbean and then the mainland: Vasco Núñez de Balboa crossed the Isthmus of Panama to reach the Pacific in 1513, the same year Juan Ponce de León explored the Florida coast. Hernán Cortés destroyed the Aztec capital of Tenochtitlán between 1519 and 1521, opening the vast silver wealth of Mexico to Spanish extraction. Francisco Pizarro followed in Peru. The scale of wealth flowing back to Castile was unlike anything in European history.</p>
+                <div class="pq">
+                  <p>"They are very gentle and without knowledge of what is evil; nor do they murder or steal. They love their neighbors as themselves, and they have the sweetest talk in the world."</p>
+                  <cite>— Christopher Columbus, describing the Taíno people of the Caribbean, journal entry, 1492</cite>
+                </div>
+                <p>North of Mexico, Spanish explorers found no obvious wealth but conducted important reconnaissance. Hernando de Soto's expedition of 1539–1542 was the most ambitious: entering at Tampa Bay, it cut north through the Appalachians, west to the Mississippi River, and into what is now Arkansas before de Soto died of fever on the river's bank. His men buried him in the river at night to conceal his death from watching Indigenous peoples and retreated south, eventually reaching Mexico overland. Juan Rodríguez Cabrillo sailed the California coast in 1542. Francisco Vásquez de Coronado spent two years, 1540 to 1542, searching the Southwest for the mythical golden cities of Cíbola, reaching as far as present-day Kansas without finding them.</p>
+                <div class="sdiv">· · ·</div>
+                <h3 class="h3">England's Slow Start</h3>
+                <p>England's claim to North America rested legally on the voyages of John Cabot, a Venetian navigator who sailed for Henry VII and reached the North American mainland — likely Newfoundland or Cape Breton — in 1497. The discovery was noted and largely set aside as England dealt with more pressing matters: the Reformation, dynastic instability, and war with Spain. Only in the latter half of the sixteenth century did English interest in North America begin to coalesce into action. Sir Humphrey Gilbert made two unsuccessful voyages; his half-brother Walter Raleigh sponsored the settlement on Roanoke Island off the North Carolina coast in 1585 and again in 1587. When a supply ship returned in 1590 — delayed three years by the war with Spain — the colony had vanished. The only trace was the word CROATOAN carved on a post. The fate of the hundred and seventeen colonists has never been definitively established.</p>
+                <p>Jamestown, founded in May 1607 by the Virginia Company of London, became England's first permanent settlement in North America. Its survival was far from assured. Of the roughly 500 colonists who arrived in the first years, fewer than 60 survived the "starving time" of winter 1609–1610, a catastrophic season of disease, starvation, and conflict with the Powhatan Confederacy. The colony was saved from abandonment only by the fortuitous arrival of a supply fleet. It stabilized after John Rolfe introduced a commercially viable strain of tobacco around 1612, creating the economic model — a single export crop cultivated by unfree labor — that would define the Chesapeake for two centuries and eventually extend across the South.</p>
+                <p>The French established their presence along the St. Lawrence River, following Jacques Cartier's explorations of 1534 and 1535. Unlike the Spanish and English, the French colonial enterprise in North America was built primarily on the fur trade rather than on settlement or mineral extraction. This economic model required Indigenous cooperation and generally produced less immediately violent relationships than those of the other colonial powers — though the fur trade disrupted traditional Indigenous economies, and the diseases that accompanied French traders were as lethal as anywhere else on the continent. Samuel de Champlain founded Quebec in 1608 and spent decades cultivating alliances with the Huron and Algonquin nations, drawing New France into Indigenous political conflicts that shaped the region for a century.</p>
+                <div class="sdiv">· · ·</div>
+                <h3 class="h3">The Columbian Exchange and Its Consequences</h3>
+                <p>The term "Columbian Exchange," coined by historian Alfred Crosby in 1972, describes the transfer of plants, animals, diseases, and people between the Eastern and Western hemispheres that followed 1492. Its effects were transformative in both directions. From the Americas: maize, potatoes, tomatoes, peppers, cacao, tobacco, and quinine changed European diets, agriculture, and medicine. Maize and potatoes in particular enabled significant population growth in Europe and parts of Africa and Asia. From Europe: wheat, sugar cane, cattle, horses, sheep, and pigs transformed American landscapes and economies. The horse, which had gone extinct in North America approximately ten thousand years earlier, was reintroduced by Spanish colonists and within two generations had been acquired by Plains peoples, transforming their cultures into the equestrian societies that European settlers would later encounter and fight.</p>
+                <p>The Columbian Exchange's darkest dimension was epidemic disease. North and South American peoples had no inherited immunity to smallpox, measles, influenza, typhus, or a range of other pathogens common in the Old World. The mortality rates following first contact were catastrophic. Demographic historians estimate that between fifty and ninety percent of the Indigenous population of the Americas died within a century of sustained European contact — a loss of somewhere between 25 and 55 million people. In some regions, depopulation was total within two generations of first European arrival. These deaths remade the landscape: forest regrowth on abandoned agricultural land so extensive that the resulting drawdown of atmospheric carbon dioxide may have contributed to a cooling of the global climate now termed the "Little Ice Age." The emptied lands that European settlers often described as wilderness were not natural but were instead the scarred aftermath of catastrophe.</p>
+              </div>
+            </div>
+          </div>
 
-<div class="fake-progress-wrap">
-    <div class="fake-progress-bar" id="fake-prog" style="width:73%"></div>
-    <div class="fake-progress-label" id="fake-prog-label">FIXING YOUR COMPUTER... 73%</div>
-</div>
+          <!-- REVOLUTION -->
+          <div class="pg" id="pg-revolution">
+            <div class="pi">
+              <div class="ah">
+                <div class="an">Article II</div>
+                <h2 class="at">The Road to Revolution, 1763–1776</h2>
+                <div class="aby">The thirteen years that turned colonial subjects into American citizens</div>
+              </div>
+              <div class="ab cf">
+                <div class="fb">
+                  <div class="fbt">Key Events</div>
+                  <p><strong>1763</strong> — Treaty of Paris ends Seven Years' War; Proclamation of 1763<br><br><strong>1765</strong> — Stamp Act; Sons of Liberty formed<br><br><strong>1770</strong> — Boston Massacre (March 5)<br><br><strong>1773</strong> — Boston Tea Party (Dec. 16)<br><br><strong>1774</strong> — Intolerable Acts; First Continental Congress<br><br><strong>1775</strong> — Lexington &amp; Concord (April 19); Bunker Hill<br><br><strong>1776</strong> — Common Sense published (Jan.); Declaration adopted (July 4)</p>
+                </div>
+                <p>The American Revolution did not begin in 1776. It began in 1763, with the end of the Seven Years' War — a conflict that reshaped the world's geopolitical order and inadvertently created the conditions for American independence. Britain emerged from the war victorious but deeply in debt, having spent colossal sums to defend its North American colonies from French encroachment. The reasonable but fatally mistaken conclusion reached in London was that the colonies ought to contribute to the cost of their own defence. From this premise followed a cascade of taxation and governance decisions that drove thirteen colonies to revolution in little more than a decade.</p>
+                <p>The Stamp Act of 1765, imposing a direct tax on paper goods, was the first British attempt to tax the colonies without their consent. The colonial reaction was immediate and furious. "No taxation without representation" encapsulated the constitutional argument: Parliament, in which the colonies had no seats, had no right to tax them. The Sons of Liberty formed and used intimidation and boycotts to force the Act's repeal in 1766 — but Parliament simultaneously passed the Declaratory Act, asserting its right to tax the colonies "in all cases whatsoever." The precedent question remained unresolved, and subsequent measures — the Townshend Acts, the Tea Act — reignited the conflict each time it seemed to subside.</p>
+                <div class="pq">
+                  <p>"The die is now cast; the colonies must either submit or triumph."</p>
+                  <cite>— King George III, letter to Lord North, September 11, 1774</cite>
+                </div>
+                <p>The Boston Massacre of March 5, 1770, in which British soldiers fired into a crowd killing five civilians, was transformed by colonial propagandists — notably Paul Revere, whose engraving depicted the soldiers firing in orderly formation on helpless victims — into a symbol of British tyranny. The Boston Tea Party of December 16, 1773, organized by the Sons of Liberty, destroyed 342 chests of East India Company tea in Boston Harbor to protest the Tea Act. Britain's response, the Coercive Acts of 1774 (known in the colonies as the Intolerable Acts), closed Boston Harbor, restructured Massachusetts's government, and required colonists to house British troops. Rather than isolating Massachusetts, these measures unified colonial opposition and prompted the convening of the First Continental Congress in September 1774.</p>
+                <p>The war began on April 19, 1775, when British regulars marched from Boston to seize colonial arms stored at Concord. Minutemen met them at Lexington Green; shots were fired — "the shot heard round the world" in Emerson's later phrase — and the running fight back to Boston began. By the time the Second Continental Congress convened in May 1775, the colonies were already at war. Thomas Paine's pamphlet Common Sense, published in January 1776, made the case for independence in plain language accessible to ordinary readers: the monarchy was an absurdity, the British connection a liability, and independence the only rational course. It sold perhaps 500,000 copies in a country of 2.5 million. By the time the Congress voted on independence that summer, public opinion had shifted enough to make the resolution possible.</p>
+              </div>
+            </div>
+          </div>
 
-<div class="spin-zone">
-    <span class="rotating-img">☢️</span>
-    <span class="ping-pong">🏓</span>
-    <span class="rotating-img" style="animation-direction:reverse; animation-duration:1.5s">🌀</span>
-    <span class="float-icon">💥</span>
-    <span class="rotating-img" style="animation-duration:3s">⚙️</span>
-    <span class="ping-pong" style="animation-delay:-0.4s">🎉</span>
-    <span class="rotating-img" style="animation-direction:reverse; animation-duration:0.8s">☣️</span>
-    <span class="float-icon" style="animation-delay:-0.3s">🤡</span>
-    <span class="rotating-img" style="animation-duration:1.2s">💩</span>
-</div>
+          <!-- DECLARATION -->
+          <div class="pg" id="pg-declaration">
+            <div class="pi">
+              <div class="ah">
+                <div class="an">Article III</div>
+                <h2 class="at">The Declaration of Independence, 1776</h2>
+                <div class="aby">Origins, composition, and the enduring significance of the founding document</div>
+              </div>
+              <div class="ab cf">
+                <div class="fb">
+                  <div class="fbt">The Document</div>
+                  <p><strong>Adopted:</strong> July 4, 1776<br><br><strong>Primary author:</strong> Thomas Jefferson (Va.)<br><br><strong>Committee:</strong> Jefferson, Adams, Franklin, Sherman, Livingston<br><br><strong>Signatories:</strong> 56 delegates from 13 colonies<br><br><strong>Oldest signer:</strong> Benjamin Franklin, age 70<br><br><strong>Youngest:</strong> Edward Rutledge, age 26<br><br><strong>Current location:</strong> National Archives, Washington D.C.</p>
+                </div>
+                <p>By the summer of 1776, events had overtaken politics. The Continental Army was in the field; British troops occupied Boston before being expelled, and now threatened New York. Richard Henry Lee of Virginia moved on June 7 that the colonies "are, and of right ought to be, free and independent States" — a motion adopted by twelve delegations on July 2 (New York abstaining, then concurring later). But a formal declaration was needed: a document that would justify the action to a watching world and, more practically, help recruit French support for the colonial cause.</p>
+                <p>The Committee of Five — Jefferson, Adams, Franklin, Roger Sherman of Connecticut, and Robert Livingston of New York — was appointed June 11. Jefferson was thirty-three years old and already known for the quality of his prose. Adams later recalled that Jefferson was selected as primary author partly for strategic reasons (Virginia's participation was politically essential) and partly on merit: "you can write ten times better than I can," Adams told him. Jefferson worked in rented rooms on Market Street in Philadelphia over approximately seventeen days, consulting no books, drawing instead on what he called "the harmonizing sentiments of the day" as expressed in conversation, pamphlets, and a tradition of political thought stretching back through Locke to the ancient world.</p>
+                <div class="pq">
+                  <p>"We hold these truths to be self-evident, that all men are created equal, that they are endowed by their Creator with certain unalienable Rights, that among these are Life, Liberty and the pursuit of Happiness."</p>
+                  <cite>— Declaration of Independence, second paragraph, as adopted July 4, 1776</cite>
+                </div>
+                <p>Jefferson's draft was not adopted unaltered. The Congress made eighty-six changes over two and a half days of revision, cutting approximately a quarter of his text. The most significant deletion was a passage blaming King George for imposing slavery on the colonies — an argument Jefferson knew to be historically dubious (the colonies had not been coerced into slavery) and which was in any case politically impossible. Georgia and South Carolina would not sign a document containing it. Jefferson was apparently pained by the deletion but understood its necessity. The contradiction embedded in a declaration of universal human equality issued by slaveholders — half of whose signatories owned enslaved people — was apparent at the time and has been debated ever since.</p>
+                <div class="tl">
+                  <div class="tli"><div class="tly">June 7, 1776</div><div class="tlt">Lee's resolution moves that the colonies are "free and independent States."</div></div>
+                  <div class="tli"><div class="tly">June 11, 1776</div><div class="tlt">Committee of Five appointed; Jefferson begins drafting in his rented rooms on Market Street.</div></div>
+                  <div class="tli"><div class="tly">June 28, 1776</div><div class="tlt">Jefferson's draft submitted to Congress; revision begins.</div></div>
+                  <div class="tli"><div class="tly">July 2, 1776</div><div class="tlt">Lee's independence resolution passes 12–0. Adams predicts July 2nd will be the great anniversary — off by two days.</div></div>
+                  <div class="tli"><div class="tly">July 4, 1776</div><div class="tlt">The revised Declaration adopted. Sent to printer John Dunlap; broadsides distributed throughout the colonies.</div></div>
+                  <div class="tli"><div class="tly">August 2, 1776</div><div class="tlt">The formal signing on parchment; 56 delegates affix their names, constituting treason against the Crown.</div></div>
+                </div>
+                <p>The Declaration's philosophical grounding drew on John Locke's Second Treatise (1689), which argued that legitimate government rests on consent of the governed and that people retain the right to alter or abolish governments that fail to protect natural rights. Jefferson's formulation — "life, liberty and the pursuit of happiness" rather than Locke's "life, liberty and property" — subtly shifted the emphasis. The document's bulk is taken up not by philosophy but by a list of twenty-seven specific grievances against George III, intended to demonstrate to a "candid world" that the colonists had exhausted less radical options before choosing independence.</p>
+                <p>The Declaration's afterlife has been as consequential as its origin. Abraham Lincoln, in the Cooper Union address and then in the Gettysburg Address, elevated the Declaration above the Constitution as the founding's animating document — calling its central proposition "the father of all moral principle" in the American tradition. Frederick Douglass, in his 1852 speech "What to the Slave is the Fourth of July?", captured its double nature: "This Fourth July is yours, not mine. You may rejoice, I must mourn." The Declaration has been invoked by every reform movement in American history: abolitionists, suffragists, labor organizers, civil rights leaders — always to call the nation back to a promise it had not yet kept.</p>
+              </div>
+            </div>
+          </div>
 
-<div class="divider"></div>
+          <!-- CONSTITUTION -->
+          <div class="pg" id="pg-constitution">
+            <div class="pi">
+              <div class="ah">
+                <div class="an">Article IV</div>
+                <h2 class="at">The Constitutional Convention and the Formation of Government, 1787</h2>
+                <div class="aby">Philadelphia, summer 1787 — the men who invented American government</div>
+              </div>
+              <div class="ab cf">
+                <div class="fb">
+                  <div class="fbt">Convention Facts</div>
+                  <p><strong>Dates:</strong> May 25 – Sept. 17, 1787<br><br><strong>Location:</strong> Pennsylvania State House (Independence Hall), Philadelphia<br><br><strong>States represented:</strong> 12 (Rhode Island refused)<br><br><strong>Delegates:</strong> 55 attended; 39 signed<br><br><strong>President:</strong> George Washington<br><br><strong>Absent:</strong> Adams (London); Jefferson (Paris); Patrick Henry ("smelled a rat")<br><br><strong>Ratified:</strong> June 21, 1788 (9th state, New Hampshire)</p>
+                </div>
+                <p>The Articles of Confederation had been the United States' governing framework since 1781, and they were failing. The central government could levy no taxes — it could only request funds from states, which routinely ignored or delayed compliance. It could not regulate interstate or foreign commerce. It could not enforce its own laws. The national debt from the Revolution went unpaid; the currency was worthless; treaties were routinely violated because the federal government lacked any mechanism to compel state compliance. The final crisis came in the winter of 1786–1787: Shays' Rebellion, an armed uprising of Massachusetts debtors against farm foreclosures, exposed the national government's impotence when it could not even protect a federal arsenal threatened by the rebels. Alexander Hamilton, James Madison, and others had been pushing for a convention to revise the Articles; Shays' Rebellion provided the political impetus.</p>
+                <p>The convention convened in May 1787, with George Washington — whose attendance was seen as a guarantee of the proceedings' seriousness — in the chair. The delegates agreed from the outset to deliberate in secret, and the secrecy held remarkably well: James Madison's meticulous notes, the primary record of what was said, were not published until after his death in 1836. What emerged in secret was not a revision of the Articles but an entirely new form of government. The Virginia Plan, drafted primarily by Madison, proposed a strong national government with proportional representation in a bicameral legislature — an immediate challenge to small states, which stood to lose influence. The New Jersey Plan proposed to preserve state equality. The resulting Connecticut Compromise (Great Compromise) created the House with proportional representation and the Senate with equal representation per state — a solution that saved the convention but produced a Senate that has been controversial ever since.</p>
+                <div class="pq">
+                  <p>"A republic, if you can keep it."</p>
+                  <cite>— Benjamin Franklin, attributed, on exiting the Constitutional Convention, asked what form of government had been created, September 17, 1787</cite>
+                </div>
+                <p>The Three-Fifths Compromise reflected the convention's deepest failure. Southern states insisted that enslaved people be counted for purposes of congressional apportionment and the Electoral College; northern states argued that people held as property could not simultaneously be counted as persons for political representation. The compromise counted each enslaved person as three-fifths of a free person. This gave slaveholding states disproportionate representation in the House and the Electoral College for the next seven decades — producing, among other effects, the election of eight of the first twelve presidents from Virginia. The clause prohibiting Congress from banning the slave trade before 1808 further entrenched the institution. Madison privately acknowledged these were concessions to political necessity, not principled settlements.</p>
+                <p>Ratification required approval by nine of thirteen states, achieved in conventions rather than state legislatures. The debate was fierce and the outcome uncertain. Anti-Federalists — including Patrick Henry, George Mason, and Mercy Otis Warren — argued that the Constitution concentrated dangerous power in a distant government, threatened liberty, and conspicuously lacked a bill of rights. The Federalist Papers, eighty-five essays published pseudonymously in New York newspapers between October 1787 and May 1788, primarily by Hamilton (fifty-one essays) and Madison (twenty-nine), provided the intellectual defense and remain the most important work of American political theory. The promise of a Bill of Rights, to be added after ratification, secured the crucial assent of Virginia (with Patrick Henry's grudging acceptance) and New York. The first ten amendments were ratified December 15, 1791.</p>
+              </div>
+            </div>
+          </div>
 
-<div class="main-content">
-    <h1 class="shake-me">Welcome to the Void™ <span class="notif-badge" id="notif-count">99+</span></h1>
+          <!-- LOUISIANA PURCHASE -->
+          <div class="pg" id="pg-louisiana">
+            <div class="pi">
+              <div class="ah">
+                <div class="an">Article V</div>
+                <h2 class="at">The Louisiana Purchase, 1803</h2>
+                <div class="aby">How Napoleon's catastrophe and Jefferson's ambition doubled the size of the United States</div>
+              </div>
+              <div class="ab cf">
+                <p>In April 1803, the American minister to France, Robert Livingston, and the special envoy James Monroe concluded a negotiation that neither had been authorized to conduct. Jefferson had sent them to Paris to purchase the city of New Orleans and, if possible, the Floridas — the outlet of the Mississippi River, through which the agricultural surplus of the interior United States flowed to market. What they agreed to purchase, at the staggering price of fifteen million dollars, was approximately 828,000 square miles of North America: the entire watershed of the Missouri River and its tributaries, stretching from the Gulf of Mexico to the Canadian border, from the Mississippi to the Rocky Mountains.</p>
+                <p>To understand why Napoleon sold, one must understand Saint-Domingue. The French colony in the western half of Hispaniola was, in 1800, the most profitable colonial possession in the world — producing nearly half the world's coffee and more than a third of its sugar, worked by half a million enslaved people. Napoleon had reacquired Louisiana from Spain by the secret Treaty of San Ildefonso in 1800, with the ambition of building a New World empire provisioned by Saint-Domingue's wealth. The Haitian Revolution — the largest and most successful slave uprising in history, beginning in 1791 under Toussaint Louverture — destroyed that plan. By 1803, approximately fifty thousand French soldiers had died in the Caribbean, most from yellow fever, and the colony was lost. Without Saint-Domingue, Louisiana was an expensive administrative burden. Napoleon needed money for the renewed war with Britain. He offered the whole territory.</p>
+              </div>
 
-    <p class="body-text">
-        This page is <strong>completely under control</strong>. Nothing to worry about. Navigating this site is easy if you do not think about it too hard, which we strongly advise against.<br><br>
-        By continuing to scroll you agree to our terms, which include: not telling anyone about this website, accepting that the font choice was intentional, and acknowledging that the spinning skull in the corner is just decorative and is not watching you specifically.<br><br>
-        <span class="blink-safe">▶ this message will self-destruct in: <span id="self-destruct">9999</span> seconds (it will not) ◀</span>
-    </p>
+              <!-- NESTED PAGE-IN-PAGE — Louisiana Full Record -->
+              <div class="lp-wrap">
+                <div class="lp-bar">
+                  <div class="lp-dots"><div class="lp-dot lpd-r"></div><div class="lp-dot lpd-y"></div><div class="lp-dot lpd-g"></div></div>
+                  <div class="lp-url">nebula-historians.edu/louisiana-purchase/full-record</div>
+                </div>
+                <div class="lp-pg" id="lp-pg">
+                  <!-- Konami overlay — strictly inside this inner page, no hint anywhere -->
+                  <div id="ko">
+                    <div class="ko-box">
+                      <div class="ko-t">A door, hidden in plain sight.</div>
+                      <div class="ko-s">Just as Jefferson stretched the Constitution past its limits to complete the Purchase, you found a passage that wasn't supposed to be here.</div>
+                      <div class="ko-btns">
+                        <button class="ko-btn ko-p" onclick="launchNebula()">Enter Nebula</button>
+                        <button class="ko-btn ko-g" onclick="closeKo()">Return</button>
+                      </div>
+                    </div>
+                  </div>
 
-    <div class="typewriter-line" id="typewriter-line">Scanning for problems... found 417...</div>
+                  <div class="lp-cnt">
+                    <div class="lp-h">Louisiana Purchase — Full Historical Record</div>
+                    <div class="lp-s">Extended analysis and primary source documentation · Nebula Historical Society Archive, 2024</div>
 
-    <div class="divider"></div>
+                    <div class="lp-grid">
+                      <div class="lp-gi"><strong>Date Signed</strong>April 30, 1803, Paris, France</div>
+                      <div class="lp-gi"><strong>Purchase Price</strong>$15 million (~$340M in 2024 dollars)</div>
+                      <div class="lp-gi"><strong>Area Acquired</strong>~828,000 square miles (2.14 million km²)</div>
+                      <div class="lp-gi"><strong>Cost per Acre</strong>Approximately 3 cents (~$0.85 today)</div>
+                      <div class="lp-gi"><strong>U.S. Negotiators</strong>Robert Livingston (minister) &amp; James Monroe (envoy)</div>
+                      <div class="lp-gi"><strong>French Counterpart</strong>François Barbé-Marbois, Finance Minister</div>
+                      <div class="lp-gi"><strong>Senate Vote</strong>October 20, 1803 — 24 to 7 in favor</div>
+                      <div class="lp-gi"><strong>Transfer Ceremony</strong>December 20, 1803, New Orleans</div>
+                      <div class="lp-gi"><strong>States Formed</strong>All or part of 15 present-day states</div>
+                      <div class="lp-gi"><strong>Explored by</strong>Lewis and Clark Expedition, 1804–1806</div>
+                    </div>
 
-    <div class="congrats-zone shake-me">
-        🎉 oh wow you're here 🎉<br>
-        <span style="font-size:17px;">you are visitor number <span id="visitor-num">1,000,000</span> which is either very good or very bad, we're not sure<br>
-        your free prize expires in: <strong id="offer-timer">00:04:59</strong> &nbsp;<span class="blink-safe">⏰</span> (the prize is nothing)</span>
-    </div>
+                    <p>Jefferson's constitutional crisis was real and he knew it. He had spent his career arguing that the federal government possessed only those powers explicitly enumerated in the Constitution. Article IV, Section 3 allowed Congress to admit new states, and Article II gave the president power to make treaties — but neither provision spoke to the acquisition of foreign territory. Jefferson drafted a constitutional amendment that would have authorized the purchase retroactively, then abandoned it when his cabinet and trusted allies warned that delay would cause Napoleon to withdraw the offer. He sent the treaty to the Senate without the amendment, and the Senate ratified it 24–7. Jefferson privately confided that he had stretched constitutional doctrine "till it cracked," and that future generations would judge whether the precedent he set was wise or dangerous.</p>
 
-    <div class="visitor-counter">
-        people who have been here: <span id="fake-counter">34,829,112</span> &nbsp;|&nbsp;
-        here right now somehow: <span id="active-count">4,291</span> &nbsp;|&nbsp;
-        cookies baked: <span id="virus-count">8,841,003</span>
-    </div>
+                    <div class="lp-q">
+                      <p>"We have lived long, but this is the noblest work of our whole lives. The United States have settled this matter, and nothing now remains but to acknowledge it."</p>
+                      <cite>— Robert Livingston, after signing the Louisiana Purchase treaty, Paris, April 30, 1803</cite>
+                    </div>
 
-    <div class="divider"></div>
+                    <div class="lp-h3">The Lewis and Clark Expedition, 1804–1806</div>
+                    <p>Jefferson had actually begun planning an exploratory expedition to the Pacific before the Purchase was finalized — he requested a secret congressional appropriation in January 1803. The acquisition of Louisiana vastly expanded the expedition's purpose. Meriwether Lewis, Jefferson's private secretary, and William Clark, a Virginia military officer and Lewis's former superior, commanded the Corps of Discovery: approximately thirty-three permanent members plus additional guides. They departed Camp Dubois near St. Louis on May 14, 1804, ascending the Missouri River through the summer and fall before wintering at Fort Mandan in present-day North Dakota.</p>
+                    <p>Sacagawea, a Shoshone woman who had been taken captive as a child by the Hidatsa, joined the expedition at Fort Mandan with her husband, the French-Canadian interpreter Toussaint Charbonneau. She proved indispensable: her linguistic abilities, her knowledge of the terrain west of the Continental Divide, and her very presence — a woman with an infant identified the party as non-hostile to many peoples they encountered. The expedition reached the Pacific at the mouth of the Columbia River in November 1805, wintered at Fort Clatsop, and returned to St. Louis in September 1806. In two and a half years and roughly eight thousand miles, they had mapped dozens of rivers, catalogued hundreds of species unknown to Western science, made diplomatic contact with twenty-four distinct Indigenous nations, and produced the first systematic American account of the continental interior.</p>
 
-    <marquee class="mid-marq" scrollamount="14" direction="right">🖨️ your printer is thinking about you 🖨️ java has been updating since 2009, it's nearly done 🖨️ your computer's fan is just nervous 🖨️ winrar would like to have a word 🖨️ the cloud is just someone else's attic 🖨️ your IP address is showing but it's fine, it's cute actually 🖨️</marquee>
+                    <div class="lp-tl">
+                      <div class="lp-tli"><div class="lp-tly">Oct. 1800</div><div class="lp-tlt">Spain secretly cedes Louisiana to France via the Treaty of San Ildefonso. Jefferson learns of it and calls New Orleans "the one single spot the possessor of which is our natural and habitual enemy."</div></div>
+                      <div class="lp-tli"><div class="lp-tly">1801–1803</div><div class="lp-tlt">Haitian Revolution destroys Napoleon's army in the Caribbean. Fifty thousand French troops dead, mostly from yellow fever. Saint-Domingue is lost; Louisiana becomes worthless without it.</div></div>
+                      <div class="lp-tli"><div class="lp-tly">Apr. 11, 1803</div><div class="lp-tlt">Foreign Minister Talleyrand shocks Livingston by asking whether the U.S. would like to purchase all of Louisiana, not merely New Orleans.</div></div>
+                      <div class="lp-tli"><div class="lp-tly">Apr. 30, 1803</div><div class="lp-tlt">Purchase treaty signed in Paris. Three documents: the treaty of cession, and two conventions establishing payment terms of $11.25M directly plus $3.75M in assumed claims against France.</div></div>
+                      <div class="lp-tli"><div class="lp-tly">Oct. 20, 1803</div><div class="lp-tlt">U.S. Senate ratifies treaty 24–7. Jefferson's constitutional doubts set aside; he sends the treaty to the Senate without the amendment he had drafted.</div></div>
+                      <div class="lp-tli"><div class="lp-tly">Dec. 20, 1803</div><div class="lp-tlt">Transfer ceremony in New Orleans: the French tricolor lowered, the American flag raised in the rain. The ceremony is brief and the weather miserable.</div></div>
+                      <div class="lp-tli"><div class="lp-tly">May 1804</div><div class="lp-tlt">Lewis and Clark depart Camp Dubois; the Corps of Discovery begins its journey to the Pacific.</div></div>
+                      <div class="lp-tli"><div class="lp-tly">Sept. 1806</div><div class="lp-tlt">Corps of Discovery returns to St. Louis, having traveled approximately 8,000 miles in two and a half years.</div></div>
+                    </div>
 
-    <div class="spin-zone" style="margin:14px 0;">
-        <span class="rotating-img" style="font-size:65px">💀</span>
-        <span class="float-icon" style="font-size:65px">🔥</span>
-        <span class="rotating-img" style="font-size:65px; animation-direction:reverse; animation-duration:1.5s">💀</span>
-        <span class="ping-pong" style="font-size:65px">👾</span>
-        <span class="rotating-img" style="font-size:65px; animation-duration:0.7s">🌀</span>
-    </div>
+                    <div class="lp-h3">Legacy and Consequences</div>
+                    <p>The Louisiana Purchase provided the geographic foundation for fifteen present-day states: Louisiana, Arkansas, Missouri, Iowa, Minnesota, North Dakota, South Dakota, Nebraska, Kansas, Oklahoma, Colorado, Wyoming, Montana, Idaho, and substantial portions of New Mexico. It transformed the United States from a coastal nation clinging to the eastern seaboard into a continental power with legitimate claims to the interior of a continent. It also set constitutional precedents of lasting consequence: the implied power of the federal government to acquire and govern territory, and the willingness of a strict-constructionist president to act beyond his explicit authority when he believed national interest demanded it.</p>
+                    <p>For the peoples who had inhabited the purchased territory for centuries — the Osage, Mandan, Hidatsa, Arikara, Lakota, Pawnee, Crow, Shoshone, Blackfeet, and dozens of others — the transaction represented something very different: the incorporation of their homelands into a distant empire without their knowledge or consent. The Lewis and Clark journals record the expedition's repeated invocations of the "great father" in Washington who now claimed sovereignty over their lands. Within a generation, the expansion of American settlement into the Purchase territory would set in motion the series of wars, treaties, and forced relocations that would define the second half of the nineteenth century on the Great Plains.</p>
+                  </div>
+                </div>
+              </div>
+              <!-- end nested page -->
 
-    <div class="divider"></div>
+              <div class="ab" style="margin-top:1.1rem">
+                <p>The Louisiana Purchase also transformed the politics of slavery. The Missouri Crisis of 1819–1821 — provoked by Missouri's application for statehood as a slave state — was the first major national confrontation over the extension of slavery into the territories acquired from France. The Missouri Compromise of 1820, admitting Missouri as a slave state and Maine as a free state while prohibiting slavery in the remainder of the Louisiana Purchase territory north of 36°30' latitude, temporarily defused the crisis. Thomas Jefferson, now seventy-six years old, wrote that the Missouri question, "like a fire bell in the night, awakened and filled me with terror. I considered it at once as the knell of the Union." He was right in his diagnosis if not in his timing; the knell would ring thirty years later.</p>
+              </div>
+            </div>
+          </div>
 
-    <!-- Nested marquee block -->
-    <div style="border:6px ridge hotpink; padding:6px; background:black; margin:10px 0;">
-        <marquee class="inner-marq1" scrollamount="10">
-            pssst. hey. your mouse is at <span id="mouse-x">0</span>, <span id="mouse-y">0</span> right now. pretty wild. &nbsp;•&nbsp; we have been watching that coordinate. impressive moves out there &nbsp;•&nbsp; blink if you need help. we cannot help but we appreciate the gesture
-        </marquee>
-        <marquee class="inner-marq2" scrollamount="18" direction="right">
-            🔊 fun fact: every time you close a popup another one is born somewhere 🔊 scientists have not confirmed this 🔊 we are the scientists 🔊
-        </marquee>
-        <marquee class="inner-marq3" scrollamount="6">
-            ℹ️ by moving your mouse you have agreed to let us see what you had for lunch. we think it was fine. not great, not bad. just fine. we're not judging. (we are a little judging.)
-        </marquee>
-        <marquee class="inner-marq1" scrollamount="13" direction="right">
-            📡 updates: your printer is in its villain era &nbsp;•&nbsp; java update number 4,891 is ready, it does the same thing &nbsp;•&nbsp; one virus was detected and it seems happy &nbsp;•&nbsp; the void said hi back
-        </marquee>
-    </div>
+          <!-- WESTWARD EXPANSION -->
+          <div class="pg" id="pg-westward">
+            <div class="pi">
+              <div class="ah">
+                <div class="an">Article VI</div>
+                <h2 class="at">Westward Expansion and Manifest Destiny, 1803–1850</h2>
+                <div class="aby">The ideology and consequences of a continental nation</div>
+              </div>
+              <div class="ab cf">
+                <div class="fb">
+                  <div class="fbt">Major Milestones</div>
+                  <p><strong>1804–06</strong> — Lewis &amp; Clark Expedition<br><br><strong>1812–15</strong> — War of 1812<br><br><strong>1819</strong> — Adams-Onís Treaty (Florida)<br><br><strong>1820</strong> — Missouri Compromise<br><br><strong>1830</strong> — Indian Removal Act<br><br><strong>1836</strong> — Texas declares independence<br><br><strong>1845</strong> — Texas annexation; "Manifest Destiny" coined<br><br><strong>1846</strong> — Oregon Treaty (49th parallel)<br><br><strong>1846–48</strong> — Mexican-American War<br><br><strong>1848</strong> — Gold discovered at Sutter's Mill<br><br><strong>1850</strong> — Compromise of 1850<br><br><strong>1869</strong> — Transcontinental railroad completed</p>
+                </div>
+                <p>The phrase "Manifest Destiny" was coined by the Democratic journalist John L. O'Sullivan in an 1845 editorial arguing for the annexation of Texas: it was, he wrote, "our manifest destiny to overspread the continent allotted by Providence for the free development of our yearly multiplying millions." The phrase crystallized an expansionist ideology that was neither new nor originally American — it drew on European ideas of civilizational hierarchy and the racial superiority of white Protestant settlers — but gave it a memorable name and a providential justification. Manifest Destiny would be invoked to justify the annexation of Texas, the war with Mexico, the forced removal of Indigenous peoples from their homelands, and ultimately the subjugation of peoples in Hawaii and the Philippines at the century's end.</p>
+                <div class="pq">
+                  <p>"The far-reaching, the boundless future will be the era of American greatness... its magnificent domain of space and time, the nation of many nations is destined to manifest to mankind the excellence of divine principles."</p>
+                  <cite>— John L. O'Sullivan, "The Great Nation of Futurity," United States Democratic Review, 1839</cite>
+                </div>
+                <p>The acquisition of territory in the 1840s was rapid and spectacular. The annexation of Texas in 1845 provoked the Mexican-American War of 1846–1848, in which the United States invaded Mexico, captured Mexico City, and compelled the Treaty of Guadalupe Hidalgo. Mexico ceded what are now California, Nevada, Utah, Arizona, New Mexico, and parts of Colorado and Wyoming — approximately 525,000 square miles — in exchange for $15 million and the assumption of claims. The Oregon Treaty of 1846 divided the Oregon Country with Britain along the 49th parallel, adding the present-day states of Oregon, Washington, and Idaho. The Gadsden Purchase of 1853 added a southern strip of present-day Arizona and New Mexico. By 1854, the United States had attained approximately its current continental borders.</p>
+                <p>For the peoples who had lived in these territories, expansion was catastrophic. The Indian Removal Act of 1830, signed by Andrew Jackson, authorized the forced removal of the Five Civilized Tribes from their southeastern homelands to Indian Territory west of the Mississippi. The Trail of Tears — the forced march of approximately sixteen thousand Cherokee in 1838–1839, during which some four thousand died of cold, disease, and exhaustion — is the most remembered of these removals but was one of many. On the Great Plains, the spread of American settlement brought the elimination of the bison herds on which Plains peoples' economies depended, followed by a series of wars — Red Cloud's War, the Great Sioux War, the Sand Creek Massacre, the Nez Percé War — that ended in the 1880s with the confinement of surviving nations on reservations. The violence of American expansion was not incidental to it but intrinsic; the wealth generated by settlement rested directly on the dispossession of peoples who had prior claim to the land.</p>
+                <p>The expansion of the 1840s also brought the political crisis that would prove fatal to the Union. The Wilmot Proviso, introduced in 1846, proposed to ban slavery from any territory acquired from Mexico. It passed the House but died in the Senate — and the question it raised, whether slavery would extend into the western territories, consumed American politics for the next fifteen years. The Compromise of 1850 temporarily resolved the crisis through a package of measures: California entered as a free state, the New Mexico and Utah territories were organized with the question of slavery left to popular sovereignty, the slave trade (but not slavery itself) was abolished in Washington D.C., and a strengthened Fugitive Slave Act required northerners to assist in the return of escaped slaves. The compromise postponed rather than resolved the underlying conflict, and the next attempt at resolution — the Kansas-Nebraska Act of 1854 — reopened the wound. The Civil War came eight years later.</p>
+              </div>
+            </div>
+          </div>
 
-    <div class="divider"></div>
+          <!-- PRIMARY SOURCES -->
+          <div class="pg" id="pg-primary">
+            <div class="pi">
+              <div class="ah">
+                <div class="an">Reference</div>
+                <h2 class="at">Primary Sources and Further Reading</h2>
+                <div class="aby">A curated guide for deeper study of the American founding era</div>
+              </div>
+              <div class="ab">
+                <h3 class="h3">Essential Primary Documents</h3>
+                <p>The following documents are available in their entirety through the National Archives (archives.gov), the Library of Congress (loc.gov), and the Avalon Project at Yale Law School (avalon.law.yale.edu):</p>
+                <p><strong>The Federalist Papers (1787–88)</strong> — Eighty-five essays by Alexander Hamilton, James Madison, and John Jay, published under the pseudonym "Publius" in New York newspapers to argue for ratification of the Constitution. Federalist No. 10 (Madison, on faction and republican government) and No. 51 (Madison, on the separation of powers and checks and balances) are the most studied. The complete text is available online through the Library of Congress.</p>
+                <p><strong>The Anti-Federalist Papers (1787–88)</strong> — A less unified collection of essays opposing ratification, written under pseudonyms including "Brutus" (likely Robert Yates of New York) and "The Federal Farmer" (possibly Melancton Smith). These essays raised constitutional objections — the lack of a bill of rights, the danger of a standing army, the excessive power of the federal judiciary — that shaped the ratification debates and influenced the content of the Bill of Rights.</p>
+                <p><strong>Jefferson's Draft of the Declaration (1776)</strong> — Jefferson's original draft, with Congressional deletions marked and his own preferred text visible, is held at the Library of Congress. The most significant deletion — the passage condemning the slave trade — is legible in the original manuscript. Julian Boyd's edition in The Papers of Thomas Jefferson (Princeton University Press, 1950) provides the definitive scholarly text and analysis.</p>
+                <p><strong>Madison's Notes on the Constitutional Convention (published 1840)</strong> — The closest thing to a complete record of the convention's debates, kept by Madison throughout the summer of 1787. Not published until after his death to preserve the confidentiality he had promised to fellow delegates. Available in Max Farrand, ed., The Records of the Federal Convention of 1787 (Yale University Press, 1911; revised 1937).</p>
+                <p><strong>Lewis and Clark Journals (1804–06)</strong> — The original journals of Meriwether Lewis and William Clark, along with supplementary journals kept by other expedition members. Published in full for the first time as The Journals of the Lewis and Clark Expedition, edited by Gary Moulton (University of Nebraska Press, 13 volumes, 1983–2001).</p>
 
-    <div id="ad-zone"></div>
+                <h3 class="h3">Recommended Scholarly Works</h3>
+                <p><strong>Gordon S. Wood, The Creation of the American Republic, 1776–1787 (1969)</strong> — The definitive account of American political thought between independence and the Constitution, tracing the transformation of republican ideology under the pressure of events.</p>
+                <p><strong>Bernard Bailyn, The Ideological Origins of the American Revolution (1967)</strong> — Argues that the Revolution was driven primarily by a distinct political ideology rooted in the English opposition tradition, with a particular fear of conspiratorial power. A foundational text in the field.</p>
+                <p><strong>Woody Holton, Unruly Americans and the Origins of the Constitution (2007)</strong> — A revisionist account emphasizing economic motivations and the fears of the propertied class in driving the Constitutional Convention.</p>
+                <p><strong>Annette Gordon-Reed, The Hemingses of Monticello: An American Family (2008)</strong> — Pulitzer Prize-winning examination of the enslaved Hemings family at Monticello, providing essential context for understanding the founding era's central contradiction.</p>
+                <p><strong>Roxanne Dunbar-Ortiz, An Indigenous Peoples' History of the United States (2014)</strong> — A systematic account of American history from Indigenous perspectives, essential for understanding the human cost of expansion.</p>
+                <p><strong>Jon Kukla, A Wilderness So Immense: The Louisiana Purchase and the Destiny of America (2003)</strong> — The most readable full account of the Louisiana Purchase, situating it in the broader context of American and European diplomacy.</p>
+              </div>
+            </div>
+          </div>
 
-    <marquee class="bot-marq" scrollamount="12">🐱 cat fact: cats are aware of everything 🐱 the number 7 is thinking about you 🐱 your refrigerator makes that noise on purpose 🐱 astrology is just horoscopes with better PR 🐱 you scrolled here specifically 🐱 this sentence was written just for you 🐱</marquee>
+          <!-- KEY FIGURES -->
+          <div class="pg" id="pg-figures">
+            <div class="pi">
+              <div class="ah">
+                <div class="an">Reference</div>
+                <h2 class="at">Key Figures of the Founding Era</h2>
+                <div class="aby">Biographical summaries of statesmen, soldiers, and essential figures</div>
+              </div>
+              <div class="ab">
+                <h3 class="h3">The Founders</h3>
+                <p><strong>George Washington (1732–1799)</strong> — Commander-in-Chief of the Continental Army, president of the Constitutional Convention, and first President of the United States (1789–1797). Washington's decision to retire after two terms established a precedent that held until Franklin Roosevelt and became constitutional law with the 22nd Amendment in 1951. His Farewell Address (1796), warning against political parties and foreign entanglements, has been read aloud in the Senate every year since 1893.</p>
+                <p><strong>Thomas Jefferson (1743–1826)</strong> — Principal author of the Declaration of Independence, Governor of Virginia, Minister to France, Secretary of State, Vice President, and third President of the United States (1801–1809). Jefferson's intellectual range was extraordinary — architect, naturalist, linguist, musician, wine connoisseur, and political philosopher — and his contradictions were correspondingly vast: the author of "all men are created equal" enslaved approximately six hundred people over his lifetime. He died on July 4, 1826, fifty years to the day after the Declaration's adoption, as did John Adams.</p>
+                <p><strong>James Madison (1751–1836)</strong> — The principal architect of the Constitutional Convention's Virginia Plan, primary author of The Federalist Papers, sponsor of the Bill of Rights in the First Congress, and fourth President (1809–1817). Called the "Father of the Constitution" by contemporaries, though Madison himself resisted the title, noting the document was the work of many minds. His notes on the Constitutional Convention are the primary historical record of that founding moment.</p>
+                <p><strong>Alexander Hamilton (1755–1804)</strong> — Washington's aide-de-camp during the Revolution, primary author of The Federalist Papers, first Secretary of the Treasury, and architect of the American financial system. Hamilton's Reports on Public Credit, Manufacturing, and a National Bank established the economic foundations of the federal government. He was killed in a duel with Vice President Aaron Burr in Weehawken, New Jersey, on July 11, 1804.</p>
+                <p><strong>Benjamin Franklin (1706–1790)</strong> — Printer, scientist, diplomat, satirist, and at eighty-one the oldest delegate to the Constitutional Convention, which he signed despite serious reservations. Franklin's long career — from Poor Richard's Almanack to the Albany Plan of Union, the lightning rod, the diplomatic mission to France that secured the alliance critical to American victory, and the Convention — makes him the most extensively documented of the founders and perhaps the most genuinely representative of ordinary American ambition.</p>
+                <p><strong>John Adams (1735–1826)</strong> — Massachusetts lawyer, delegate to both Continental Congresses, diplomat in Europe, first Vice President, and second President (1797–1801). Adams was indispensable to independence and is often underrated: his legal defense of the British soldiers acquitted after the Boston Massacre was a model of principle over popularity. His presidency was undone by the Quasi-War with France and the disastrous Alien and Sedition Acts. He and Jefferson, who had become estranged, reconciled in old age through an extraordinary correspondence and died within hours of each other on July 4, 1826.</p>
+                <h3 class="h3">Often Overlooked</h3>
+                <p><strong>Abigail Adams (1744–1818)</strong> — John Adams's wife and intellectual equal, whose letters constitute one of the most important documentary records of the founding period. Her injunction to John to "remember the ladies" in drafting new laws was not heeded, but her correspondence provides an indispensable perspective on the Revolution and early Republic from outside the male political class that dominated its institutions.</p>
+                <p><strong>Toussaint Louverture (c. 1743–1803)</strong> — Leader of the Haitian Revolution, whose military genius destroyed Napoleon's Caribbean ambitions and thereby made the Louisiana Purchase possible. Born into slavery in Saint-Domingue, Louverture commanded the revolutionary army against France, Spain, and Britain simultaneously, creating the conditions for Haitian independence. Napoleon had him arrested by treachery in 1802 and transported to France, where he died of pneumonia in a mountain prison in April 1803 — the same month the Louisiana Purchase treaty was signed in Paris. The connection is not coincidental.</p>
+                <p><strong>Sacagawea (c. 1788–1812 or 1884)</strong> — Shoshone woman who joined the Lewis and Clark Expedition at Fort Mandan in November 1804 and accompanied the Corps of Discovery to the Pacific and back. Her contributions — as interpreter, guide, diplomatic intermediary, and by her mere presence signaling the party's peaceful intentions — were essential to the expedition's success. Her later life is disputed; one tradition holds she died in 1812, another that she lived until 1884 on the Wind River Reservation. She appears on the obverse of the U.S. dollar coin introduced in 2000.</p>
+                <p><strong>Frederick Douglass (c. 1818–1895)</strong> — Born into slavery on a Maryland plantation, Douglass escaped north in 1838 and became the most important African American intellectual and activist of the nineteenth century. His Narrative of the Life of Frederick Douglass, an American Slave (1845) and his 1852 speech "What to the Slave is the Fourth of July?" — in which he called the Declaration of Independence "the ring-bolt to the chain of your nation's destiny" while excoriating the nation's hypocrisy — are essential documents for understanding the founding era's contradictions as lived experience rather than philosophical abstraction.</p>
+              </div>
+            </div>
+          </div>
 
-    <div class="spam-text-block" id="spam-text-block">
-        hmm hmm hmm nothing to see here hmm hmm hmm hmm just some text hmm hmm hmm hmm hmm actually do not read this
-        hmm hmm hmm scrolling detected hmm hmm hmm hmm eyes on screen hmm hmm hmm hmm we see you buddy hmm hmm hmm
-        hmm hmm hmm hmm hmm everything is fine hmm hmm hmm hmm hmm nothing is wrong hmm hmm hmm hmm hmm stop reading
-        this is the bottom of the page hmm hmm hmm congratulations hmm hmm hmm your prize is more text hmm hmm hmm
-        hmm hmm hmm hmm hmm hmm hmm hmm hmm hmm hmm hmm hmm hmm hmm hmm hmm hmm hmm hmm hmm hmm hmm hmm hmm hmm
-    </div>
-
-    <div class="bottom-pad"></div>
-</div>
-
-<button id="elusive-button">🖱️ CLICK TO FIX EVERYTHING 🖱️</button>
+        </div><!-- /.pages -->
+      </main>
+    </div><!-- /.site -->
+  </div><!-- /.win-body -->
+</div><!-- /.win -->
 
 <script>
-// ─── CURSOR TRAIL ────────────────────────────────────────────────
-const canvas = document.getElementById('cursor-canvas');
-const ctx = canvas.getContext('2d');
-canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-window.addEventListener('resize', () => { canvas.width=window.innerWidth; canvas.height=window.innerHeight; });
-const trail = [];
-const trailEmojis = ['💀','🔥','⚡','💥','🌀','😱','🤡','👾','💩','🎉','✨','🍕','📢','🧨','🎮','🛸'];
-document.addEventListener('mousemove', e => {
-    document.getElementById('mouse-x').textContent = e.clientX;
-    document.getElementById('mouse-y').textContent = e.clientY;
-    trail.push({ x:e.clientX, y:e.clientY, age:0, emoji:trailEmojis[Math.floor(Math.random()*trailEmojis.length)] });
-    if (trail.length > 30) trail.shift();
-});
-function drawTrail() {
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    for (const t of trail) {
-        ctx.globalAlpha = 1 - t.age/30;
-        ctx.font = `${22 - t.age*0.5}px serif`;
-        ctx.fillText(t.emoji, t.x, t.y);
-        t.age++;
-    }
-    requestAnimationFrame(drawTrail);
-}
-drawTrail();
+// ── Navigation ───────────────────────────────────────────
+const URLS = {
+  home:        'nebula-historians.edu/american-history',
+  exploration: 'nebula-historians.edu/american-history/exploration-1492-1607',
+  revolution:  'nebula-historians.edu/american-history/road-to-revolution-1763-1776',
+  declaration: 'nebula-historians.edu/american-history/declaration-of-independence-1776',
+  constitution:'nebula-historians.edu/american-history/constitutional-convention-1787',
+  louisiana:   'nebula-historians.edu/american-history/louisiana-purchase-1803',
+  westward:    'nebula-historians.edu/american-history/westward-expansion-manifest-destiny',
+  primary:     'nebula-historians.edu/american-history/primary-sources',
+  figures:     'nebula-historians.edu/american-history/key-figures',
+};
+const NAMES = {
+  exploration:'Early Exploration', revolution:'The Revolution',
+  declaration:'Declaration of Independence', constitution:'The Constitution',
+  louisiana:'Louisiana Purchase', westward:'Westward Expansion',
+  primary:'Primary Sources', figures:'Key Figures',
+};
 
-// ─── ELUSIVE BUTTON ─────────────────────────────────────────────
-const btn = document.getElementById('elusive-button');
-btn.style.left = '40px'; btn.style.top = '200px';
-let catchCount = 0;
-btn.addEventListener('mousemove', () => {
-    const m = 60;
-    btn.style.left = (m + Math.random()*(window.innerWidth  - btn.offsetWidth  - m*2)) + 'px';
-    btn.style.top  = (m + Math.random()*(window.innerHeight - btn.offsetHeight - m*2)) + 'px';
-});
-btn.addEventListener('click', () => {
-    catchCount++;
-    const msgs = [
-        "okay you got me. nothing happens though.",
-        "the fix is: have you tried believing in yourself",
-        "error 404: fix not found. error also not found. everything is fine.",
-        "wow. you actually caught it. i respect that. still nothing happens.",
-        "i'm calling someone. not the police. just someone.",
-        `you've caught this button ${catchCount} times. this is a hobby now.`,
-        "fixed! (not fixed.) (was never broken.) (debatable.)",
-        "your computer is healed. spiritually. not technically.",
-        "catching buttons is a skill. you have it. use it wisely.",
-        "the button has been caught. the button is thinking about what it did.",
-        `${catchCount} catches. i am genuinely impressed and also concerned.`,
-    ];
-    spawnExplosion(parseInt(btn.style.left)+btn.offsetWidth/2, parseInt(btn.style.top)+btn.offsetHeight/2);
-    showPopup("RESULT ✅", msgs[Math.min(catchCount-1,msgs.length-1)], ["OK","THANK YOU","WOW","COOL"]);
-});
+let cur = 'home';
 
-// ─── COUNTERS ────────────────────────────────────────────────────
-let fakeCount=34829112, activeCount=4291, virusCount=8841003;
-setInterval(() => {
-    fakeCount  += Math.floor(Math.random()*300+50);
-    activeCount += Math.floor(Math.random()*11-4);
-    virusCount  += Math.floor(Math.random()*500+100);
-    document.getElementById('fake-counter').textContent  = fakeCount.toLocaleString();
-    document.getElementById('active-count').textContent  = Math.max(1,activeCount).toLocaleString();
-    document.getElementById('virus-count').textContent   = virusCount.toLocaleString();
-}, 400);
-setInterval(() => {
-    document.getElementById('visitor-num').textContent = (Math.floor(Math.random()*9000000)+1000000).toLocaleString();
-}, 1200);
+function go(id) {
+  document.querySelectorAll('.pg').forEach(p => p.classList.remove('on'));
+  document.querySelectorAll('.sb-item').forEach(n => n.classList.remove('on'));
+  document.getElementById('pg-' + id)?.classList.add('on');
+  document.querySelector(`[data-p="${id}"]`)?.classList.add('on');
+  document.getElementById('urlbar').textContent = URLS[id] || URLS.home;
+  document.getElementById('pg-' + id)?.scrollTo(0, 0);
 
-// Loading % chaos
-const pctOpts=['999','1000','∞','ERROR','NaN','over 9000','-12','404','loading...','∞+1','69','BEEF'];
-setInterval(()=>{ document.getElementById('loading-pct').textContent=pctOpts[Math.floor(Math.random()*pctOpts.length)]; }, 1500);
+  const bc = document.getElementById('bc');
+  if(id === 'home') {
+    bc.innerHTML = '<span>Home</span>';
+  } else {
+    bc.innerHTML = `<span class="link" onclick="go('home')">Home</span><span class="sep2"> › </span><span>${NAMES[id] || id}</span>`;
+  }
 
-// Offer timer (sometimes goes up)
-let offerSecs=299;
-setInterval(()=>{
-    offerSecs=Math.max(0,offerSecs-1+(Math.random()<0.3?Math.floor(Math.random()*30):0));
-    if(offerSecs<=0) offerSecs=599;
-    const m=Math.floor(offerSecs/60).toString().padStart(2,'0');
-    const s=(offerSecs%60).toString().padStart(2,'0');
-    document.getElementById('offer-timer').textContent=`00:${m}:${s}`;
-}, 1000);
-
-// Notif badge
-const badgeOpts=['99+','!!','NEW','???','😱','∞','LOTS','WHY'];
-setInterval(()=>{ document.getElementById('notif-count').textContent=badgeOpts[Math.floor(Math.random()*badgeOpts.length)]; }, 900);
-
-// Self destruct
-let sdCount=9999;
-setInterval(()=>{
-    sdCount-=Math.floor(Math.random()*3+1);
-    if(sdCount<=0) sdCount=9999;
-    document.getElementById('self-destruct').textContent=sdCount;
-}, 800);
-
-// Progress bar
-let progPct=73, progDir=1;
-const progLabels=['thinking about fixing your computer','considering the options','identifying the vibe','downloading a sense of purpose','asking the computer nicely','negotiating with the RAM','untangling some stuff','reorganizing the electrons'];
-setInterval(()=>{
-    progPct+=progDir*(Math.random()*3);
-    if(progPct>=99){progPct=99;progDir=-1;} if(progPct<=5){progPct=5;progDir=1;}
-    document.getElementById('fake-prog').style.width=progPct.toFixed(1)+'%';
-    document.getElementById('fake-prog-label').textContent=progLabels[Math.floor(Math.random()*progLabels.length)]+`... ${progPct.toFixed(0)}%`;
-}, 700);
-
-// ─── TYPEWRITER ───────────────────────────────────────────────────
-const typeMsgs=[
-    "scanning for problems... found 417... putting them back...",
-    "your keyboard is typing slightly too confidently",
-    "contacting the void on your behalf... the void is busy",
-    "your saved passwords look fine to us (we looked)",
-    "uploading your vibe to the cloud... vibe: medium",
-    "error: no errors found. creating one for balance",
-    "your mouse is moving in a very interesting way",
-    "checking if you are a robot... inconclusive... checking again...",
-    "backing up your files to a post-it note",
-    "installing update 1 of 10,000. the rest will install while you sleep",
-    "please do not make eye contact with the progress bar",
-    "mining absolutely nothing on your behalf. you're welcome.",
-    "your browser has 47 tabs open. we counted. we're concerned.",
-    "your clipboard says: [redacted]. interesting.",
-    "estimating your vibe... vibe estimated: chaotic neutral",
-];
-let tmIdx=0;
-function typeNext(){
-    const el=document.getElementById('typewriter-line');
-    const msg=typeMsgs[tmIdx++%typeMsgs.length];
-    el.textContent='';
-    let i=0;
-    const iv=setInterval(()=>{
-        el.textContent+=msg[i++];
-        if(i>=msg.length){clearInterval(iv);setTimeout(typeNext,2000);}
-    },38);
-}
-typeNext();
-
-// ─── POPUP SYSTEM ─────────────────────────────────────────────────
-let pzBase=5000;
-function showPopup(title, message, buttons){
-    pzBase++;
-    const p=document.createElement('div'); p.className='popup';
-    p.style.left=(60+Math.random()*Math.max(0,window.innerWidth-380))+'px';
-    p.style.top=(60+Math.random()*Math.max(0,window.innerHeight-220))+'px';
-    p.style.zIndex=pzBase;
-    const icons=['🚨','⚠️','💥','🔔','❗','🛑','💀','🤖','🎉','🏆','😱','🧨'];
-    const icon=icons[Math.floor(Math.random()*icons.length)];
-    p.innerHTML=`
-        <div class="popup-title"><span>${icon} ${title}</span><button class="close-btn" onclick="this.closest('.popup').remove()">✕</button></div>
-        <div class="popup-body"><span class="popup-icon">${icon}</span><p style="margin:6px 0 12px;">${message}</p>
-        <div>${buttons.map(b=>`<button class="popup-btn" onclick="pbClick(this,'${b.replace(/'/g,"&#39;")}')">${b}</button>`).join('')}</div></div>`;
-    document.body.appendChild(p);
-    makeDraggable(p);
+  if(id !== 'louisiana') konamiProg = 0;
+  cur = id;
 }
 
-function pbClick(el,label){
-    const fu=[
-        ["Are you sure?","This cannot be undone. (It has already been undone. Twice.)","Yes,No,What did I do,please"],
-        ["noted.","your response has been forwarded to a very small folder that no one checks.","OK,oh,who checks it"],
-        ["wrong button","all buttons lead here. there is no correct button. there never was.","OK,OK,OK,OK"],
-        ["please rate this","how was your experience closing that popup?","⭐,⭐⭐,⭐⭐⭐,⭐⭐⭐⭐⭐"],
-        ["one more thing","it will be quick. (it will not be quick.)","okay,fine,ugh,sure whatever"],
-        ["final warning","this is warning 4 of 847. you are making great progress.","got it,ignore,what is this,sigh"],
-        ["thank you","your cooperation has been stored in a jar on a shelf somewhere.","Close,bye,okay bye,BYE"],
-        ["bonus content","you have unlocked: another popup. you earned this.","nice,okay,did i though"],
-        ["oops","that button does the same thing as the other button. they all do.","understood,relatable,wait what"],
-        ["just checking","do you actually want to close this, or are you just clicking things?","yes,no,honestly no idea"],
-        ["one last thing","this is genuinely the last thing. (there are seven more things.)","okay,fine,I don't believe you,correct"],
-    ];
-    const w=fu[Math.floor(Math.random()*fu.length)];
-    setTimeout(()=>showPopup(w[0],w[1],w[2].split(',')),150);
-    el.closest('.popup').remove();
-}
+// ── Konami Code — ↑↑↓↓←→←→BA — no hint shown anywhere ──
+const SEQ = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
+let konamiProg = 0;
+let koOpen = false;
+let launched = false; // launch Nebula only once ever
 
-function makeDraggable(el){
-    let ox=0,oy=0,mx=0,my=0;
-    const t=el.querySelector('.popup-title'); t.style.cursor='move';
-    t.addEventListener('mousedown',e=>{
-        e.preventDefault(); mx=e.clientX; my=e.clientY;
-        function mv(e){ox=mx-e.clientX;oy=my-e.clientY;mx=e.clientX;my=e.clientY;el.style.top=(el.offsetTop-oy)+'px';el.style.left=(el.offsetLeft-ox)+'px';}
-        function up(){document.removeEventListener('mousemove',mv);document.removeEventListener('mouseup',up);}
-        document.addEventListener('mousemove',mv); document.addEventListener('mouseup',up);
-    });
-}
+document.addEventListener('keydown', e => {
+  if(cur !== 'louisiana') { konamiProg = 0; return; }
+  if(koOpen) { if(e.key === 'Escape') closeKo(); return; }
 
-// ─── RANDOM POPUPS ────────────────────────────────────────────────
-const rndPopups=[
-    ["hey","your computer is running. just wanted to let you know.","okay,thanks,i know,why"],
-    ["update available","java update 4,891 is ready. it does approximately the same thing as before.","sure,not now,what does it do,what is java"],
-    ["free thing","you have been selected to receive a free thing. the thing is this popup.","oh,okay,is this the thing,yes this is the thing"],
-    ["cookie notice","this site uses cookies. and brownies. and a small amount of existential dread.","accept,decline (still accepts),what kind of cookies,oatmeal raisin (deal breaker)"],
-    ["just checking in","you've been on this page for a while. are you okay?","yes,no,define okay,getting there"],
-    ["survey","we'd love your feedback! the survey is 3 hours long. snacks are not provided.","begin,no thanks,how long again,3 hours,oh"],
-    ["suspicious activity","your scroll wheel has been scrolling. we are watching the scroll wheel.","understood,it won't happen again,it will happen again,correct"],
-    ["winrar","your winrar trial expired in 1993. you were not born yet. the trial still expired.","buy it,$0.00,was it free,technically yes"],
-    ["printer","your printer is offline. it went offline in 2017 and has not looked back. respect it.","okay,wake it,let it rest,F"],
-    ["password","your password must contain: a number, a symbol, a dream, and the smell of rain.","change it,reset,i forgot it immediately,relatable"],
-    ["caps lock","your caps lock key was briefly on. we noticed. we wrote it down.","sorry,it was the cat,i don't have a cat,suspicious"],
-    ["memory","your computer is low on memory. please think fewer thoughts.","okay,which thoughts,not the good ones,the good ones are taking the most space"],
-    ["location","this site would like to know your location, your vibe, and what you had for lunch.","allow,deny (allows anyway),why,we're curious"],
-    ["update","a new version is available with exciting new features, one of which is this popup.","update,later,what feature,this one"],
-    ["microphone","this page would like to listen in. just to vibe. no notes.","allow,deny,you can't handle my vibes,we can handle them"],
-    ["terms","terms of service updated. key change: we now own your idle thoughts on tuesdays.","accept,decline (accepts),which tuesdays,all of them"],
-];
-let rpi=0;
-function firePopup(){
-    const p=rndPopups[rpi++%rndPopups.length];
-    showPopup(p[0],p[1],p[2].split(','));
-    setTimeout(firePopup,1800+Math.random()*2200);
-}
-setTimeout(firePopup,800);
-
-// ─── FLOATING ADS ─────────────────────────────────────────────────
-const adDefs=[
-    {text:"local single<br>just standing there<br>📍 2 miles away",bg:"#ffff00",border:"red"},
-    {text:"free robux<br>(this is not real)<br>🎮 we're sorry",bg:"#00ff88",border:"blue"},
-    {text:"your fan<br>is venting<br>🔇 respect that",bg:"#ff9900",border:"black"},
-    {text:"winrar<br>misses you<br>🗜️ it's been years",bg:"#ccccff",border:"purple"},
-    {text:"download<br>more ram<br>💾 trust the process",bg:"#ffcccc",border:"darkred"},
-    {text:"we saw<br>you blink<br>👁️ impressive",bg:"#ffffaa",border:"navy"},
-    {text:"print this page<br>hang it up<br>🖨️ you earned it",bg:"#ccffcc",border:"green"},
-    {text:"your IP<br>is showing<br>🌐 very cute",bg:"#ffd0f0",border:"hotpink"},
-];
-let adI=0;
-function spawnFloatAd(){
-    if(document.querySelectorAll('.float-ad').length>=7) return;
-    const a=adDefs[adI++%adDefs.length];
-    const el=document.createElement('div'); el.className='float-ad';
-    el.style.background=a.bg; el.style.borderColor=a.border;
-    el.style.left=(Math.random()*(window.innerWidth-220))+'px';
-    el.style.top=(80+Math.random()*(window.innerHeight-300))+'px';
-    el.style.animationDelay=(Math.random()*2)+'s';
-    el.innerHTML=`<div class="ad-close" onclick="this.parentElement.remove();setTimeout(spawnFloatAd,800)">✕</div>${a.text}`;
-    el.addEventListener('click',e=>{
-        if(!e.target.classList.contains('ad-close'))
-            showPopup("you clicked it","we appreciate the click. genuinely. there is no prize but the click mattered to us.","okay,fair,i want a prize,there is no prize".split(','));
-    });
-    document.body.appendChild(el);
-}
-setInterval(spawnFloatAd,3000);
-spawnFloatAd(); spawnFloatAd(); spawnFloatAd();
-
-// ─── INLINE ADS ───────────────────────────────────────────────────
-const adZone=document.getElementById('ad-zone');
-[
-    ['🖥️ your pc<br>needs a hug<br><b>we all do</b>','blue','white','cyan'],
-    ['🏆 winner<br>probably you<br><b>(unconfirmed)</b>','red','yellow','orange'],
-    ['💾 system32<br>is just vibing<br><b>leave it alone</b>','black','lime','green'],
-    ['🍕 a pizza exists<br>somewhere near you<br><b>follow your nose</b>','purple','white','violet'],
-    ['💻 the mainframe<br>is doing its best<br><b>be nice to it</b>','#004400','#00ff00','lime'],
-    ['⚡ one weird trick<br>scientists found it<br><b>then lost it</b>','orange','black','yellow'],
-    ['🧠 more brain<br>available now<br><b>limited supply</b>','navy','cyan','blue'],
-    ['🐱 a cat<br>watched you scroll<br><b>said nothing</b>','#2d0a2d','hotpink','magenta'],
-].forEach(([html,bg,color,bdr])=>{
-    const wrap=document.createElement('div');
-    wrap.style.cssText=`background:${bg};color:${color};padding:10px;border:4px outset ${bdr};font-size:13px;text-align:center;font-family:'Comic Sans MS',cursive;min-width:130px;cursor:pointer;`;
-    wrap.innerHTML=html;
-    wrap.addEventListener('click',()=>showPopup("oh","you clicked the little ad. it didn't do anything. we still think that was brave.","okay,sure,i regret it,we know".split(',')));
-    adZone.appendChild(wrap);
+  if(e.key === SEQ[konamiProg]) {
+    konamiProg++;
+    if(konamiProg === SEQ.length) { konamiProg = 0; openKo(); }
+  } else {
+    konamiProg = 0;
+    if(e.key === SEQ[0]) konamiProg = 1;
+  }
 });
 
-// ─── TEXT RAIN ─────────────────────────────────────────────────────
-const rainC=document.getElementById('text-rain-container');
-const rainW=['hmm','uh oh','wait','huh','oh no','sir','ma\'am','buddy','friend','hello','yikes','oof','bruh','oh','ah','anyway','moving on','as i was saying','nevermind','okay','noted','understood','sure','fine','whatever','look','listen','hey','psst','okay so','the thing is','actually','you know what','genuinely','no but like','wait actually','hold on','oh also','one more thing'];
-const rainCol=['#ff00ff','#00ff00','#ffff00','#00ffff','#ff6600','#ff0000','white','orange','hotpink','#aaaaff'];
-function spawnRain(){
-    const el=document.createElement('div'); el.className='rain-word';
-    el.textContent=rainW[Math.floor(Math.random()*rainW.length)];
-    el.style.left=Math.random()*95+'vw';
-    el.style.color=rainCol[Math.floor(Math.random()*rainCol.length)];
-    el.style.fontSize=(11+Math.random()*22)+'px';
-    const dur=3+Math.random()*6;
-    el.style.animationDuration=dur+'s';
-    el.style.animationDelay='-'+(Math.random()*dur)+'s';
-    rainC.appendChild(el);
-    setTimeout(()=>el.remove(),dur*1200);
+function openKo() {
+  koOpen = true;
+  const ov = document.getElementById('ko');
+  ov.classList.add('on');
+  // Scroll inner page so overlay is fully visible
+  const lp = document.getElementById('lp-pg');
+  if(lp) lp.scrollTop = lp.scrollHeight;
 }
-setInterval(spawnRain,80);
-
-// ─── EXPLOSIONS ──────────────────────────────────────────────────
-function spawnExplosion(x,y){
-    ['💥','✨','🔥','⚡','💫','🌟','🎆','🎉'].forEach((_,i)=>{
-        const el=document.createElement('div'); el.className='explosion';
-        el.textContent=['💥','✨','🔥','⚡','💫','🌟','🎆','🎉'][Math.floor(Math.random()*8)];
-        el.style.left=(x+(Math.random()-.5)*120)+'px';
-        el.style.top=(y+(Math.random()-.5)*120)+'px';
-        document.body.appendChild(el);
-        setTimeout(()=>el.remove(),800);
-    });
+function closeKo() {
+  koOpen = false;
+  konamiProg = 0;
+  document.getElementById('ko').classList.remove('on');
 }
-document.addEventListener('click',e=>{ if(e.target!==btn) spawnExplosion(e.clientX,e.clientY); });
+window.closeKo = closeKo;
 
-// ─── AUDIO ────────────────────────────────────────────────────────
-let aCtx=null;
-function getA(){ if(!aCtx) aCtx=new(window.AudioContext||window.webkitAudioContext)(); return aCtx; }
-function beep(f,d){
-    try{const a=getA(),o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);
-    o.frequency.value=f;o.type='square';g.gain.setValueAtTime(0.05,a.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.001,a.currentTime+d);o.start(a.currentTime);o.stop(a.currentTime+d);}catch(e){}
+// Launch Nebula in about:blank — only ever once
+function launchNebula() {
+  if(launched) return;
+  launched = true;
+  closeKo();
+  fetch('main.html')
+    .then(r => r.text())
+    .then(html => {
+      const w = window.open('about:blank', '_blank');
+      if(!w) { launched = false; window.open('main.html', '_blank'); return; }
+      w.document.open();
+      w.document.write(html);
+      w.document.close();
+    })
+    .catch(() => { launched = false; window.open('main.html', '_blank'); });
 }
-document.addEventListener('click',e=>{
-    getA();
-    if(e.target.classList.contains('popup-btn')||e.target.classList.contains('close-btn'))
-        beep(550+Math.random()*500,0.12);
-});
-setInterval(()=>{ if(aCtx) beep(250+Math.random()*900,0.05+Math.random()*0.1); },1000);
-
-// ─── TITLE CHAOS ─────────────────────────────────────────────────
-const titles=["ERROR: EVERYTHING IS FINE","wait come back","your fan is just nervous","⚠️ something ⚠️","please","still loading (999%)","have you tried the button","you have (1) unread vibe","🔴 live: your screen doing stuff","do not close this, we're talking","is this a computer? yes. okay.","system32 got a lil deleted","nice browser honestly","the void said hi","hey. hey you. look at this.","you left the oven on (you didn't) (maybe)","downloading: your sense of calm","your printer wrote you a letter. it said nothing.","404: afternoon not found","we accept cookies and reasonable excuses","your mouse looks a little tired","loading your situation... 74%","front camera: thinking","please stop scrolling (keep going)","hello? anyone? just us? okay.","we are so back","the void stares back and honestly fair"];
-let ti=0;
-setInterval(()=>{ document.title=titles[ti++%titles.length]; },750);
-
-// ─── GENTLE SCROLL JITTER ─────────────────────────────────────────
-setInterval(()=>{ if(Math.random()<0.07) window.scrollBy(0,(Math.random()-.5)*18); },700);
-
-// ─── SPAM TEXT GROWS ──────────────────────────────────────────────
-const spamEl=document.getElementById('spam-text-block');
-const spamSnip=['hmm','okay but','wait actually','you know','the thing is','anyway','as i was saying','hold on','one sec','never mind','oh also','so basically','right so','and another thing','moving on','back to my point','where was i','oh right','actually though','in conclusion'];
-setInterval(()=>{
-    spamEl.textContent+=' '+spamSnip[Math.floor(Math.random()*spamSnip.length)];
-    if(spamEl.textContent.length>5000) spamEl.textContent=spamEl.textContent.slice(2500);
-}, 250);
-
-
-// ─── DANGER ZONE: inject main.html into about:blank ──────────────
-let mainLaunched = false;
-document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible') mainLaunched = false;
-});
-function openMainInBlank() {
-    if (mainLaunched) return;
-    mainLaunched = true;
-    fetch('main.html')
-        .then(r => r.text())
-        .then(html => {
-            const w = window.open('about:blank', '_blank');
-            w.document.open();
-            w.document.write(html);
-            w.document.close();
-        })
-        .catch(() => {
-            // If fetch fails (e.g. no server), just open a blank tab with an error message
-            const w = window.open('about:blank', '_blank');
-            w.document.open();
-            w.document.write('<h1 style="font-family:Comic Sans MS;color:red">ERROR: main.html not found. Did you forget to bring it?</h1>');
-            w.document.close();
-        });
-}
-
+window.launchNebula = launchNebula;
 </script>
 </body>
 </html>
