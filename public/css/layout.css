@@ -1761,7 +1761,251 @@ body.layout-bottombar #main { flex: 1; overflow: hidden; min-height: 0; }
   .cleanup-actions { grid-template-columns: 1fr; }
   .cleanup-action-card { border-right: none; }
 }
+/* ══════════════════════════════════════════
+   LAYOUT.CSS ADDITIONS — paste at bottom
+   - Goat Console polish
+   - Better goat rank badge
+   - SVG reaction chips
+   - Presence fix
+══════════════════════════════════════════ */
 
+/* ── GOAT CONSOLE (Admin Panel) ── */
+#section-admin {
+  background: var(--bg);
+}
+#section-admin.active .admin-full {
+  max-width: 940px;
+}
+
+/* Console-style header for goat rank */
+.admin-full .pg-title {
+  font-size: 1.4rem;
+  letter-spacing: -.01em;
+}
+
+/* Goat console monospace feel */
+.cleanup-log {
+  font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+  font-size: .71rem;
+  line-height: 1.6;
+  background: #000e1a;
+  border: 1px solid rgba(79,201,234,.15);
+  border-radius: 8px;
+  color: #a0d8ef;
+}
+.cleanup-log-ts { color: rgba(79,201,234,.4); }
+.cleanup-log-success { color: #4ade80; }
+.cleanup-log-error { color: #f87171; }
+.cleanup-log-info { color: #94a3b8; }
+
+/* Admin stat pills — better */
+.admin-stat-pill {
+  border-radius: var(--pill-radius);
+  padding: .32rem .9rem;
+  font-size: .72rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  border: 1px solid var(--border2);
+  background: var(--card-bg);
+  transition: border-color var(--tm);
+}
+.admin-stat-pill:hover { border-color: var(--border); }
+.admin-stat-pill span {
+  font-size: .95rem;
+  font-weight: 900;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Admin tabs — cleaner */
+.adm-tab {
+  font-size: .73rem;
+  font-weight: 700;
+  letter-spacing: .2px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: .44rem .95rem;
+}
+
+/* ── GOAT RANK BADGE — polished ── */
+.rbadge.goat {
+  background: linear-gradient(90deg, rgba(245,158,11,.2), rgba(244,63,94,.15));
+  color: #fde68a;
+  border: 1px solid rgba(245,158,11,.4);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 900;
+  letter-spacing: .5px;
+  box-shadow: 0 0 12px rgba(245,158,11,.12);
+}
+
+/* Goat SVG icon in badge */
+.rbadge.goat .goat-badge-icon {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+/* ── SVG REACTION CHIPS ── */
+.rchip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: .18rem .55rem;
+  border-radius: var(--rl);
+  cursor: pointer;
+  transition: all var(--t);
+  font-size: .74rem;
+  font-weight: 600;
+  user-select: none;
+}
+.rchip svg {
+  flex-shrink: 0;
+  pointer-events: none;
+  transition: transform var(--t);
+}
+.rchip:hover svg { transform: scale(1.15); }
+.rchip .rcnt { font-size: .7rem; font-weight: 700; }
+
+/* Reaction picker SVG options */
+.epicker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: .55rem .6rem;
+  border-radius: var(--rl);
+  border: 1px solid var(--border);
+  background: var(--bg2);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 12px 40px rgba(0,0,0,.4);
+  width: 240px;
+  animation: slideDown .13s ease;
+  position: fixed;
+  z-index: 8000;
+}
+.eopt {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--r);
+  cursor: pointer;
+  padding: 0;
+  background: transparent;
+  border: 1.5px solid transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--t);
+  color: var(--text-muted);
+}
+.eopt:hover {
+  background: var(--nav-hover);
+  border-color: var(--accent);
+  color: var(--accent);
+  transform: scale(1.12);
+}
+
+/* ── ONLINE PRESENCE DOT — fixed ── */
+.ms-item {
+  position: relative;
+}
+.ms-ava-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+/* The dot is on the ava wrapper, not the ava itself */
+.ms-ava-online-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+.ms-ava-online-wrap::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  right: -1px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--success, #4ade80);
+  border: 2px solid var(--bg2, #0f172a);
+  pointer-events: none;
+  box-shadow: 0 0 6px rgba(74,222,128,.4);
+  animation: fadeIn .25s ease;
+}
+
+/* ── MEMBERS SIDEBAR SECTION LABELS ── */
+.ms-section-label {
+  font-size: .53rem;
+  font-weight: 800;
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+  padding: .6rem .6rem .2rem;
+  color: var(--text-faint);
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+}
+.ms-section-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border2);
+  margin-left: .2rem;
+}
+
+/* ── BJ 1v1 — cleaner single-opponent layout ── */
+.bj-sides-row-full {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.2rem;
+  width: 100%;
+  margin: 0 auto 1rem;
+}
+@media (max-width: 580px) {
+  .bj-sides-row-full {
+    grid-template-columns: 1fr;
+  }
+}
+.bj-sides-row-full .bj-side {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--surface-radius);
+  padding: 1rem 1.2rem;
+}
+.bj-fullscreen-overlay .bj-sides-row-full .bj-active-side {
+  border-color: var(--accent) !important;
+  background: var(--nav-active-bg) !important;
+  box-shadow: 0 0 0 1px var(--accent-dim);
+}
+
+/* ── GOAT CONSOLE SECTION ── */
+#section-admin .pg-title {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+}
+
+/* ── BJ LOBBY IMPROVEMENTS ── */
+.bj-lobby-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--text);
+  margin-bottom: .25rem;
+}
+.bj-lobby-sub {
+  font-size: .73rem;
+  color: var(--text-muted);
+  line-height: 1.65;
+}
+
+/* ── GOAT RANK ICON — sidebar ── */
+.sp-rank[style*="goat"], .rbadge.goat {
+  text-shadow: 0 0 8px rgba(253,230,138,.25);
+}
 /* ══════════════════════════════════════════
    BJ TABLE — PLAYER-ONLY LAYOUT
 ══════════════════════════════════════════ */

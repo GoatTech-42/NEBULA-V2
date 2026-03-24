@@ -792,6 +792,24 @@ function subscribeChannel(channelId) {
 }
 
 let lastMsgSender = null, lastMsgTime = null;
+
+function renderRankBadge(rank) {
+  if(rank === 'goat') {
+    return `<span class="rbadge goat">
+      <svg class="goat-badge-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 9V7a2 2 0 0 0-2-2h-1a2 2 0 0 0-2 2v1"/>
+        <path d="M4 9V7a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v1"/>
+        <path d="M8 9h8"/>
+        <ellipse cx="12" cy="13" rx="5" ry="4"/>
+        <path d="M9 17v2"/>
+        <path d="M15 17v2"/>
+      </svg>
+      GOAT
+    </span>`;
+  }
+  return `<span class="rbadge ${rank||'planetary'}">${rank||'planetary'}</span>`;
+}
+
 function appendMsg(id, data, container) {
   const groupMs = (window._groupMins ?? 5) * 60000;
   const isFirst = data.uid !== lastMsgSender || !lastMsgTime || (data.ts?.toMillis() - lastMsgTime) > groupMs;
@@ -817,7 +835,7 @@ function appendMsg(id, data, container) {
       <div class="msg-content">
         <div class="msg-header">
           <span class="msg-name" style="color:${color};cursor:pointer" onclick="window._openProfile('${data.uid}')">${escHtml(data.username)}</span>
-          <span class="rbadge ${data.rank||'planetary'}">${data.rank||'planetary'}</span>
+          ${renderRankBadge(data.rank)}
           ${badgeHtml ? `<span class="msg-badge-row">${badgeHtml}</span>` : ''}
           <span class="msg-ts">${tsStr}</span>
         </div>
@@ -877,19 +895,7 @@ function updateMsgEl(el, data) {
   }
 }
 
-function renderReactions(container, reactions, msgId) {
-  if(!container) return;
-  container.innerHTML = '';
-  Object.entries(reactions).forEach(([emoji, uids]) => {
-    if(!uids||!uids.length) return;
-    const mine = uids.includes(currentUser.uid);
-    const chip = document.createElement('span');
-    chip.className = `rchip${mine?' mine':''}`;
-    chip.innerHTML = `${emoji} <span class="rcnt">${uids.length}</span>`;
-    chip.addEventListener('click', () => toggleReaction(msgId, emoji));
-    container.appendChild(chip);
-  });
-}
+// ...existing code...
 
 async function toggleReaction(msgId, emoji) {
   const chId = currentChannel?.id;
@@ -1073,24 +1079,109 @@ window.deleteMsg = function(id) {
 };
 
 // ── Reactions ──
-const EMOJI_OPTS = ['👍','👎','❤️','😂','😮','😢','🔥','🎉','⭐','💯'];
+
+// SVG Reaction System
+const REACTION_DEFS = {
+  thumbsup: {
+    label: 'Like',
+    path: `<path d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.28a2 2 0 002-1.7l1.38-9a2 2 0 00-2-2.3H14z"/><path d="M7 22H4a2 2 0 01-2-2v-7a2 2 0 012-2h3"/>`
+  },
+  thumbsdown: {
+    label: 'Dislike',
+    path: `<path d="M10 15v4a3 3 0 003 3l4-9V2H5.72a2 2 0 00-2 1.7l-1.38 9a2 2 0 002 2.3H10z"/><path d="M17 2h2.67A2.31 2.31 0 0122 4v7a2.31 2.31 0 01-2.33 2H17"/>`
+  },
+  fire: {
+    label: 'Fire',
+    path: `<path d="M8.5 14.5A2.5 2.5 0 0011 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 01-7 7 7 7 0 01-7-7c0-1.53.4-2.973 1.1-4.2.31-.477.63-.913.9-1.3"/>`
+  },
+  wiltedflower: {
+    label: 'Wilted Flower',
+    path: `<path d="M12 22v-8"/><path d="M9 14c-1.5-.8-3-2.5-3-4.5a6 6 0 0112 0c0 2-1.5 3.7-3 4.5" stroke-dasharray="3 1.5" opacity=".7"/><path d="M10 19c-2 .8-3.5.2-3.5-1.3" opacity=".6"/><path d="M12 14l-2 2"/>`
+  },
+  crackedheart: {
+    label: 'Broken Heart',
+    path: `<path d="M20.42 4.58a5.4 5.4 0 00-7.65 0l-.77.78-.77-.78a5.4 5.4 0 00-7.65 0C1.46 6.7 1.33 10.28 4 13l8 8 8-8c2.67-2.72 2.54-6.3.42-8.42z"/><path d="M12 6l-1.5 3 3-.8-1.5 2.8" stroke="#fff" stroke-width="1.2" fill="none"/>`
+  },
+  insanegrin: {
+    label: 'Insane Grin',
+    path: `<circle cx="12" cy="12" r="10"/><path d="M7 14.5s1 3.5 5 3.5 5-3.5 5-3.5"/><path d="M7 14c.4.4.8.4 1.2 0s.8-.4 1.2 0 .8.4 1.2 0 .8-.4 1.2 0 .8.4 1.2 0 .8-.4 1.2 0" opacity=".7"/><circle cx="9" cy="9.5" r="1.2" fill="currentColor" stroke="none"/><circle cx="15" cy="9.5" r="1.2" fill="currentColor" stroke="none"/>`
+  },
+  star: {
+    label: 'Star',
+    path: `<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>`
+  },
+  skull: {
+    label: 'Skull',
+    path: `<circle cx="12" cy="11" r="5"/><path d="M9 11v2M15 11v2"/><path d="M9 16c0 1 .5 1.5 1.5 1.5h3c1 0 1.5-.5 1.5-1.5v-1H9v1z"/><path d="M7 8c-1-2 0-5 3-5s3 2 3 2 1-2 3-2 4 3 3 5"/>`
+  },
+  laugh: {
+    label: 'LOL',
+    path: `<circle cx="12" cy="12" r="10"/><path d="M8 13s1.5 3 4 3 4-3 4-3"/><path d="M9 9h.01M15 9h.01" stroke-width="3" stroke-linecap="round"/>`
+  },
+  wave: {
+    label: 'Wave',
+    path: `<path d="M18.5 17.5c-2-2.5-4.5-3-7.5-3s-5.5.5-7.5 3"/><path d="M12 3c-1.2 1.2-1.8 2.6-1.8 4 0 1.5.6 3 1.8 4.5"/><path d="M12 3c1.2 1.2 1.8 2.6 1.8 4 0 1.5-.6 3-1.8 4.5"/>`
+  }
+};
+
+const REACTION_KEYS = Object.keys(REACTION_DEFS);
+
+function _reactionSVG(key, size=14) {
+  const def = REACTION_DEFS[key];
+  if(!def) return '';
+  return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${def.path}</svg>`;
+}
+
+// Replacement for window.addReaction
 window.addReaction = function(msgId) {
+  // Remove any existing picker
+  document.querySelectorAll('.epicker').forEach(p=>p.remove());
   const el = document.getElementById('msg-'+msgId);
   if(!el) return;
   const picker = document.createElement('div');
   picker.className = 'epicker';
   const rect = el.getBoundingClientRect();
-  picker.style.top = (rect.bottom+4)+'px';
-  picker.style.left = rect.left+'px';
-  EMOJI_OPTS.forEach(em => {
-    const opt = document.createElement('span');
-    opt.className='eopt'; opt.textContent=em;
-    opt.addEventListener('click', ()=>{ toggleReaction(msgId,em); picker.remove(); });
+  const top = Math.min(rect.bottom + 4, window.innerHeight - 220);
+  const left = Math.min(rect.left, window.innerWidth - 250);
+  picker.style.top = (window.scrollY + top) + 'px';
+  picker.style.left = left + 'px';
+
+  REACTION_KEYS.forEach(key => {
+    const def = REACTION_DEFS[key];
+    const opt = document.createElement('button');
+    opt.className = 'eopt';
+    opt.title = def.label;
+    opt.innerHTML = _reactionSVG(key, 16);
+    opt.addEventListener('click', () => { toggleReaction(msgId, key); picker.remove(); });
     picker.appendChild(opt);
   });
+
   document.body.appendChild(picker);
-  setTimeout(()=>document.addEventListener('click',()=>picker.remove(),{once:true}),10);
+  // Close on outside click
+  setTimeout(() => {
+    function onOutside(e) {
+      if(!picker.contains(e.target)) { picker.remove(); document.removeEventListener('click', onOutside); }
+    }
+    document.addEventListener('click', onOutside, false);
+  }, 10);
 };
+
+// Replacement for renderReactions — uses SVG icons
+function renderReactions(container, reactions, msgId) {
+  if(!container) return;
+  container.innerHTML = '';
+  Object.entries(reactions).forEach(([key, uids]) => {
+    if(!uids||!uids.length) return;
+    const mine = typeof currentUser !== 'undefined' && uids.includes(currentUser.uid);
+    const def = REACTION_DEFS[key];
+    const chip = document.createElement('span');
+    chip.className = `rchip${mine?' mine':''}`;
+    chip.title = def?.label || key;
+    chip.innerHTML = `${_reactionSVG(key, 13)} <span class="rcnt">${uids.length}</span>`;
+    chip.addEventListener('click', () => toggleReaction(msgId, key));
+    container.appendChild(chip);
+  });
+}
 
 // ── Members — uses RTDB presence if available ──
 function loadMembers(ch) {
@@ -1100,6 +1191,23 @@ function loadMembers(ch) {
 
   let users = [], presenceMap = {};
   const ACTIVE_THRESHOLD = 75000;
+
+  function _memberItemHtml(u, isOnline) {
+    const avaHtml = avatarHtml(u.icon, u.username, '60%');
+    const color = u.color || avatarColor(u.uid);
+    
+    const avaWrapper = isOnline
+      ? `<div class="ms-ava-online-wrap"><div class="ms-ava" style="background:${color}">${avaHtml}</div></div>`
+      : `<div class="ms-ava" style="background:${color}">${avaHtml}</div>`;
+    
+    const itemClass = isOnline ? 'ms-item' : 'ms-item ms-item-offline';
+    
+    return `<div class="${itemClass}" onclick="window._openProfile('${u.uid}')" style="cursor:pointer">
+      ${avaWrapper}
+      <span class="ms-name">${escHtml(u.username)}</span>
+      <span class="rbadge ${u.rank}" style="flex-shrink:0">${u.rank[0].toUpperCase()}</span>
+    </div>`;
+  }
 
   function renderMembers() {
     const now = Date.now();
@@ -1119,11 +1227,11 @@ function loadMembers(ch) {
     let html = '';
     if(online.length) html += `<div class="ms-section-label">Active — ${online.length}</div>`;
     online.forEach(u => {
-      html += `<div class="ms-item" onclick="window._openProfile('${u.uid}')" style="cursor:pointer"><div class="ms-ava ms-ava-online" style="background:${u.color||avatarColor(u.uid)}">${avatarHtml(u.icon,u.username,"60%")}</div><span class="ms-name">${escHtml(u.username)}</span><span class="rbadge ${u.rank}" style="flex-shrink:0">${u.rank[0].toUpperCase()}</span></div>`;
+      html += _memberItemHtml(u, true);
     });
     if(offline.length) html += `<div class="ms-section-label">Members — ${offline.length}</div>`;
     offline.forEach(u => {
-      html += `<div class="ms-item ms-item-offline" onclick="window._openProfile('${u.uid}')" style="cursor:pointer"><div class="ms-ava" style="background:${u.color||avatarColor(u.uid)}">${avatarHtml(u.icon,u.username,"60%")}</div><span class="ms-name">${escHtml(u.username)}</span><span class="rbadge ${u.rank}" style="flex-shrink:0">${u.rank[0].toUpperCase()}</span></div>`;
+      html += _memberItemHtml(u, false);
     });
     list.innerHTML = html || '<div class="ms-section-label">No members</div>';
   }

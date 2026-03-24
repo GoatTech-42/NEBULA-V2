@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-3DNSV0WCYG"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-3DNSV0WCYG');
+</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Under Construction</title>
+    <style>
+        :root {
+            --yellow: #ffde59;
+            --dark: #1a1a1a;
+            --gray: #666666;
+            --bg: #fdfdfd;
+            --grid: #f0f0f0;
+        }
+
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: var(--bg);
+            /* Blueprint Grid Background */
+            background-image: 
+                linear-gradient(var(--grid) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+            background-size: 40px 40px;
+            font-family: -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
+            color: var(--dark);
+            overflow: hidden;
+        }
+
+        .content {
+            position: relative;
+            text-align: center;
+            padding: 3rem;
+            background: rgba(253, 253, 253, 0.9); /* Slight fade for readability over grid */
+            border-radius: 20px;
+        }
+
+        /* --- Minimalist Crane (Corrected Sides) --- */
+        .crane {
+            position: relative;
+            width: 200px;
+            height: 140px;
+            margin: 0 auto 40px;
+        }
+
+        .tower {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 10px;
+            height: 100px;
+            background: var(--dark);
+            transform: translateX(-50%);
+            border-radius: 2px;
+            z-index: 2;
+        }
+
+        .arm-assembly {
+            position: absolute;
+            top: 30px;
+            left: 50%;
+            width: 0;
+            height: 0;
+            animation: swing 6s ease-in-out infinite;
+            z-index: 1;
+        }
+
+        .arm {
+            position: absolute;
+            top: -4px;
+            /* Long side is the Jib (right), Short side is Counterweight (left) */
+            left: -40px; 
+            width: 160px; 
+            height: 8px;
+            background: var(--yellow);
+            border-radius: 4px;
+            border: 2px solid var(--dark);
+        }
+
+        .hook-line {
+            position: absolute;
+            top: 6px;
+            left: 80px; /* Positioned on the long arm side */
+            width: 2px;
+            height: 40px;
+            background: var(--dark);
+            animation: drop 3s ease-in-out infinite alternate;
+        }
+
+        .hook-line::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: -4px;
+            width: 8px;
+            height: 8px;
+            border: 2px solid var(--dark);
+            border-top: none;
+            border-radius: 0 0 4px 4px;
+        }
+
+        /* --- Text Styling --- */
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin: 0;
+            letter-spacing: -1px;
+            text-transform: uppercase;
+        }
+
+        p {
+            font-size: 1.1rem;
+            color: var(--gray);
+            margin-top: 10px;
+        }
+
+        .time {
+            color: var(--dark);
+            font-weight: 700;
+            background: var(--yellow);
+            padding: 2px 8px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+
+        /* --- Animations --- */
+        @keyframes swing {
+            0%, 100% { transform: rotate(-8deg); }
+            50% { transform: rotate(10deg); }
+        }
+
+        @keyframes drop {
+            0% { height: 35px; }
+            100% { height: 75px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="content">
+        <div class="crane">
+            <div class="tower"></div>
+            <div class="arm-assembly">
+                <div class="arm"></div>
+                <div class="hook-line"></div>
+            </div>
+        </div>
+
+        <h1>Under Construction</h1>
+        <p>We’ll be back up <span class="time">soon.</span></p>
+    </div>
+
+</body>
+</html>

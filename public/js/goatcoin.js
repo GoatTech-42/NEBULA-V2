@@ -1,12 +1,15 @@
 // ═══════════════════════════════════════════════════
-//  goatcoin.js — GoatCoin currency, multiplayer blackjack,
+//  goatcoin.js — GoatCoin currency, 1v1 blackjack,
 //  leaderboard, weekly badge awards
+//  NOTE: Blackjack is STRICTLY 2-player (you vs one opponent).
+//        Games stored in RTDB for speed/cost.
 // ═══════════════════════════════════════════════════
 import {
   db, auth,
   doc, getDoc, setDoc, updateDoc, collection, query, where,
   getDocs, onSnapshot, orderBy, limit, serverTimestamp, increment, addDoc, deleteDoc
 } from './firebase.js';
+import { getDatabase, ref as rtRef, set as rtSet, get as rtGet, onValue, push as rtPush, remove as rtRemove, update as rtUpdate, onDisconnect } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 import { toast, avatarColor, avatarInitial, escHtml, avatarHtml } from './app.js';
 
 // ── Constants ──
@@ -20,33 +23,29 @@ let _gcUnsub   = null;
 let _gcTimer   = null;
 let _activity  = 'site';
 
-// Multiplayer BJ
+// Multiplayer BJ (1v1 only)
 let _mpGame        = null;
 let _mpGameId      = null;
-let _mpGameUnsub   = null;
+let _mpGameUnsub   = null; // RTDB listener off-fn
 let _mpChallengeId = null;
-let _mpChalOpp1    = null;
-let _mpChalOpp2    = null;
+let _mpChalOpp     = null;
 let _mpChalStake   = 0;
 let _mpChalBestOf  = 3;
-let _mpChalUnsub2  = null;
+let _mpChalUnsub   = null; // Firestore challenges listener
+let _mpChalUnsub2  = null; // Firestore sent-challenge listener
 let _cachedIncoming = [];
-let _mpChalUnsub   = null;
 let _myRole        = null;
 
-// Realtime DB reference (injected from app.js via init)
 let _rtdb = null;
 
 // ──────────────────────────────────────────────────
-//  WEEK KEY — Sunday-based ISO week
+//  WEEK KEY
 // ──────────────────────────────────────────────────
 function _weekKey() {
   const now = new Date();
-  // Get the most recent Sunday (day 0)
   const sunday = new Date(now);
   sunday.setHours(0, 0, 0, 0);
-  sunday.setDate(now.getDate() - now.getDay()); // rewind to Sunday
-  // Build key: YYYY-SUN-MMDD
+  sunday.setDate(now.getDate() - now.getDay());
   const y = sunday.getFullYear();
   const m = String(sunday.getMonth() + 1).padStart(2, '0');
   const d = String(sunday.getDate()).padStart(2, '0');
@@ -82,12 +81,18 @@ async function _cleanupStaleData() {
       else if(data.createdAt?.toDate && data.createdAt.toDate() < cutoff) toDel.push(d.ref);
     });
     await Promise.all(toDel.map(r => deleteDoc(r).catch(()=>{})));
-
-    const [g1, g2] = await Promise.all([
-      getDocs(query(collection(db,'bj_games'), where('p1uid','==',_gcUser.uid), where('phase','==','gameDone'))),
-      getDocs(query(collection(db,'bj_games'), where('p2uid','==',_gcUser.uid), where('phase','==','gameDone')))
-    ]);
-    await Promise.all([...g1.docs, ...g2.docs].map(d => deleteDoc(d.ref).catch(()=>{})));
+    // Clean up stale RTDB games
+    if(_rtdb) {
+      const gamesSnap = await rtGet(rtRef(_rtdb, 'bj_games'));
+      if(gamesSnap.val()) {
+        const now = Date.now();
+        Object.entries(gamesSnap.val()).forEach(([gid, g]) => {
+          if(g.phase === 'gameDone' || (g.createdAt && (now - g.createdAt) > 24*60*60*1000)) {
+            rtRemove(rtRef(_rtdb, `bj_games/${gid}`)).catch(()=>{});
+          }
+        });
+      }
+    }
   } catch(e) {}
 }
 
@@ -125,16 +130,10 @@ async function _checkWeekReset() {
   if(!_gcData) return;
   const current = _weekKey();
   if(_gcData.lastWeekReset === current) return;
-  // Award weekly badges before resetting
   await _awardWeeklyBadges();
-  // Reset weekly fields atomically
   await updateDoc(doc(db,'goatcoin',_gcUser.uid), {
-    weekCoins: 0,
-    weekSiteMins: 0,
-    weekChatMins: 0,
-    weekGameMins: 0,
-    weekBJWins: 0,
-    lastWeekReset: current
+    weekCoins: 0, weekSiteMins: 0, weekChatMins: 0,
+    weekGameMins: 0, weekBJWins: 0, lastWeekReset: current
   }).catch(()=>{});
 }
 
@@ -152,7 +151,6 @@ async function _awardWeeklyBadges() {
       if((data.weekBJWins||0)   > topBJ.val)    topBJ   ={uid:d.id,val:data.weekBJWins||0};
     });
     const allUsers = await getDocs(collection(db,'users'));
-    // Strip old weekly badges from everyone
     await Promise.all(allUsers.docs.map(d => {
       const badges = (d.data().badges||[]).filter(b=>!['champion','sweat','social','lucky'].includes(b));
       return updateDoc(doc(db,'users',d.id),{badges});
@@ -244,9 +242,7 @@ function _renderTab() {
   const wCoins = _gcData ? Math.floor(_gcData.weekCoins||0) : 0;
   const wChat  = _gcData ? Math.floor(_gcData.weekChatMins||0) : 0;
   const wGame  = _gcData ? Math.floor(_gcData.weekGameMins||0) : 0;
-  const wSite  = _gcData ? Math.floor(_gcData.weekSiteMins||0) : 0;
 
-  // Week label: Sun–Sat
   const now = new Date();
   const sunday = new Date(now);
   sunday.setDate(now.getDate() - now.getDay());
@@ -257,7 +253,6 @@ function _renderTab() {
 
   container.innerHTML = `
     <div class="pad gc-page">
-
       <div class="gc-header-row">
         <div>
           <div class="pg-title">GoatCoin</div>
@@ -303,13 +298,13 @@ function _renderTab() {
   _wireBJLobby();
   _renderLeaderboard();
   if(_mpGameId && _mpGame) { _renderBJTable(); return; }
-  if(_mpChallengeId && _mpChalOpp1) _restoreWaitingState();
+  if(_mpChallengeId && _mpChalOpp) _restoreWaitingState();
   if(_cachedIncoming.length) _renderPendingChallenges(_cachedIncoming);
   _fetchIncomingNow();
 }
 
 // ──────────────────────────────────────────────────
-//  LOBBY UI
+//  LOBBY UI — 1v1 only
 // ──────────────────────────────────────────────────
 function _renderBJLobby() {
   return `<div class="bj-lobby">
@@ -317,32 +312,21 @@ function _renderBJLobby() {
       <div class="bj-lobby-intro">
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="18" rx="2"/><path d="M12 7v10M7 12h10"/></svg>
         <div>
-          <div class="bj-lobby-title">Multiplayer Blackjack</div>
-          <div class="bj-lobby-sub">Pick up to 2 opponents, set your stake, and play. Most round wins takes the pot.</div>
+          <div class="bj-lobby-title">1v1 Blackjack</div>
+          <div class="bj-lobby-sub">Challenge one opponent. Closest to 21 wins each round — no dealer advantage. Most round wins takes the pot.</div>
         </div>
       </div>
 
       <div class="bj-form-section">
         <div class="bj-form-label">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
-          Opponents (up to 2)
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+          Opponent
         </div>
-        <div class="bj-opp-slots">
-          <div class="bj-opp-slot" id="bj-opp-slot-1">
-            <div class="bj-opp-search-wrap">
-              <input class="bj-opp-inp" data-slot="1" type="text" placeholder="Search player 1..." autocomplete="off">
-              <div class="bj-search-results hidden" id="bj-search-results-1"></div>
-            </div>
-            <div class="bj-selected-pill hidden" id="bj-selected-1"></div>
-          </div>
-          <div class="bj-opp-slot" id="bj-opp-slot-2">
-            <div class="bj-opp-search-wrap">
-              <input class="bj-opp-inp" data-slot="2" type="text" placeholder="Search player 2 (optional)..." autocomplete="off">
-              <div class="bj-search-results hidden" id="bj-search-results-2"></div>
-            </div>
-            <div class="bj-selected-pill hidden" id="bj-selected-2"></div>
-          </div>
+        <div class="bj-opp-search-wrap">
+          <input class="bj-opp-inp" id="bj-opp-inp" type="text" placeholder="Search for a player..." autocomplete="off">
+          <div class="bj-search-results hidden" id="bj-search-results"></div>
         </div>
+        <div class="bj-selected-pill hidden" id="bj-selected"></div>
       </div>
 
       <div class="bj-form-row-inline">
@@ -358,7 +342,7 @@ function _renderBJLobby() {
             <button class="bj-chip" data-bet="100">100</button>
             <button class="bj-chip" data-bet="250">250</button>
           </div>
-          <input id="bj-stake-input" class="field-input" type="number" min="1" placeholder="Custom..." style="margin-top:.5rem;max-width:160px">
+          <input id="bj-stake-input" class="field-input" type="number" min="1" placeholder="Custom amount..." style="margin-top:.5rem;max-width:160px">
         </div>
         <div class="bj-form-section" style="flex:0 0 auto">
           <div class="bj-form-label">
@@ -384,14 +368,14 @@ function _renderBJLobby() {
   </div>`;
 }
 
-const _selectedOpponents = {1: null, 2: null};
+let _selectedOpp = null;
 
 async function _updateStakeMax() {
   const myCoins = _gcData ? Math.floor(_gcData.coins||0) : 0;
   let minCoins = myCoins;
-  for(const opp of [_selectedOpponents[1], _selectedOpponents[2]].filter(Boolean)) {
+  if(_selectedOpp) {
     try {
-      const snap = await getDoc(doc(db,'goatcoin',opp.uid));
+      const snap = await getDoc(doc(db,'goatcoin',_selectedOpp.uid));
       const c = snap.exists() ? Math.floor(snap.data().coins||0) : 0;
       if(c < minCoins) minCoins = c;
     } catch(e) {}
@@ -430,35 +414,32 @@ function _wireBJLobby() {
     });
   });
 
-  [1, 2].forEach(slot => {
-    const inp = panel.querySelector(`.bj-opp-inp[data-slot="${slot}"]`);
-    if(!inp) return;
+  const inp = panel.querySelector('#bj-opp-inp');
+  if(inp) {
     let t;
     inp.addEventListener('input', () => {
       clearTimeout(t);
-      t = setTimeout(() => _searchOpponentsSlot(inp.value.trim(), slot), 250);
+      t = setTimeout(() => _searchOpponents(inp.value.trim()), 250);
     });
     document.addEventListener('click', e => {
-      if(!e.target.closest(`#bj-search-results-${slot}`) && !e.target.closest(`.bj-opp-inp[data-slot="${slot}"]`))
-        document.getElementById(`bj-search-results-${slot}`)?.classList.add('hidden');
+      if(!e.target.closest('#bj-search-results') && !e.target.closest('#bj-opp-inp'))
+        document.getElementById('bj-search-results')?.classList.add('hidden');
     }, {passive:true});
-  });
+  }
 
-  panel.querySelector('#bj-send-challenge')?.addEventListener('click', _sendChallengeMulti);
+  panel.querySelector('#bj-send-challenge')?.addEventListener('click', _sendChallenge);
   _updateStakeMax();
   _renderPendingChallenges();
 }
 
-async function _searchOpponentsSlot(q, slot) {
-  const resultsEl = document.getElementById(`bj-search-results-${slot}`);
+async function _searchOpponents(q) {
+  const resultsEl = document.getElementById('bj-search-results');
   if(!resultsEl) return;
   if(!q) { resultsEl.innerHTML=''; resultsEl.classList.add('hidden'); return; }
   try {
     const snap = await getDocs(query(collection(db,'users'), where('status','==','approved')));
-    const otherSlot = slot === 1 ? 2 : 1;
-    const otherUid = _selectedOpponents[otherSlot]?.uid;
     const users = snap.docs.map(d=>d.data())
-      .filter(u => u.uid !== _gcUser.uid && u.uid !== otherUid && u.username?.toLowerCase().includes(q.toLowerCase()))
+      .filter(u => u.uid !== _gcUser.uid && u.username?.toLowerCase().includes(q.toLowerCase()))
       .slice(0,8);
     if(!users.length) { resultsEl.innerHTML='<div class="bj-sr-empty">No users found</div>'; resultsEl.classList.remove('hidden'); return; }
     resultsEl.innerHTML = users.map(u => `
@@ -470,21 +451,21 @@ async function _searchOpponentsSlot(q, slot) {
     resultsEl.classList.remove('hidden');
     resultsEl.querySelectorAll('.bj-sr-item').forEach(item => {
       item.addEventListener('click', () => {
-        _selectedOpponents[slot] = { uid:item.dataset.uid, username:item.dataset.username, color:item.dataset.color, icon:item.dataset.icon||'' };
-        const inp = document.querySelector(`.bj-opp-inp[data-slot="${slot}"]`);
-        if(inp) inp.value = '';
+        _selectedOpp = { uid:item.dataset.uid, username:item.dataset.username, color:item.dataset.color, icon:item.dataset.icon||'' };
+        const oppInp = document.getElementById('bj-opp-inp');
+        if(oppInp) oppInp.value = '';
         resultsEl.innerHTML=''; resultsEl.classList.add('hidden');
-        const pill = document.getElementById(`bj-selected-${slot}`);
+        const pill = document.getElementById('bj-selected');
         if(pill) {
           pill.innerHTML = `
-            <div class="bj-sr-ava" style="background:${_selectedOpponents[slot].color}">${avatarHtml(_selectedOpponents[slot].icon,_selectedOpponents[slot].username,'60%')}</div>
-            <span>${escHtml(_selectedOpponents[slot].username)}</span>
-            <button class="bj-clear-btn" data-clear="${slot}">
+            <div class="bj-sr-ava" style="background:${_selectedOpp.color}">${avatarHtml(_selectedOpp.icon,_selectedOpp.username,'60%')}</div>
+            <span>${escHtml(_selectedOpp.username)}</span>
+            <button class="bj-clear-btn" id="bj-clear-opp">
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             </button>`;
           pill.classList.remove('hidden');
-          pill.querySelector(`[data-clear="${slot}"]`)?.addEventListener('click', () => {
-            _selectedOpponents[slot] = null;
+          document.getElementById('bj-clear-opp')?.addEventListener('click', () => {
+            _selectedOpp = null;
             pill.classList.add('hidden');
             _updateStakeMax();
           });
@@ -495,29 +476,26 @@ async function _searchOpponentsSlot(q, slot) {
   } catch(e) { console.error(e); }
 }
 
-async function _sendChallengeMulti() {
+async function _sendChallenge() {
   const err = document.getElementById('bj-challenge-err');
   if(err) err.textContent='';
-  const opp1 = _selectedOpponents[1];
-  const opp2 = _selectedOpponents[2];
-  if(!opp1) { if(err) err.textContent='Select at least one opponent'; return; }
+  if(!_selectedOpp) { if(err) err.textContent='Select an opponent'; return; }
   const stake = parseInt(document.getElementById('bj-stake-input')?.value||'0');
   if(!stake||stake<1) { if(err) err.textContent='Set a stake amount'; return; }
   const boBtn = document.querySelector('.bj-bo-chip.active');
   const bestOf = parseInt(boBtn?.dataset.bo||'3');
 
   const myCoins = _gcData ? Math.floor(_gcData.coins||0) : 0;
-  const balances = [{ name:'You', coins: myCoins }];
-  for(const opp of [opp1, opp2].filter(Boolean)) {
-    const oppGC = await getDoc(doc(db,'goatcoin',opp.uid));
-    const oppCoins = oppGC.exists() ? Math.floor(oppGC.data().coins||0) : 0;
-    balances.push({ name: opp.username, coins: oppCoins });
-  }
-  const lowestBalance = Math.min(...balances.map(b=>b.coins));
   const maxLoss = stake * Math.ceil(bestOf/2);
-  if(maxLoss > lowestBalance) {
-    const poorest = balances.find(b=>b.coins===lowestBalance);
-    if(err) err.textContent=`Stake too high — ${poorest.name} only has ${poorest.coins.toLocaleString()} GC (need ${maxLoss.toLocaleString()} to cover worst-case losses)`;
+
+  if(maxLoss > myCoins) {
+    if(err) err.textContent=`You don't have enough GC — need ${maxLoss.toLocaleString()} to cover worst-case losses (you have ${myCoins.toLocaleString()})`;
+    return;
+  }
+  const oppGC = await getDoc(doc(db,'goatcoin',_selectedOpp.uid));
+  const oppCoins = oppGC.exists() ? Math.floor(oppGC.data().coins||0) : 0;
+  if(maxLoss > oppCoins) {
+    if(err) err.textContent=`${_selectedOpp.username} doesn't have enough GC (they have ${oppCoins.toLocaleString()}, need ${maxLoss.toLocaleString()})`;
     return;
   }
 
@@ -531,40 +509,37 @@ async function _sendChallengeMulti() {
     fromUsername: _gcData?.username||'',
     fromColor: _gcData?.color||avatarColor(_gcUser.uid),
     fromIcon: _gcData?.icon||'',
-    toUid: opp1.uid,
-    toUsername: opp1.username,
-    toUid2: opp2?.uid||null,
-    toUsername2: opp2?.username||null,
+    toUid: _selectedOpp.uid,
+    toUsername: _selectedOpp.username,
     stake, bestOf,
     status: 'pending',
     createdAt: serverTimestamp()
   });
   _mpChallengeId = ref.id;
-  _mpChalOpp1 = opp1; _mpChalOpp2 = opp2||null;
+  _mpChalOpp = _selectedOpp;
   _mpChalStake = stake; _mpChalBestOf = bestOf;
-  toast(`Challenge sent to ${opp1.username}${opp2?` & ${opp2.username}`:''}!`,'success');
-  _showWaitingState(opp1, opp2, stake, bestOf);
+  toast(`Challenge sent to ${_selectedOpp.username}!`,'success');
+  _showWaitingState(_selectedOpp, stake, bestOf);
 
   if(_mpChalUnsub2) _mpChalUnsub2();
   _mpChalUnsub2 = onSnapshot(doc(db,'bj_challenges',ref.id), snap => {
     if(!snap.exists()) { _mpChalUnsub2?.(); return; }
     const data = snap.data();
     if(data.status==='accepted'&&data.gameId) {
-      _mpChalUnsub2?.(); _mpChallengeId=null; _mpChalOpp1=null; _mpChalOpp2=null;
+      _mpChalUnsub2?.(); _mpChallengeId=null; _mpChalOpp=null;
       _joinGame(data.gameId,'p1');
     } else if(data.status==='declined') {
-      _mpChalUnsub2?.(); _mpChallengeId=null; _mpChalOpp1=null; _mpChalOpp2=null;
-      toast(`${opp1?.username||'Opponent'} declined`,'warning'); _renderTab();
+      _mpChalUnsub2?.(); _mpChallengeId=null; _mpChalOpp=null;
+      toast(`${_selectedOpp?.username||'Opponent'} declined`,'warning'); _renderTab();
     } else if(data.status==='cancelled') {
-      _mpChalUnsub2?.(); _mpChallengeId=null; _mpChalOpp1=null; _mpChalOpp2=null; _renderTab();
+      _mpChalUnsub2?.(); _mpChallengeId=null; _mpChalOpp=null; _renderTab();
     }
   });
 }
 
-function _showWaitingState(opp1, opp2, stake, bestOf) {
+function _showWaitingState(opp, stake, bestOf) {
   const col = document.getElementById('gc-bj-col');
   if(!col) return;
-  const names = [opp1.username, opp2?.username].filter(Boolean).map(n=>`<strong>${escHtml(n)}</strong>`).join(' & ');
   col.innerHTML = `
     <div class="bj-lobby-card bj-waiting-card">
       <div class="bj-waiting-header">
@@ -572,35 +547,33 @@ function _showWaitingState(opp1, opp2, stake, bestOf) {
         <span>Challenge Sent</span>
       </div>
       <div class="bj-waiting-opps">
-        <div class="bj-waiting-opp" style="background:${opp1.color||avatarColor(opp1.uid)}">${avatarHtml(opp1.icon||'',opp1.username,'55%')}</div>
-        ${opp2 ? `<div class="bj-waiting-opp" style="background:${opp2.color||avatarColor(opp2.uid)}">${avatarHtml(opp2.icon||'',opp2.username,'55%')}</div>` : ''}
+        <div class="bj-waiting-opp" style="background:${opp.color||avatarColor(opp.uid)}">${avatarHtml(opp.icon||'',opp.username,'55%')}</div>
       </div>
-      <div class="bj-waiting-text">Waiting for ${names} to accept…</div>
+      <div class="bj-waiting-text">Waiting for <strong>${escHtml(opp.username)}</strong> to accept…</div>
       <div class="bj-waiting-meta">${stake} GC per round · Best of ${bestOf}</div>
       <button class="btn btn-ghost btn-sm" id="bj-cancel-challenge">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-        Cancel Challenge
+        Cancel
       </button>
     </div>`;
   document.getElementById('bj-cancel-challenge')?.addEventListener('click', _cancelChallenge);
 }
 
 function _restoreWaitingState() {
-  if(!_mpChallengeId || !_mpChalOpp1) return;
-  _showWaitingState(_mpChalOpp1, _mpChalOpp2, _mpChalStake, _mpChalBestOf);
+  if(!_mpChallengeId || !_mpChalOpp) return;
+  _showWaitingState(_mpChalOpp, _mpChalStake, _mpChalBestOf);
   if(_mpChalUnsub2) _mpChalUnsub2();
   _mpChalUnsub2 = onSnapshot(doc(db,'bj_challenges',_mpChallengeId), snap => {
     if(!snap.exists()) { _mpChalUnsub2?.(); return; }
     const data = snap.data();
     if(data.status==='accepted'&&data.gameId) {
-      _mpChalUnsub2?.(); _mpChallengeId=null; _mpChalOpp1=null; _mpChalOpp2=null;
+      _mpChalUnsub2?.(); _mpChallengeId=null; _mpChalOpp=null;
       _joinGame(data.gameId,'p1');
     } else if(data.status==='declined') {
-      _mpChalUnsub2?.(); _mpChallengeId=null; _mpChalOpp1=null; _mpChalOpp2=null;
+      _mpChalUnsub2?.(); _mpChallengeId=null; _mpChalOpp=null;
       toast('Challenge declined','warning'); _renderTab();
     } else if(data.status==='cancelled') {
-      _mpChalUnsub2?.(); _mpChallengeId=null; _mpChalOpp1=null; _mpChalOpp2=null;
-      _renderTab();
+      _mpChalUnsub2?.(); _mpChallengeId=null; _mpChalOpp=null; _renderTab();
     }
   });
 }
@@ -608,7 +581,7 @@ function _restoreWaitingState() {
 async function _cancelChallenge() {
   if(!_mpChallengeId) return;
   await updateDoc(doc(db,'bj_challenges',_mpChallengeId),{status:'cancelled'}).catch(()=>{});
-  _mpChallengeId=null; _mpChalOpp1=null; _mpChalOpp2=null; _mpChalStake=0; _renderTab();
+  _mpChallengeId=null; _mpChalOpp=null; _mpChalStake=0; _selectedOpp=null; _renderTab();
 }
 
 function _updateBJNavBadge() {
@@ -674,7 +647,7 @@ function _renderPendingChallenges(challenges) {
       <div class="bj-challenge-row" data-cid="${c.id}">
         <div class="bj-sr-ava bj-mystery-ava">?</div>
         <div class="bj-chal-info">
-          <span class="bj-chal-from bj-mystery-name">Someone</span>
+          <span class="bj-chal-from bj-mystery-name">Someone challenges you</span>
           <span class="bj-chal-meta">${c.stake} GC/round · Best of ${c.bestOf} · <span style="color:var(--warn);font-weight:700">Identity hidden until accepted</span></span>
         </div>
         <button class="ta-btn ta-green bj-accept-btn" data-cid="${c.id}">Accept</button>
@@ -691,31 +664,47 @@ async function _acceptChallenge(cid) {
   const maxLoss = (c.stake||0) * Math.ceil((c.bestOf||1)/2);
   const myCoins = _gcData ? Math.floor(_gcData.coins||0) : 0;
   if(!_gcData || myCoins < maxLoss) {
-    toast(`Not enough GC — need ${maxLoss.toLocaleString()} to cover worst-case losses (you have ${myCoins.toLocaleString()})`, 'error');
+    toast(`Not enough GC — need ${maxLoss.toLocaleString()} to cover worst-case losses`, 'error');
     return;
   }
   const senderGC = await getDoc(doc(db,'goatcoin',c.fromUid));
   const senderCoins = senderGC.exists() ? Math.floor(senderGC.data().coins||0) : 0;
   if(senderCoins < maxLoss) {
-    toast('Challenger no longer has enough GC to cover this bet', 'warning');
+    toast('Challenger no longer has enough GC', 'warning');
     await updateDoc(doc(db,'bj_challenges',cid),{status:'cancelled'}).catch(()=>{});
     return;
   }
+
+  // Create game in RTDB for fast, cheap updates
   const deck = _newDeck();
-  const gameRef = await addDoc(collection(db,'bj_games'), {
-    p1uid:c.fromUid, p1name:c.fromUsername, p1color:c.fromColor||avatarColor(c.fromUid), p1icon:c.fromIcon||'',
-    p2uid:_gcUser.uid, p2name:_gcData?.username||'', p2color:_gcData?.color||avatarColor(_gcUser.uid), p2icon:_gcData?.icon||'',
-    stake:c.stake, bestOf:c.bestOf,
-    scores:{p1:0,p2:0}, currentRound:1,
-    deck:_deckToStr(deck), p1hand:[], p2hand:[], dealerHand:[],
-    phase:'dealing', p1action:null, p2action:null,
-    p1double:false, p2double:false,
-    winner:null, roundResults:[],
-    createdAt:serverTimestamp(), updatedAt:serverTimestamp()
-  });
-  await updateDoc(doc(db,'bj_challenges',cid),{status:'accepted',gameId:gameRef.id});
-  await _dealRound(gameRef.id);
-  _joinGame(gameRef.id,'p2');
+  const gameId = `bj_${Date.now()}_${Math.random().toString(36).slice(2,8)}`;
+  const gameData = {
+    p1uid: c.fromUid, p1name: c.fromUsername, p1color: c.fromColor||avatarColor(c.fromUid), p1icon: c.fromIcon||'',
+    p2uid: _gcUser.uid, p2name: _gcData?.username||'', p2color: _gcData?.color||avatarColor(_gcUser.uid), p2icon: _gcData?.icon||'',
+    stake: c.stake, bestOf: c.bestOf,
+    scores: {p1:0, p2:0}, currentRound: 1,
+    deck: _deckToStr(deck), p1hand: '', p2hand: '', dealerHand: '',
+    phase: 'dealing', p1action: '', p2action: '',
+    p1double: false, p2double: false,
+    winner: '', roundResults: JSON.stringify([]),
+    createdAt: Date.now(), updatedAt: Date.now()
+  };
+
+  if(_rtdb) {
+    await rtSet(rtRef(_rtdb, `bj_games/${gameId}`), gameData);
+  } else {
+    // Fallback to Firestore if RTDB unavailable
+    const fsRef = await addDoc(collection(db,'bj_games'), {...gameData, createdAt: serverTimestamp()});
+    await updateDoc(doc(db,'bj_challenges',cid), {status:'accepted', gameId: fsRef.id});
+    await _dealRound(fsRef.id, false);
+    _joinGame(fsRef.id, 'p2', false);
+    setTimeout(() => deleteDoc(doc(db,'bj_challenges',cid)).catch(()=>{}), 5000);
+    return;
+  }
+
+  await updateDoc(doc(db,'bj_challenges',cid), {status:'accepted', gameId});
+  await _dealRound(gameId, true);
+  _joinGame(gameId, 'p2', true);
   setTimeout(() => deleteDoc(doc(db,'bj_challenges',cid)).catch(()=>{}), 5000);
 }
 
@@ -724,33 +713,74 @@ async function _declineChallenge(cid) {
 }
 
 // ──────────────────────────────────────────────────
-//  GAME LOGIC
+//  GAME LOGIC — RTDB-backed
 // ──────────────────────────────────────────────────
-async function _dealRound(gameId) {
-  const snap = await getDoc(doc(db,'bj_games',gameId));
-  if(!snap.exists()) return;
-  const deck = _strToDeck(snap.data().deck);
+
+async function _getGame(gameId, useRTDB) {
+  if(useRTDB && _rtdb) {
+    const snap = await rtGet(rtRef(_rtdb, `bj_games/${gameId}`));
+    return snap.val();
+  } else {
+    const snap = await getDoc(doc(db,'bj_games',gameId));
+    return snap.exists() ? snap.data() : null;
+  }
+}
+
+async function _updateGame(gameId, useRTDB, updates) {
+  updates.updatedAt = Date.now();
+  if(useRTDB && _rtdb) {
+    await rtUpdate(rtRef(_rtdb, `bj_games/${gameId}`), updates);
+  } else {
+    await updateDoc(doc(db,'bj_games',gameId), updates);
+  }
+}
+
+async function _dealRound(gameId, useRTDB) {
+  const g = await _getGame(gameId, useRTDB);
+  if(!g) return;
+  const deck = _strToDeck(g.deck);
   const p1h=[deck.pop(),deck.pop()], p2h=[deck.pop(),deck.pop()], dh=[deck.pop(),deck.pop()];
-  await updateDoc(doc(db,'bj_games',gameId), {
+  await _updateGame(gameId, useRTDB, {
     deck: _deckToStr(deck),
-    p1hand: p1h,
-    p2hand: p2h,
-    dealerHand: dh,
-    phase: 'p1turn', p1action:null, p2action:null,
-    p1double:false, p2double:false,
-    updatedAt: serverTimestamp()
+    p1hand: _handToStr(p1h),
+    p2hand: _handToStr(p2h),
+    dealerHand: _handToStr(dh),
+    phase: 'p1turn', p1action: '', p2action: '',
+    p1double: false, p2double: false,
   });
 }
 
-function _joinGame(gameId, role) {
-  _mpGameId=gameId; _myRole=role;
-  if(_mpGameUnsub) _mpGameUnsub();
-  _mpGameUnsub = onSnapshot(doc(db,'bj_games',gameId), snap => {
-    if(!snap.exists()) { _leaveGame(); return; }
-    _mpGame = snap.data();
-    if(_mpGame.phase==='dealer'&&_myRole==='p1') _resolveRound();
-    else _renderBJTable();
-  });
+let _useRTDB = true;
+
+function _joinGame(gameId, role, useRtdb=true) {
+  _mpGameId=gameId; _myRole=role; _useRTDB=useRtdb;
+  if(_mpGameUnsub) { _mpGameUnsub(); _mpGameUnsub=null; }
+
+  if(useRtdb && _rtdb) {
+    const off = onValue(rtRef(_rtdb, `bj_games/${gameId}`), snap => {
+      if(!snap.val()) { _leaveGame(); return; }
+      _mpGame = snap.val();
+      // Normalize hand fields
+      _mpGame.p1hand = _strToHand(_mpGame.p1hand||'');
+      _mpGame.p2hand = _strToHand(_mpGame.p2hand||'');
+      _mpGame.dealerHand = _strToHand(_mpGame.dealerHand||'');
+      _mpGame.roundResults = typeof _mpGame.roundResults === 'string' ? JSON.parse(_mpGame.roundResults||'[]') : (_mpGame.roundResults||[]);
+      _mpGame.scores = _mpGame.scores || {p1:0,p2:0};
+      if(_mpGame.phase==='dealer'&&_myRole==='p1') _resolveRound();
+      else _renderBJTable();
+    });
+    _mpGameUnsub = () => off();
+  } else {
+    const unsub = onSnapshot(doc(db,'bj_games',gameId), snap => {
+      if(!snap.exists()) { _leaveGame(); return; }
+      _mpGame = snap.data();
+      if(_mpGame.phase==='dealer'&&_myRole==='p1') _resolveRound();
+      else _renderBJTable();
+    });
+    _mpGameUnsub = unsub;
+  }
+
+  // Navigate to goatcoin tab
   document.querySelectorAll('[data-section="goatcoin"]').forEach(el=>el.click());
 }
 
@@ -758,7 +788,8 @@ function _leaveGame() {
   if(_mpGameUnsub) { _mpGameUnsub(); _mpGameUnsub=null; }
   document.getElementById('bj-fullscreen-overlay')?.remove();
   if(_mpGameId && _mpGame?.phase === 'gameDone') {
-    deleteDoc(doc(db,'bj_games',_mpGameId)).catch(()=>{});
+    if(_useRTDB && _rtdb) rtRemove(rtRef(_rtdb,`bj_games/${_mpGameId}`)).catch(()=>{});
+    else deleteDoc(doc(db,'bj_games',_mpGameId)).catch(()=>{});
   }
   _mpGameId=null; _mpGame=null; _myRole=null;
   _renderTab();
@@ -769,110 +800,102 @@ export async function bjHit() {
   const g = _mpGame;
   const myPhase = _myRole==='p1'?'p1turn':'p2turn';
   if(g.phase!==myPhase) return;
-  const deck = _strToDeck(g.deck);
-  const hand = [...(g[`${_myRole}hand`]||[]), deck.pop()];
+  const deck = _strToDeck(typeof g.deck==='string'?g.deck:'');
+  const currentHand = Array.isArray(g[`${_myRole}hand`]) ? g[`${_myRole}hand`] : [];
+  const hand = [...currentHand, deck.pop()];
   const total = _handTotal(hand);
-  const updates = {[`${_myRole}hand`]:hand, deck:_deckToStr(deck), updatedAt:serverTimestamp()};
+  const updates = {[`${_myRole}hand`]: _handToStr(hand), deck: _deckToStr(deck)};
   if(total>=21) {
     updates[`${_myRole}action`]='stand';
     updates.phase = _myRole==='p1'?'p2turn':'dealer';
   }
-  await updateDoc(doc(db,'bj_games',_mpGameId), updates);
+  await _updateGame(_mpGameId, _useRTDB, updates);
 }
 
 export async function bjStand() {
   if(!_mpGame||!_mpGameId) return;
-  const g = _mpGame;
   const myPhase = _myRole==='p1'?'p1turn':'p2turn';
-  if(g.phase!==myPhase) return;
-  await updateDoc(doc(db,'bj_games',_mpGameId), {
-    [`${_myRole}action`]:'stand',
+  if(_mpGame.phase!==myPhase) return;
+  await _updateGame(_mpGameId, _useRTDB, {
+    [`${_myRole}action`]: 'stand',
     phase: _myRole==='p1'?'p2turn':'dealer',
-    updatedAt: serverTimestamp()
   });
 }
 
 export async function bjDouble() {
   if(!_mpGame||!_mpGameId) return;
-  const g = _mpGame;
   const myPhase = _myRole==='p1'?'p1turn':'p2turn';
-  if(g.phase!==myPhase||(g[`${_myRole}hand`]||[]).length!==2) return;
-  const deck = _strToDeck(g.deck);
-  const hand = [...(g[`${_myRole}hand`]||[]), deck.pop()];
-  await updateDoc(doc(db,'bj_games',_mpGameId), {
-    [`${_myRole}hand`]:hand,
-    [`${_myRole}double`]:true,
-    deck:_deckToStr(deck),
-    [`${_myRole}action`]:'stand',
+  const myHand = Array.isArray(_mpGame[`${_myRole}hand`]) ? _mpGame[`${_myRole}hand`] : [];
+  if(_mpGame.phase!==myPhase||myHand.length!==2) return;
+  const deck = _strToDeck(typeof _mpGame.deck==='string'?_mpGame.deck:'');
+  const hand = [...myHand, deck.pop()];
+  await _updateGame(_mpGameId, _useRTDB, {
+    [`${_myRole}hand`]: _handToStr(hand),
+    [`${_myRole}double`]: true,
+    deck: _deckToStr(deck),
+    [`${_myRole}action`]: 'stand',
     phase: _myRole==='p1'?'p2turn':'dealer',
-    updatedAt: serverTimestamp()
   });
 }
 
 async function _resolveRound() {
   const g = _mpGame;
   if(!g||g.phase!=='dealer'||_myRole!=='p1') return;
-  const deck = _strToDeck(g.deck);
-  // Dealer draws to 17+ (still needed for comparison vs player totals)
-  const dealerHand = [...g.dealerHand];
+  const deck = _strToDeck(typeof g.deck==='string'?g.deck:'');
+  const dealerHand = Array.isArray(g.dealerHand) ? [...g.dealerHand] : [];
   while(_handTotal(dealerHand)<17) dealerHand.push(deck.pop());
-  const dt=_handTotal(dealerHand), p1t=_handTotal(g.p1hand||[]), p2t=_handTotal(g.p2hand||[]);
 
-  const rr = (pt, isDouble) => {
-    const s = isDouble ? (g.stake||0)*2 : (g.stake||0);
-    if(pt>21)    return {result:'lose',delta:-s,win:false,bust:true};
-    if(dt>21)    return {result:'win', delta:s, win:true,bust:false};
-    if(pt>dt)    return {result:'win', delta:s, win:true,bust:false};
-    if(pt===dt)  return {result:'push',delta:0, win:false,bust:false};
-                 return {result:'lose',delta:-s,win:false,bust:false};
-  };
-  const r1=rr(p1t,g.p1double), r2=rr(p2t,g.p2double);
+  const dt=_handTotal(dealerHand);
+  const p1h = Array.isArray(g.p1hand) ? g.p1hand : [];
+  const p2h = Array.isArray(g.p2hand) ? g.p2hand : [];
+  const p1t=_handTotal(p1h), p2t=_handTotal(p2h);
 
-  // Award round wins — if BOTH win, neither gets a round point (it's a shared win)
-  // If tied (both push or both lose), no points awarded either
+  // 1v1: whoever is closer to 21 without busting wins the round
+  // If both bust, neither wins. If tied, push.
+  const p1bust = p1t>21, p2bust = p2t>21;
   let p1rs=0, p2rs=0;
-  if(r1.win && !r2.win) p1rs=1;
-  if(r2.win && !r1.win) p2rs=1;
-  // Both win = shared round, nobody gets the point (not a round score tie)
+  if(p1bust && p2bust) { /* nobody */ }
+  else if(p1bust) { p2rs=1; }
+  else if(p2bust) { p1rs=1; }
+  else if(p1t > p2t) { p1rs=1; }
+  else if(p2t > p1t) { p2rs=1; }
+  // tie = no points
 
   const newScores={p1:(g.scores?.p1||0)+p1rs, p2:(g.scores?.p2||0)+p2rs};
-  const roundResults=[...(g.roundResults||[]),{
-    round:g.currentRound||1,
-    p1:{hand:g.p1hand,total:p1t,result:r1.result},
-    p2:{hand:g.p2hand,total:p2t,result:r2.result},
-    dealer:{hand:dealerHand,total:dt}
+  const prevResults = Array.isArray(g.roundResults) ? g.roundResults : [];
+  const roundResults=[...prevResults, {
+    round: g.currentRound||1,
+    p1:{hand:p1h, total:p1t, bust:p1bust, result:p1rs>0?'win':p1bust?'bust':'lose'},
+    p2:{hand:p2h, total:p2t, bust:p2bust, result:p2rs>0?'win':p2bust?'bust':'lose'},
+    dealer:{hand:dealerHand, total:dt}
   }];
 
   const bestOf=g.bestOf||3, winsNeeded=Math.ceil(bestOf/2);
   const currentRound = g.currentRound||1;
-
-  // Check if either player has enough wins to end the game
   const p1Won = newScores.p1 >= winsNeeded;
   const p2Won = newScores.p2 >= winsNeeded;
-  // Only end on max rounds if there's a clear winner — otherwise extend for tiebreaker
   const maxRoundsReached = currentRound >= bestOf;
   const isTied = newScores.p1 === newScores.p2;
-
-  // Game is over if: someone hit win threshold, OR max rounds AND not tied
   const gameOver = p1Won || p2Won || (maxRoundsReached && !isTied);
   const winner = gameOver
-    ? (newScores.p1 > newScores.p2 ? 'p1' : newScores.p2 > newScores.p1 ? 'p2' : null)
-    : null;
+    ? (newScores.p1 > newScores.p2 ? 'p1' : newScores.p2 > newScores.p1 ? 'p2' : '')
+    : '';
 
-  await updateDoc(doc(db,'bj_games',_mpGameId), {
-    dealerHand, deck:_deckToStr(deck), scores:newScores, roundResults,
+  await _updateGame(_mpGameId, _useRTDB, {
+    dealerHand: _handToStr(dealerHand),
+    deck: _deckToStr(deck),
+    scores: newScores,
+    roundResults: JSON.stringify(roundResults),
     phase: gameOver ? 'gameDone' : 'roundDone',
-    winner: winner||null, p1double:false, p2double:false,
-    updatedAt: serverTimestamp()
+    winner: winner,
+    p1double: false, p2double: false,
   });
 
-  // Only transfer coins on game over with a winner (no push possible at game level anymore)
   if(gameOver && winner) {
     const winnerUid = winner==='p1'?g.p1uid:g.p2uid;
     const loserUid = winner==='p1'?g.p2uid:g.p1uid;
     const totalWins = winner==='p1'?newScores.p1:newScores.p2;
     const totalLosses = winner==='p1'?newScores.p2:newScores.p1;
-    // Transfer per-round stakes for the wins delta
     const netDelta = (totalWins - totalLosses) * (g.stake||0);
     if(netDelta > 0) {
       await updateDoc(doc(db,'goatcoin',winnerUid),{coins:increment(netDelta),weekCoins:increment(netDelta),totalCoins:increment(netDelta)}).catch(()=>{});
@@ -886,20 +909,23 @@ async function _resolveRound() {
 export async function bjNextRound() {
   if(!_mpGameId||!_mpGame) return;
   const g = _mpGame;
-  // Allow next round from roundDone OR from gameDone when there's no winner (tiebreaker)
   if((g.phase!=='roundDone' && !(g.phase==='gameDone'&&!g.winner))||_myRole!=='p1') return;
   const deck = _newDeck();
   const p1h=[deck.pop(),deck.pop()], p2h=[deck.pop(),deck.pop()], dh=[deck.pop(),deck.pop()];
-  await updateDoc(doc(db,'bj_games',_mpGameId), {
-    deck:_deckToStr(deck), p1hand:p1h, p2hand:p2h, dealerHand:dh,
-    phase:'p1turn', p1action:null, p2action:null, p1double:false, p2double:false,
-    winner: null, // clear winner for tiebreaker
-    currentRound:(g.currentRound||1)+1, updatedAt:serverTimestamp()
+  await _updateGame(_mpGameId, _useRTDB, {
+    deck: _deckToStr(deck),
+    p1hand: _handToStr(p1h),
+    p2hand: _handToStr(p2h),
+    dealerHand: _handToStr(dh),
+    phase: 'p1turn', p1action: '', p2action: '',
+    p1double: false, p2double: false,
+    winner: '',
+    currentRound: (g.currentRound||1)+1,
   });
 }
 
 // ──────────────────────────────────────────────────
-//  BLACKJACK TABLE UI
+//  BJ TABLE UI
 // ──────────────────────────────────────────────────
 function _getBJContainer() {
   let ov = document.getElementById('bj-fullscreen-overlay');
@@ -918,44 +944,51 @@ function _renderBJTable() {
   const g = _mpGame;
   if(!g) return;
 
-  const myH=g[`${_myRole}hand`]||[], oppRole=_myRole==='p1'?'p2':'p1', oppH=g[`${oppRole}hand`]||[];
+  const myH=Array.isArray(g[`${_myRole}hand`])?g[`${_myRole}hand`]:[];
+  const oppRole=_myRole==='p1'?'p2':'p1';
+  const oppH=Array.isArray(g[`${oppRole}hand`])?g[`${oppRole}hand`]:[];
   const myName=g[`${_myRole}name`]||'You', oppName=g[`${oppRole}name`]||'Opponent';
   const myColor=g[`${_myRole}color`]||'var(--accent)', oppColor=g[`${oppRole}color`]||'var(--text-muted)';
   const myIcon=g[`${_myRole}icon`]||'', oppIcon=g[`${oppRole}icon`]||'';
   const myTotal=_handTotal(myH), oppTotal=_handTotal(oppH);
-  const phase=g.phase, myTurn=(phase==='p1turn'&&_myRole==='p1')||(phase==='p2turn'&&_myRole==='p2');
+  const phase=g.phase;
+  const myTurn=(phase==='p1turn'&&_myRole==='p1')||(phase==='p2turn'&&_myRole==='p2');
   const done=['dealer','roundDone','gameDone'].includes(phase);
   const scores=g.scores||{p1:0,p2:0};
-  const dh=g.dealerHand||[];
+  const dh=Array.isArray(g.dealerHand)?g.dealerHand:[];
 
   let roundMsg='', gameOverMsg='';
   if(done) {
-    const lr=(g.roundResults||[]).slice(-1)[0];
+    const rr = Array.isArray(g.roundResults) ? g.roundResults : [];
+    const lr=rr.slice(-1)[0];
     if(lr) {
       const mr=lr[_myRole]?.result, or=lr[oppRole]?.result;
-      roundMsg=`<div class="bj-round-result"><span>You: ${mr==='win'?'Won 🎉':mr==='push'?'Push 🤝':'Lost 💸'}</span><span>${escHtml(oppName)}: ${or==='win'?'Won 🎉':or==='push'?'Push 🤝':'Lost 💸'}</span></div>`;
+      const resultIcon = (r) => r==='win'?'🏆':r==='bust'?'💥':'❌';
+      roundMsg=`<div class="bj-round-result">
+        <span>You: ${resultIcon(mr)} ${mr}</span>
+        <span>${escHtml(oppName)}: ${resultIcon(or)} ${or}</span>
+      </div>`;
     }
   }
   if(phase==='gameDone') {
     const w=g.winner;
-    const isTied = !w && g.scores?.p1 === g.scores?.p2;
     gameOverMsg = !w
-      ? `<div class="bj-result bj-result-push">Tiebreaker round — keep playing!</div>`
+      ? `<div class="bj-result bj-result-push">Tiebreaker round needed!</div>`
       : w===_myRole
-        ? `<div class="bj-result bj-result-win">🏆 You won the series! GC transferred.</div>`
-        : `<div class="bj-result bj-result-lose">${escHtml(oppName)} won the series. Better luck next time.</div>`;
+        ? `<div class="bj-result bj-result-win">You won the series! GC transferred.</div>`
+        : `<div class="bj-result bj-result-lose">${escHtml(oppName)} won this one. Better luck next time.</div>`;
   }
 
   panel.innerHTML = `
   <div class="bj-fullscreen-inner">
     <div class="bj-fullscreen-topbar">
-      <span class="bj-fs-title">Blackjack</span>
+      <span class="bj-fs-title">1v1 Blackjack</span>
       <button class="bj-fs-close" id="bj-fs-close">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-        Leave game
+        Leave
       </button>
     </div>
-    <div class="bj-mp-table" id="bj-mp-table">
+    <div class="bj-mp-table">
       <div class="bj-mp-header">
         <div class="bj-mp-scores">
           <div class="bj-mp-player">
@@ -963,7 +996,7 @@ function _renderBJTable() {
             <span>${escHtml(myName)} (You)</span>
             <span class="bj-mp-score">${scores[_myRole]||0}</span>
           </div>
-          <div class="bj-mp-vs">vs · Round ${g.currentRound||1}/${g.bestOf||3} · ${g.stake}GC/rd</div>
+          <div class="bj-mp-vs">vs · Round ${g.currentRound||1} of ${g.bestOf||3} · ${g.stake}GC/rd</div>
           <div class="bj-mp-player">
             <div class="bj-mp-ava" style="background:${oppColor}">${avatarHtml(oppIcon,oppName,'60%')}</div>
             <span>${escHtml(oppName)}</span>
@@ -974,25 +1007,36 @@ function _renderBJTable() {
       <div class="bj-mp-area">
         <div class="bj-sides-row bj-sides-row-full">
           <div class="bj-side bj-my-side ${myTurn?'bj-active-side':''}">
-            <div class="bj-side-label">You <span class="bj-total ${myTotal>21?'bust':''}">${myTotal}</span>${myTurn?'<span class="bj-your-turn-badge">your move</span>':''}</div>
+            <div class="bj-side-label">
+              You <span class="bj-total ${myTotal>21?'bust':''}">${myH.length?myTotal:'—'}</span>
+              ${myTurn?'<span class="bj-your-turn-badge">your move</span>':''}
+            </div>
             <div class="bj-hand">${myH.map(c=>_renderCard(c)).join('')}</div>
           </div>
           <div class="bj-side bj-opp-side">
-            <div class="bj-side-label">${escHtml(oppName)} ${done?`<span class="bj-total ${oppTotal>21?'bust':''}">${oppTotal}</span>`:'<span class="bj-total">?</span>'}${phase===`${oppRole}turn`?'<span class="bj-their-turn-badge">thinking...</span>':''}</div>
+            <div class="bj-side-label">
+              ${escHtml(oppName)}
+              ${done?`<span class="bj-total ${oppTotal>21?'bust':''}">${oppH.length?oppTotal:'—'}</span>`:'<span class="bj-total">?</span>'}
+              ${phase===`${oppRole}turn`?'<span class="bj-their-turn-badge">thinking…</span>':''}
+            </div>
             <div class="bj-hand">${done?oppH.map(c=>_renderCard(c)).join(''):oppH.map(()=>_renderCard(null,true)).join('')}</div>
           </div>
         </div>
-        ${done ? `<div class="bj-dealer-reveal">Dealer: <span class="bj-total ${_handTotal(dh)>21?'bust':''}">${_handTotal(dh)}</span> <span class="bj-dealer-cards">${dh.map(c=>_renderCard(c)).join('')}</span></div>` : ''}
+        ${done&&dh.length ? `<div class="bj-dealer-reveal">Reference hand: <span class="bj-total ${_handTotal(dh)>21?'bust':''}">${_handTotal(dh)}</span> <span class="bj-dealer-cards">${dh.map(c=>_renderCard(c)).join('')}</span></div>` : ''}
         ${roundMsg}${gameOverMsg}
         <div class="bj-mp-actions">
-          ${myTurn&&phase!=='gameDone'?('<button class="btn bj-btn" id="bj-mp-hit">Hit</button><button class="btn bj-btn" id="bj-mp-stand">Stand</button>'+(myH.length===2&&Math.floor(_gcData?.coins||0)>=(g.stake||0)*2?'<button class="btn bj-btn bj-double" id="bj-mp-double">Double</button>':'')):''}
-          ${phase==='roundDone'?(_myRole==='p1'?'<button class="btn bj-btn" id="bj-mp-next">Next Round ▶</button>':`<div class="bj-wait-msg">${escHtml(g.p1name)} is starting the next round...</div>`):''}
-          ${phase==='gameDone'&&g.winner?'<button class="btn btn-ghost bj-btn" id="bj-mp-leave">Leave</button>':''}
-          ${phase==='gameDone'&&!g.winner?(_myRole==='p1'?'<button class="btn bj-btn" id="bj-mp-next">Tiebreaker Round ▶</button>':`<div class="bj-wait-msg">${escHtml(g.p1name)} is starting the tiebreaker...</div>`):''}
-          ${phase==='p1turn'&&_myRole==='p2'?`<div class="bj-wait-msg">${escHtml(g.p1name)} is thinking...</div>`:''}
-          ${phase==='p2turn'&&_myRole==='p1'?`<div class="bj-wait-msg">${escHtml(g.p2name)} is thinking...</div>`:''}
-          ${phase==='dealer'?'<div class="bj-wait-msg">Resolving round...</div>':''}
-          ${phase==='dealing'?'<div class="bj-wait-msg">Dealing...</div>':''}
+          ${myTurn&&phase!=='gameDone'?`
+            <button class="btn bj-btn" id="bj-mp-hit">Hit</button>
+            <button class="btn bj-btn" id="bj-mp-stand">Stand</button>
+            ${myH.length===2&&Math.floor(_gcData?.coins||0)>=(g.stake||0)*2?'<button class="btn bj-btn bj-double" id="bj-mp-double">Double Down</button>':''}
+          `:''}
+          ${phase==='roundDone'?(_myRole==='p1'?'<button class="btn bj-btn" id="bj-mp-next">Next Round</button>':`<div class="bj-wait-msg">${escHtml(g.p1name)} is dealing next round…</div>`):''}
+          ${phase==='gameDone'&&g.winner?'<button class="btn btn-ghost bj-btn" id="bj-mp-leave">Back to Lobby</button>':''}
+          ${phase==='gameDone'&&!g.winner?(_myRole==='p1'?'<button class="btn bj-btn" id="bj-mp-next">Tiebreaker Round</button>':`<div class="bj-wait-msg">${escHtml(g.p1name)} is starting the tiebreaker…</div>`):''}
+          ${phase==='p1turn'&&_myRole==='p2'?`<div class="bj-wait-msg">${escHtml(g.p1name)} is taking their turn…</div>`:''}
+          ${phase==='p2turn'&&_myRole==='p1'?`<div class="bj-wait-msg">${escHtml(g.p2name)} is taking their turn…</div>`:''}
+          ${phase==='dealer'?'<div class="bj-wait-msg">Resolving round…</div>':''}
+          ${phase==='dealing'?'<div class="bj-wait-msg">Dealing cards…</div>':''}
         </div>
       </div>
     </div>
@@ -1018,12 +1062,18 @@ function _newDeck() {
   return deck;
 }
 function _deckToStr(deck) { return deck.map(c=>`${c.v}${c.s}`).join(','); }
+function _handToStr(hand) { return hand.map(c=>`${c.v}${c.s}`).join(','); }
 function _strToDeck(str) {
   if(!str) return _newDeck();
   return str.split(',').filter(Boolean).map(s=>({v:s.slice(0,-1),s:s.slice(-1)}));
 }
+function _strToHand(str) {
+  if(!str) return [];
+  return str.split(',').filter(Boolean).map(s=>({v:s.slice(0,-1),s:s.slice(-1)}));
+}
 function _cardValue(c) { if(['J','Q','K'].includes(c.v)) return 10; if(c.v==='A') return 11; return parseInt(c.v)||0; }
 function _handTotal(hand) {
+  if(!hand||!hand.length) return 0;
   let t=0,a=0;
   for(const c of hand){t+=_cardValue(c);if(c.v==='A')a++;}
   while(t>21&&a>0){t-=10;a--;}
@@ -1036,14 +1086,13 @@ function _renderCard(card,hidden=false) {
 }
 
 // ──────────────────────────────────────────────────
-//  LEADERBOARD — polished
+//  LEADERBOARD
 // ──────────────────────────────────────────────────
 async function _renderLeaderboard() {
   const el=document.getElementById('gc-leaderboard-content');
   if(!el) return;
   el.innerHTML='<div style="color:var(--text-faint);font-size:.78rem;padding:.5rem 0">Loading…</div>';
   try {
-    // Fetch both in parallel — single batch read
     const [gcSnap,usersSnap]=await Promise.all([
       getDocs(collection(db,'goatcoin')),
       getDocs(collection(db,'users'))
@@ -1054,59 +1103,38 @@ async function _renderLeaderboard() {
     const rows=gcSnap.docs.map(d=>{
       const gc=d.data(),u=userMap[d.id]||{};
       return {
-        uid:d.id,
-        username:u.username||'Unknown',
-        color:u.color||avatarColor(d.id),
-        icon:u.icon||'',
-        rank:u.rank||'planetary',
-        coins:Math.floor(gc.coins||0),
-        weekCoins:Math.floor(gc.weekCoins||0),
-        totalCoins:Math.floor(gc.totalCoins||0),
-        weekChatMins:Math.floor(gc.weekChatMins||0),
-        weekGameMins:Math.floor(gc.weekGameMins||0),
-        weekBJWins:Math.floor(gc.weekBJWins||0),
+        uid:d.id, username:u.username||'Unknown',
+        color:u.color||avatarColor(d.id), icon:u.icon||'', rank:u.rank||'planetary',
+        coins:Math.floor(gc.coins||0), weekCoins:Math.floor(gc.weekCoins||0),
+        totalCoins:Math.floor(gc.totalCoins||0), weekChatMins:Math.floor(gc.weekChatMins||0),
+        weekGameMins:Math.floor(gc.weekGameMins||0), weekBJWins:Math.floor(gc.weekBJWins||0),
         totalBJWins:Math.floor(gc.totalBJWins||0)
       };
     }).filter(r=>userMap[r.uid]?.status==='approved');
 
-    // SVG icons for leaderboard tabs
-    const _svgCalendar = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>';
-    const _svgCoin    = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 6v2m0 8v2M9.5 9.5h3a1.5 1.5 0 010 3H10m0 0h2.5a1.5 1.5 0 010 3H9.5"/></svg>';
-    const _svgTrophy  = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4H4v7a8 8 0 0016 0V4h-3M7 4h10"/></svg>';
-    const _svgCard    = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="18" rx="2"/><path d="M7 9h10M7 13h6"/></svg>';
-    const _svgChat    = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>';
-    const _svgGame    = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M7 10v4M5 12h4M15 11h.01M17 13h.01"/></svg>';
-    const _svgStar    = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>';
-    // Rank medal SVGs
-    const _medal1 = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M9 14.5l-2 7 5-3 5 3-2-7"/><circle cx="12" cy="8" r="2" fill="#fbbf24"/></svg>';
-    const _medal2 = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M9 14.5l-2 7 5-3 5 3-2-7"/><circle cx="12" cy="8" r="2" fill="#94a3b8"/></svg>';
-    const _medal3 = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#b45309" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M9 14.5l-2 7 5-3 5 3-2-7"/><circle cx="12" cy="8" r="2" fill="#b45309"/></svg>';
-
     const tabs=[
-      {key:'weekCoins',    label:'Week GC',      icon:_svgCalendar, fmt:(v,r)=>`${v.toLocaleString()} GC`},
-      {key:'coins',        label:'Balance',       icon:_svgCoin,     fmt:(v,r)=>`${v.toLocaleString()} GC`},
-      {key:'totalCoins',   label:'All-Time',      icon:_svgTrophy,   fmt:(v,r)=>`${v.toLocaleString()} GC`},
-      {key:'weekBJWins',   label:'BJ (week)',     icon:_svgCard,     fmt:(v,r)=>`${v} wins`},
-      {key:'totalBJWins',  label:'BJ (total)',    icon:_svgStar,     fmt:(v,r)=>`${v} wins`},
-      {key:'weekChatMins', label:'Chat (week)',   icon:_svgChat,     fmt:(v,r)=>_fmtMins(v)},
-      {key:'weekGameMins', label:'Games (week)',  icon:_svgGame,     fmt:(v,r)=>_fmtMins(v)},
+      {key:'weekCoins',   label:'Week GC',    fmt:(v)=>`${v.toLocaleString()} GC`},
+      {key:'coins',       label:'Balance',    fmt:(v)=>`${v.toLocaleString()} GC`},
+      {key:'totalCoins',  label:'All-Time',   fmt:(v)=>`${v.toLocaleString()} GC`},
+      {key:'weekBJWins',  label:'BJ Wins',    fmt:(v)=>`${v} wins`},
+      {key:'weekChatMins',label:'Chat',       fmt:(v)=>_fmtMins(v)},
+      {key:'weekGameMins',label:'Games',      fmt:(v)=>_fmtMins(v)},
     ];
     let activeTab='weekCoins';
-
-    const medals = [_medal1, _medal2, _medal3];
 
     const render=()=>{
       const sorted=[...rows].sort((a,b)=>(b[activeTab]||0)-(a[activeTab]||0));
       const tabDef = tabs.find(t=>t.key===activeTab);
+      const medals = ['🥇','🥈','🥉'];
       el.innerHTML=`
         <div class="lb-tabs">
-          ${tabs.map(t=>`<button class="lb-tab${t.key===activeTab?' active':''}" data-lbkey="${t.key}" title="${t.label}">${t.icon} ${t.label}</button>`).join('')}
+          ${tabs.map(t=>`<button class="lb-tab${t.key===activeTab?' active':''}" data-lbkey="${t.key}">${t.label}</button>`).join('')}
         </div>
         <div class="lb-table">
           ${sorted.slice(0,20).map((r,i)=>{
             const isMe = r.uid===_gcUser?.uid;
             const medal = medals[i] || `<span class="lb-rank-num">#${i+1}</span>`;
-            const val = tabDef?.fmt(r[activeTab]||0, r) || '—';
+            const val = tabDef?.fmt(r[activeTab]||0) || '—';
             return `<div class="lb-row${isMe?' lb-me':''}">
               <span class="lb-rank">${medal}</span>
               <div class="lb-ava" style="background:${r.color}">${avatarHtml(r.icon,r.username,'60%')}</div>
