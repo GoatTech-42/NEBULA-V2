@@ -10,13 +10,12 @@ import { getGoatCoinData } from './goatcoin.js';
 
 // ── Badge definitions ──
 export const BADGE_DEFS = {
-  champion:   { label:'Champion',  desc:'Most GoatCoins earned this week',   color:'#fbbf24' },
-  sweat:      { label:'Sweat',     desc:'Most games played this week',        color:'#f97316' },
-  social:     { label:'Social',    desc:'Most time in chat this week',        color:'#38bdf8' },
-  lucky:      { label:'Lucky',     desc:'Most blackjack wins this week',      color:'#4ade80' },
-  veteran:    { label:'Veteran',   desc:'Member for 30+ days',                color:'#fde68a' },
-  og:         { label:'OG',        desc:'One of the first members',           color:'#67e8f9' },
-  customized: { label:'Stylist',   desc:'Customized their avatar color',      color:'#a78bfa' },
+  champion:   { label:'Champion',  desc:'Most GoatCoins earned this week',   color:'#fbbf24', emoji:'🏆' },
+  sweat:      { label:'Sweat',     desc:'Most games played this week',        color:'#f97316', emoji:'🎮' },
+  social:     { label:'Social',    desc:'Most time in chat this week',        color:'#38bdf8', emoji:'💬' },
+  lucky:      { label:'Lucky',     desc:'Most blackjack wins this week',      color:'#4ade80', emoji:'🍀' },
+  veteran:    { label:'Veteran',   desc:'Member for 30+ days',                color:'#fde68a', emoji:'⭐' },
+  og:         { label:'OG',        desc:'One of the first members',           color:'#67e8f9', emoji:'🌟' },
 };
 
 const fmtTime = mins => {
@@ -35,25 +34,13 @@ export function renderBadgeRow(badges, compact=false) {
   const unique = badges.filter(b => { if(seen.has(b)) return false; seen.add(b); return true; });
   if(!unique.length) return '';
 
-  const SVGS = {
-    champion: '<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>',
-    sweat:    '<path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>',
-    social:   '<path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>',
-    lucky:    '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
-    veteran:  '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',
-    og:       '<circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"/>',
-    customized:'<circle cx="13.5" cy="6.5" r="2.5"/><circle cx="6.5" cy="13.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/>',
-  };
-  const dflt = '<circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2"/>';
-
   return unique.map(b => {
-    const def = BADGE_DEFS[b] || { label: b, color:'var(--accent)' };
-    const svgInner = SVGS[b] || dflt;
-    const svgEl = `<svg class="badge-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${svgInner}</svg>`;
+    const def = BADGE_DEFS[b] || { label: b, color:'var(--accent)', emoji:'🏅' };
+    const emojiEl = `<span class="badge-emoji">${def.emoji || '🏅'}</span>`;
     if(compact) {
-      return `<span class="badge-chip badge-compact" style="--bc:${def.color}" title="${escHtml(def.desc||b)}">${svgEl}<span class="badge-label">${escHtml(def.label)}</span></span>`;
+      return `<span class="badge-chip badge-compact" style="--bc:${def.color}" title="${escHtml(def.desc||b)}">${emojiEl}<span class="badge-label">${escHtml(def.label)}</span></span>`;
     }
-    return `<span class="badge-chip" style="--bc:${def.color}" title="${escHtml(def.desc||b)}">${svgEl}<span class="badge-label">${escHtml(def.label)}</span></span>`;
+    return `<span class="badge-chip" style="--bc:${def.color}" title="${escHtml(def.desc||b)}">${emojiEl}<span class="badge-label">${escHtml(def.label)}</span></span>`;
   }).join('');
 }
 
@@ -77,16 +64,12 @@ function _showAdblockerBanner() {
   banner.className = 'adblock-banner';
   banner.innerHTML = `
     <div class="adblock-banner-inner">
-      <div class="adblock-icon">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-      </div>
+      <div class="adblock-icon">🛡️</div>
       <div class="adblock-text">
         <strong>Ad blocker detected</strong>
         <span>GoatCoin time tracking may not work correctly. Please disable your ad blocker for this site.</span>
       </div>
-      <button class="adblock-dismiss" id="adblock-dismiss">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </button>
+      <button class="adblock-dismiss" id="adblock-dismiss" style="font-size:1rem">✕</button>
     </div>`;
   document.body.appendChild(banner);
   document.getElementById('adblock-dismiss')?.addEventListener('click', () => {
@@ -341,18 +324,22 @@ export function renderOwnProfile(user, userData, gcData) {
 export async function checkAutoAwards(uid, userData) {
   const rawBadges = userData.badges || [];
   // Always deduplicate first when checking/writing
-  const existing = [...new Set(rawBadges)];
+  // Also remove deprecated badges (customized/stylist)
+  const DEPRECATED = new Set(['customized']);
+  const existing = [...new Set(rawBadges)].filter(b => !DEPRECATED.has(b));
   const newBadges = [...existing];
-  let changed = false;
+  let changed = existing.length !== rawBadges.length; // changed if we removed deprecated
 
+  // Auto-award veteran badge for accounts 30+ days old
   if(!existing.includes('veteran') && userData.createdAt?.toDate) {
-    if(Date.now() - userData.createdAt.toDate().getTime() > 30*24*60*60*1000) {
+    const accountAgeMs = Date.now() - userData.createdAt.toDate().getTime();
+    if(accountAgeMs > 30*24*60*60*1000) {
       newBadges.push('veteran'); changed = true;
     }
   }
 
-  // If we found duplicates, clean them up even if no new badges
-  if(changed || existing.length !== rawBadges.length) {
+  // If we found duplicates or changes, write back
+  if(changed) {
     const dedupedNew = [...new Set(newBadges)];
     await updateDoc(doc(db,'users',uid), { badges: dedupedNew }).catch(()=>{});
   }

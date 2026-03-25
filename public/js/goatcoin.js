@@ -238,10 +238,12 @@ export function renderGoatCoinTab() { _renderTab(); }
 function _renderTab() {
   const container = document.getElementById('section-goatcoin');
   if(!container) return;
-  const coins  = _gcData ? Math.floor(_gcData.coins||0) : 0;
-  const wCoins = _gcData ? Math.floor(_gcData.weekCoins||0) : 0;
-  const wChat  = _gcData ? Math.floor(_gcData.weekChatMins||0) : 0;
-  const wGame  = _gcData ? Math.floor(_gcData.weekGameMins||0) : 0;
+  const coins      = _gcData ? Math.floor(_gcData.coins||0) : 0;
+  const totalCoins = _gcData ? Math.floor(_gcData.totalCoins||0) : 0;
+  const wCoins     = _gcData ? Math.floor(_gcData.weekCoins||0) : 0;
+  const wChat      = _gcData ? Math.floor(_gcData.weekChatMins||0) : 0;
+  const wGame      = _gcData ? Math.floor(_gcData.weekGameMins||0) : 0;
+  const wBJ        = _gcData ? Math.floor(_gcData.weekBJWins||0) : 0;
 
   const now = new Date();
   const sunday = new Date(now);
@@ -255,31 +257,42 @@ function _renderTab() {
     <div class="pad gc-page">
       <div class="gc-header-row">
         <div>
-          <div class="pg-title">GoatCoin</div>
+          <div class="pg-title">🪙 GoatCoin</div>
           <div class="pg-sub">Earn coins for being here. Bet in blackjack. Climb the weekly board.</div>
         </div>
-        <div class="gc-balance-badge">
-          <div class="gc-balance-num gc-balance" id="gc-bal-display">${coins.toLocaleString()}</div>
-          <div class="gc-balance-tag">GC</div>
+        <div style="display:flex;flex-direction:column;gap:.5rem;align-items:flex-end">
+          <div class="gc-balance-badge">
+            <div class="gc-balance-num gc-balance" id="gc-bal-display">${coins.toLocaleString()}</div>
+            <div class="gc-balance-tag">GC Balance</div>
+          </div>
+          <div class="gc-total-badge">
+            <span class="gc-total-label">All-Time Earned:</span>
+            <span class="gc-total-val">${totalCoins.toLocaleString()} GC</span>
+          </div>
         </div>
       </div>
 
-      <div class="settings-section-label">Week of ${weekLabel}</div>
+      <div class="settings-section-label">📅 Week of ${weekLabel}</div>
       <div class="gc-stats-row">
         <div class="notif-section-card gc-stat-card">
-          <div class="gc-stat-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></div>
+          <div class="gc-stat-icon" style="font-size:1.4rem">📈</div>
           <div class="gc-stat-val">${wCoins.toLocaleString()}</div>
           <div class="gc-stat-label">Earned This Week</div>
         </div>
         <div class="notif-section-card gc-stat-card">
-          <div class="gc-stat-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div>
+          <div class="gc-stat-icon" style="font-size:1.4rem">💬</div>
           <div class="gc-stat-val">${wChat}m</div>
           <div class="gc-stat-label">Chat Time</div>
         </div>
         <div class="notif-section-card gc-stat-card">
-          <div class="gc-stat-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M7 10v4"/><line x1="12" y1="9" x2="12" y2="15"/></svg></div>
+          <div class="gc-stat-icon" style="font-size:1.4rem">🎮</div>
           <div class="gc-stat-val">${wGame}m</div>
           <div class="gc-stat-label">Game Time</div>
+        </div>
+        <div class="notif-section-card gc-stat-card">
+          <div class="gc-stat-icon" style="font-size:1.4rem">🃏</div>
+          <div class="gc-stat-val">${wBJ}</div>
+          <div class="gc-stat-label">BJ Wins</div>
         </div>
       </div>
 
@@ -287,8 +300,7 @@ function _renderTab() {
         <div class="gc-bj-col" id="gc-bj-col">${_renderBJLobby()}</div>
         <div class="gc-lb-col">
           <div class="gc-lb-hdr">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
-            Leaderboard
+            📊 Leaderboard
           </div>
           <div id="gc-leaderboard-content"><div class="gc-lb-loading">Loading…</div></div>
         </div>
@@ -310,7 +322,7 @@ function _renderBJLobby() {
   return `<div class="bj-lobby">
     <div class="bj-lobby-card">
       <div class="bj-lobby-intro">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="18" rx="2"/><path d="M12 7v10M7 12h10"/></svg>
+        <span style="font-size:1.8rem">🃏</span>
         <div>
           <div class="bj-lobby-title">1v1 Blackjack</div>
           <div class="bj-lobby-sub">Challenge one opponent. Closest to 21 wins each round — no dealer advantage. Most round wins takes the pot.</div>
@@ -319,8 +331,7 @@ function _renderBJLobby() {
 
       <div class="bj-form-section">
         <div class="bj-form-label">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-          Opponent
+          👤 Opponent
         </div>
         <div class="bj-opp-search-wrap">
           <input class="bj-opp-inp" id="bj-opp-inp" type="text" placeholder="Search for a player..." autocomplete="off">
@@ -331,10 +342,7 @@ function _renderBJLobby() {
 
       <div class="bj-form-row-inline">
         <div class="bj-form-section" style="flex:1">
-          <div class="bj-form-label">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 6v2m0 8v2M9.5 9.5h3a1.5 1.5 0 010 3H10m0 0h2.5a1.5 1.5 0 010 3H9.5"/></svg>
-            Stake per round (GC)
-          </div>
+          <div class="bj-form-label">🪙 Stake per round (GC)</div>
           <div class="bj-chips-row">
             <button class="bj-chip" data-bet="10">10</button>
             <button class="bj-chip" data-bet="25">25</button>
@@ -345,10 +353,7 @@ function _renderBJLobby() {
           <input id="bj-stake-input" class="field-input" type="number" min="1" placeholder="Custom amount..." style="margin-top:.5rem;max-width:160px">
         </div>
         <div class="bj-form-section" style="flex:0 0 auto">
-          <div class="bj-form-label">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 014-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg>
-            Best of
-          </div>
+          <div class="bj-form-label">🔁 Best of</div>
           <div class="bj-chips-row">
             <button class="bj-chip bj-bo-chip" data-bo="1">1</button>
             <button class="bj-chip bj-bo-chip active" data-bo="3">3</button>
@@ -359,8 +364,7 @@ function _renderBJLobby() {
       </div>
 
       <button class="btn bj-challenge-btn" id="bj-send-challenge">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-        Send Challenge
+        🎯 Send Challenge
       </button>
       <div class="merr" id="bj-challenge-err"></div>
     </div>
@@ -543,7 +547,7 @@ function _showWaitingState(opp, stake, bestOf) {
   col.innerHTML = `
     <div class="bj-lobby-card bj-waiting-card">
       <div class="bj-waiting-header">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <span style="font-size:1.4rem">⏳</span>
         <span>Challenge Sent</span>
       </div>
       <div class="bj-waiting-opps">
@@ -552,8 +556,7 @@ function _showWaitingState(opp, stake, bestOf) {
       <div class="bj-waiting-text">Waiting for <strong>${escHtml(opp.username)}</strong> to accept…</div>
       <div class="bj-waiting-meta">${stake} GC per round · Best of ${bestOf}</div>
       <button class="btn btn-ghost btn-sm" id="bj-cancel-challenge">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-        Cancel
+        ✕ Cancel
       </button>
     </div>`;
   document.getElementById('bj-cancel-challenge')?.addEventListener('click', _cancelChallenge);
@@ -640,8 +643,7 @@ function _renderPendingChallenges(challenges) {
   const el = document.getElementById('bj-pending-section');
   if(!el||!challenges?.length) { if(el) el.innerHTML=''; return; }
   el.innerHTML = `<div class="bj-incoming-hdr">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-      Incoming Challenges
+      🎯 Incoming Challenges
     </div>
     ${challenges.map(c=>`
       <div class="bj-challenge-row" data-cid="${c.id}">
@@ -984,8 +986,7 @@ function _renderBJTable() {
     <div class="bj-fullscreen-topbar">
       <span class="bj-fs-title">1v1 Blackjack</span>
       <button class="bj-fs-close" id="bj-fs-close">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-        Leave
+        ✕ Leave
       </button>
     </div>
     <div class="bj-mp-table">

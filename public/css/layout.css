@@ -2045,3 +2045,145 @@ body.layout-bottombar #main { flex: 1; overflow: hidden; min-height: 0; }
 ══════════════════════════════════════════ */
 #visits-count { transition: all .35s ease; }
 
+/* ══════════════════════════════════════════
+   ADMIN FULL-PAGE LAYOUT (full-screen like GC)
+══════════════════════════════════════════ */
+#section-admin { overflow-y: auto; padding: 0; scrollbar-width: thin; }
+#section-admin::-webkit-scrollbar { width: 4px; }
+#section-admin::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: var(--r); }
+#section-admin.active { display: flex; flex-direction: column; animation: none; }
+
+.admin-fullpage {
+  width: 100%; flex: 1; display: flex; flex-direction: column;
+  min-height: 0;
+}
+.admin-topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1.4rem 2rem 1rem;
+  border-bottom: 1px solid var(--border2);
+  flex-shrink: 0; flex-wrap: wrap; gap: .8rem;
+  background: var(--bg);
+}
+.admin-topbar-left { display: flex; align-items: center; gap: .75rem; }
+.admin-topbar-icon { font-size: 1.6rem; }
+.admin-topbar-title { font-family: var(--font-display); font-size: 1.5rem; font-weight: 900; line-height: 1.1; }
+.admin-topbar-sub { font-size: .72rem; color: var(--text-muted); margin-top: .15rem; }
+.admin-tabs {
+  display: flex; gap: 0; flex-shrink: 0;
+  border-bottom: 1px solid var(--border2);
+  padding: 0 2rem;
+  overflow-x: auto;
+}
+.admin-tabs::-webkit-scrollbar { height: 0; }
+.adm-tab {
+  padding: .75rem 1.2rem; font-size: .77rem; font-weight: 700;
+  border: none; background: transparent; cursor: pointer;
+  color: var(--text-muted); border-bottom: 2px solid transparent;
+  transition: all var(--tm); white-space: nowrap;
+  font-family: var(--font-body);
+}
+.adm-tab:hover { color: var(--text); }
+.adm-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+.admin-panel-area { flex: 1; overflow-y: auto; padding: 1.5rem 2rem 3rem; }
+.admin-panel-area::-webkit-scrollbar { width: 4px; }
+.admin-panel-area::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: var(--r); }
+.adm-panel { display: none; }
+.adm-panel.active { display: block; animation: sectionIn .2s ease; }
+
+/* ══════════════════════════════════════════
+   GOATCOIN EXTRA STATS
+══════════════════════════════════════════ */
+.gc-stats-row { grid-template-columns: repeat(4, 1fr); }
+@media (max-width: 860px) { .gc-stats-row { grid-template-columns: repeat(2, 1fr); } }
+.gc-total-badge {
+  display: flex; align-items: center; gap: .4rem;
+  font-size: .72rem; color: var(--text-muted);
+  padding: .3rem .6rem; border-radius: var(--r);
+  border: 1px solid var(--border2); background: var(--input-bg);
+}
+.gc-total-label { color: var(--text-faint); }
+.gc-total-val { font-weight: 800; color: var(--text); }
+
+/* ══════════════════════════════════════════
+   SHOP PAGE
+══════════════════════════════════════════ */
+#section-shop { overflow-y: auto; padding: 0; scrollbar-width: thin; }
+#section-shop::-webkit-scrollbar { width: 4px; }
+#section-shop::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: var(--r); }
+#section-shop.active { display: flex; flex-direction: column; animation: none; }
+
+.shop-page { width: 100%; padding: 0; flex: 1; display: flex; flex-direction: column; }
+.shop-topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1.4rem 2rem 1rem; border-bottom: 1px solid var(--border2);
+  flex-wrap: wrap; gap: .8rem; background: var(--bg); flex-shrink: 0;
+}
+.shop-topbar-left {}
+.shop-title { font-family: var(--font-display); font-size: 1.5rem; font-weight: 900; line-height: 1.1; }
+.shop-sub { font-size: .72rem; color: var(--text-muted); margin-top: .2rem; }
+.shop-balance-chip {
+  display: flex; align-items: center; gap: .45rem;
+  background: var(--nav-active-bg); border: 1.5px solid var(--accent);
+  border-radius: var(--surface-radius); padding: .5rem .9rem;
+  font-size: .87rem; font-weight: 800; color: var(--accent);
+}
+.shop-cats {
+  display: flex; gap: 6px; padding: .85rem 2rem;
+  border-bottom: 1px solid var(--border2); flex-wrap: wrap; flex-shrink: 0;
+}
+.shop-cat-btn {
+  padding: .38rem .9rem; border-radius: var(--pill-radius);
+  border: 1.5px solid var(--border2); background: transparent;
+  cursor: pointer; font-size: .74rem; font-weight: 700;
+  color: var(--text-muted); transition: all var(--tm);
+  font-family: var(--font-body); white-space: nowrap;
+}
+.shop-cat-btn:hover { border-color: var(--accent); color: var(--accent); }
+.shop-cat-btn.active { background: var(--nav-active-bg); border-color: var(--accent); color: var(--accent); }
+.shop-grid {
+  padding: 1.5rem 2rem 4rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 14px;
+  overflow-y: auto;
+  flex: 1;
+}
+.shop-grid::-webkit-scrollbar { width: 4px; }
+.shop-grid::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: var(--r); }
+.shop-card {
+  background: var(--card-bg); border: 1.5px solid var(--card-border);
+  border-radius: var(--surface-radius); padding: 1.2rem 1.1rem;
+  display: flex; flex-direction: column; align-items: center; text-align: center;
+  gap: .45rem; transition: all var(--tm); cursor: default;
+  position: relative; overflow: hidden;
+}
+.shop-card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.15); }
+.shop-card-owned { border-color: rgba(74,222,128,.4); background: rgba(74,222,128,.03); }
+.shop-card-cant-afford { opacity: .55; }
+.shop-card-emoji { font-size: 2.2rem; line-height: 1; margin-bottom: .1rem; }
+.shop-card-name { font-weight: 800; font-size: .9rem; }
+.shop-card-desc { font-size: .72rem; color: var(--text-muted); line-height: 1.5; flex: 1; }
+.shop-card-price { margin-top: .3rem; }
+.shop-price-tag { font-size: .8rem; font-weight: 800; color: var(--accent); }
+.shop-owned-tag { font-size: .75rem; font-weight: 700; color: #4ade80; }
+.shop-card-actions { width: 100%; }
+.shop-buy-btn, .shop-equip-btn, .shop-unequip-btn { width: 100%; margin-top: .1rem; }
+.shop-equip-btn { background: var(--accent); color: var(--badge-text); }
+.shop-unequip-btn { background: transparent; border: 1.5px solid var(--border2); color: var(--text-muted); }
+.shop-unequip-btn:hover { border-color: var(--danger); color: var(--danger); }
+.btn-disabled { opacity: .45; cursor: not-allowed; }
+
+/* ══════════════════════════════════════════
+   BADGE EMOJI FIX
+══════════════════════════════════════════ */
+.badge-emoji { font-size: .85rem; line-height: 1; }
+.badge-chip { display: inline-flex; align-items: center; gap: 3px; }
+.msg-badge-row .badge-emoji { font-size: .75rem; }
+
+/* ══════════════════════════════════════════
+   RANK BADGE EMOJI FIX
+══════════════════════════════════════════ */
+.rbadge { font-size: .55rem; }
+.rbadge.goat { font-size: .62rem; letter-spacing: .3px; }
+
+

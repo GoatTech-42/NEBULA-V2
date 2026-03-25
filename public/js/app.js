@@ -12,6 +12,7 @@ import { getDatabase, ref as rtRef, set as rtSet, get as rtGet, onValue, onDisco
 import { updateEmail, updatePassword, EmailAuthProvider, reauthenticateWithCredential } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { initGoatCoin, setActivity, cleanupGoatCoin, getGoatCoinData, renderGoatCoinTab } from './goatcoin.js';
 import { renderBadgeRow, openProfileModal, renderOwnProfile, checkAutoAwards, BADGE_DEFS, checkAdblocker } from './profile.js';
+import { renderShopTab, initShop } from './shop.js';
 
 // ── State ──
 let currentUser = null;
@@ -325,6 +326,7 @@ async function initApp(user) {
   trackVisits();
   setupPresence();
   initGoatCoin(user, data, _rtdb);
+  initShop(user, data, _rtdb);
   window._onGCUpdate = () => {
     const sec = document.getElementById('section-profile');
     if(sec?.classList.contains('active')) {
@@ -383,6 +385,7 @@ function navigate(section) {
   document.querySelectorAll(`[data-section="${section}"]`).forEach(i=>i.classList.add('active'));
   setActivity(section === 'chat' ? 'chat' : section === 'games' ? 'game' : 'site');
   if(section === 'goatcoin') renderGoatCoinTab();
+  if(section === 'shop') renderShopTab();
   document.getElementById('mobile-drawer-overlay')?.remove();
   document.getElementById('mobile-drawer')?.remove();
 }
@@ -513,31 +516,63 @@ function setupPresence() {
   const uid = currentUser.uid;
 
   if(_rtdb) {
-    // Use RTDB for low-latency, low-cost presence
     const presRef = rtRef(_rtdb, `presence/${uid}`);
-    const presData = {
-      uid, username: currentUserData.username,
-      color: currentUserData.color||avatarColor(uid),
-      rank: currentUserData.rank,
-      icon: currentUserData.icon||'',
-      online: true, lastSeen: Date.now()
-    };
-    rtSet(presRef, presData).catch(()=>{});
-    // Auto-mark offline on disconnect
-    onDisconnect(presRef).update({ online: false, lastSeen: Date.now() });
 
-    // Heartbeat every 30s to keep lastSeen fresh
+    function _presData() {
+      return {
+        uid,
+        username: currentUserData.username,
+        color: currentUserData.color || avatarColor(uid),
+        rank: currentUserData.rank,
+        icon: currentUserData.icon || '',
+        online: true,
+        lastSeen: Date.now()
+      };
+    }
+
+    // Set online immediately
+    rtSet(presRef, _presData()).catch(()=>{});
+
+    // When client disconnects, mark offline and stamp lastSeen
+    onDisconnect(presRef).set({ uid, online: false, lastSeen: Date.now() });
+
+    // Heartbeat every 20s
     if(_presenceInterval) clearInterval(_presenceInterval);
     _presenceInterval = setInterval(() => {
-      rtSet(rtRef(_rtdb, `presence/${uid}`), {...presData, lastSeen: Date.now(), online: true}).catch(()=>{});
-    }, 30000);
+      if(!document.hidden) {
+        rtSet(presRef, _presData()).catch(()=>{});
+      }
+    }, 20000);
+
+    // Visibility changes
+    document.addEventListener('visibilitychange', () => {
+      if(document.hidden) {
+        // Mark as offline when tab is hidden (optional: some prefer keeping online)
+        // We just stop the heartbeat — onDisconnect handles real closure
+        clearInterval(_presenceInterval);
+      } else {
+        // Come back online
+        rtSet(presRef, _presData()).catch(()=>{});
+        if(_presenceInterval) clearInterval(_presenceInterval);
+        _presenceInterval = setInterval(() => {
+          if(!document.hidden) rtSet(presRef, _presData()).catch(()=>{});
+        }, 20000);
+      }
+    });
+
+    // Also set offline on page unload (best-effort)
+    window.addEventListener('beforeunload', () => {
+      // Fire-and-forget: sets to offline
+      rtSet(presRef, { uid, online: false, lastSeen: Date.now() }).catch(()=>{});
+    });
+
   } else {
     // Fallback: Firestore presence
     const ref = doc(db, 'presence', uid);
     function beat() {
       setDoc(ref, {
         uid, username: currentUserData.username,
-        color: currentUserData.color||avatarColor(uid),
+        color: currentUserData.color || avatarColor(uid),
         rank: currentUserData.rank,
         lastSeen: serverTimestamp(), online: true
       }, { merge: true }).catch(()=>{});
@@ -548,29 +583,10 @@ function setupPresence() {
     window.addEventListener('beforeunload', () => {
       setDoc(ref, { online: false, lastSeen: serverTimestamp() }, { merge: true }).catch(()=>{});
     });
+    document.addEventListener('visibilitychange', () => {
+      if(!document.hidden) beat();
+    });
   }
-
-  document.addEventListener('visibilitychange', () => {
-    if(document.hidden) { clearInterval(_presenceInterval); }
-    else {
-      if(_rtdb) {
-        rtSet(rtRef(_rtdb, `presence/${uid}`), {
-          uid, username: currentUserData.username,
-          color: currentUserData.color||avatarColor(uid),
-          rank: currentUserData.rank, icon: currentUserData.icon||'',
-          online: true, lastSeen: Date.now()
-        }).catch(()=>{});
-        _presenceInterval = setInterval(() => {
-          rtSet(rtRef(_rtdb, `presence/${uid}`), {
-            uid, username: currentUserData.username,
-            color: currentUserData.color||avatarColor(uid),
-            rank: currentUserData.rank, icon: currentUserData.icon||'',
-            online: true, lastSeen: Date.now()
-          }).catch(()=>{});
-        }, 30000);
-      }
-    }
-  });
 }
 
 function trackVisits() {
@@ -693,7 +709,7 @@ async function openChannel(ch) {
       const wipeBtn = document.createElement('button');
       wipeBtn.className = 'wipe-thread-btn btn btn-danger btn-sm';
       wipeBtn.style.cssText = 'font-size:.62rem;padding:.28rem .6rem;gap:.3rem;display:flex;align-items:center';
-      wipeBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>Wipe Thread`;
+      wipeBtn.innerHTML = `🗑️ Wipe Thread`;
       wipeBtn.addEventListener('click', () => wipeThread(ch.id, ch.name));
       ctbRight.appendChild(wipeBtn);
     }
@@ -795,19 +811,10 @@ let lastMsgSender = null, lastMsgTime = null;
 
 function renderRankBadge(rank) {
   if(rank === 'goat') {
-    return `<span class="rbadge goat">
-      <svg class="goat-badge-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M20 9V7a2 2 0 0 0-2-2h-1a2 2 0 0 0-2 2v1"/>
-        <path d="M4 9V7a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v1"/>
-        <path d="M8 9h8"/>
-        <ellipse cx="12" cy="13" rx="5" ry="4"/>
-        <path d="M9 17v2"/>
-        <path d="M15 17v2"/>
-      </svg>
-      GOAT
-    </span>`;
+    return `<span class="rbadge goat">🐐 GOAT</span>`;
   }
-  return `<span class="rbadge ${rank||'planetary'}">${rank||'planetary'}</span>`;
+  const labels = { earthbound:'🌍 EARTHBOUND', planetary:'🪐 PLANETARY', solar:'☀️ SOLAR', galactic:'🌌 GALACTIC', universal:'⚡ UNIVERSAL' };
+  return `<span class="rbadge ${rank||'planetary'}">${labels[rank]||rank||'planetary'}</span>`;
 }
 
 function appendMsg(id, data, container) {
@@ -844,9 +851,9 @@ function appendMsg(id, data, container) {
         <div class="msg-reactions" id="reacts-${id}"></div>
       </div>
       <div class="msg-actions">
-        <button class="mab" onclick="window.addReaction('${id}')">+</button>
-        ${canEdit?`<button class="mab" onclick="window.editMsg('${id}','${encodeURIComponent(data.text||'')}')">Edit</button>`:''}
-        ${canDelete?`<button class="mab d" onclick="window.deleteMsg('${id}')">Del</button>`:''}
+        <button class="mab" onclick="window.addReaction('${id}')" title="React">😊</button>
+        ${canEdit?`<button class="mab" onclick="window.editMsg('${id}','${encodeURIComponent(data.text||'')}')">✏️</button>`:''}
+        ${canDelete?`<button class="mab d" onclick="window.deleteMsg('${id}')">🗑️</button>`:''}
       </div>`;
   } else {
     el.innerHTML = `
@@ -858,9 +865,9 @@ function appendMsg(id, data, container) {
       </div>
       <div class="msg-actions">
         <span class="msg-ts-inline">${tsStr}</span>
-        <button class="mab" onclick="window.addReaction('${id}')">+</button>
-        ${canEdit?`<button class="mab" onclick="window.editMsg('${id}','${encodeURIComponent(data.text||'')}')">Edit</button>`:''}
-        ${canDelete?`<button class="mab d" onclick="window.deleteMsg('${id}')">Del</button>`:''}
+        <button class="mab" onclick="window.addReaction('${id}')" title="React">😊</button>
+        ${canEdit?`<button class="mab" onclick="window.editMsg('${id}','${encodeURIComponent(data.text||'')}')">✏️</button>`:''}
+        ${canDelete?`<button class="mab d" onclick="window.deleteMsg('${id}')">🗑️</button>`:''}
       </div>`;
   }
 
@@ -882,7 +889,13 @@ function updateMsgEl(el, data) {
     const ava = el.querySelector('.msg-ava');
     if(ava) ava.innerHTML = avatarHtml(data.icon, data.username, '60%');
     const rankEl = el.querySelector('.rbadge');
-    if(rankEl && data.rank) { rankEl.className=`rbadge ${data.rank}`; rankEl.textContent=data.rank; }
+    if(rankEl && data.rank) {
+      const newBadgeHtml = renderRankBadge(data.rank);
+      const tmp = document.createElement('div');
+      tmp.innerHTML = newBadgeHtml;
+      const newEl = tmp.firstElementChild;
+      if(newEl) rankEl.replaceWith(newEl);
+    }
     // Remove old badge row
     el.querySelector('.msg-badge-row')?.remove();
     const bHtml = renderBadgeRow(data.badges||[], true);
@@ -1080,59 +1093,25 @@ window.deleteMsg = function(id) {
 
 // ── Reactions ──
 
-// SVG Reaction System
+// Emoji Reaction System
 const REACTION_DEFS = {
-  thumbsup: {
-    label: 'Like',
-    path: `<path d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.28a2 2 0 002-1.7l1.38-9a2 2 0 00-2-2.3H14z"/><path d="M7 22H4a2 2 0 01-2-2v-7a2 2 0 012-2h3"/>`
-  },
-  thumbsdown: {
-    label: 'Dislike',
-    path: `<path d="M10 15v4a3 3 0 003 3l4-9V2H5.72a2 2 0 00-2 1.7l-1.38 9a2 2 0 002 2.3H10z"/><path d="M17 2h2.67A2.31 2.31 0 0122 4v7a2.31 2.31 0 01-2.33 2H17"/>`
-  },
-  fire: {
-    label: 'Fire',
-    path: `<path d="M8.5 14.5A2.5 2.5 0 0011 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 01-7 7 7 7 0 01-7-7c0-1.53.4-2.973 1.1-4.2.31-.477.63-.913.9-1.3"/>`
-  },
-  wiltedflower: {
-    label: 'Wilted Flower',
-    path: `<path d="M12 22v-8"/><path d="M9 14c-1.5-.8-3-2.5-3-4.5a6 6 0 0112 0c0 2-1.5 3.7-3 4.5" stroke-dasharray="3 1.5" opacity=".7"/><path d="M10 19c-2 .8-3.5.2-3.5-1.3" opacity=".6"/><path d="M12 14l-2 2"/>`
-  },
-  crackedheart: {
-    label: 'Broken Heart',
-    path: `<path d="M20.42 4.58a5.4 5.4 0 00-7.65 0l-.77.78-.77-.78a5.4 5.4 0 00-7.65 0C1.46 6.7 1.33 10.28 4 13l8 8 8-8c2.67-2.72 2.54-6.3.42-8.42z"/><path d="M12 6l-1.5 3 3-.8-1.5 2.8" stroke="#fff" stroke-width="1.2" fill="none"/>`
-  },
-  insanegrin: {
-    label: 'Insane Grin',
-    path: `<circle cx="12" cy="12" r="10"/><path d="M7 14.5s1 3.5 5 3.5 5-3.5 5-3.5"/><path d="M7 14c.4.4.8.4 1.2 0s.8-.4 1.2 0 .8.4 1.2 0 .8-.4 1.2 0 .8.4 1.2 0 .8-.4 1.2 0" opacity=".7"/><circle cx="9" cy="9.5" r="1.2" fill="currentColor" stroke="none"/><circle cx="15" cy="9.5" r="1.2" fill="currentColor" stroke="none"/>`
-  },
-  star: {
-    label: 'Star',
-    path: `<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>`
-  },
-  skull: {
-    label: 'Skull',
-    path: `<circle cx="12" cy="11" r="5"/><path d="M9 11v2M15 11v2"/><path d="M9 16c0 1 .5 1.5 1.5 1.5h3c1 0 1.5-.5 1.5-1.5v-1H9v1z"/><path d="M7 8c-1-2 0-5 3-5s3 2 3 2 1-2 3-2 4 3 3 5"/>`
-  },
-  laugh: {
-    label: 'LOL',
-    path: `<circle cx="12" cy="12" r="10"/><path d="M8 13s1.5 3 4 3 4-3 4-3"/><path d="M9 9h.01M15 9h.01" stroke-width="3" stroke-linecap="round"/>`
-  },
-  wave: {
-    label: 'Wave',
-    path: `<path d="M18.5 17.5c-2-2.5-4.5-3-7.5-3s-5.5.5-7.5 3"/><path d="M12 3c-1.2 1.2-1.8 2.6-1.8 4 0 1.5.6 3 1.8 4.5"/><path d="M12 3c1.2 1.2 1.8 2.6 1.8 4 0 1.5-.6 3-1.8 4.5"/>`
-  }
+  thumbsup:    { label: '👍 Like',         emoji: '👍' },
+  thumbsdown:  { label: '👎 Dislike',      emoji: '👎' },
+  fire:        { label: '🔥 Fire',         emoji: '🔥' },
+  wilted:      { label: '🥀 Wilted',       emoji: '🥀' },
+  heartbreak:  { label: '💔 Heartbreak',   emoji: '💔' },
+  skull:       { label: '💀 Skull',        emoji: '💀' },
+  laugh:       { label: '😂 LOL',          emoji: '😂' },
+  mindblown:   { label: '🤯 Mind Blown',   emoji: '🤯' },
+  wave:        { label: '👋 Wave',         emoji: '👋' },
+  star:        { label: '⭐ Star',         emoji: '⭐' },
+  party:       { label: '🎉 Party',        emoji: '🎉' },
+  goat:        { label: '🐐 GOAT',         emoji: '🐐' },
 };
 
 const REACTION_KEYS = Object.keys(REACTION_DEFS);
 
-function _reactionSVG(key, size=14) {
-  const def = REACTION_DEFS[key];
-  if(!def) return '';
-  return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${def.path}</svg>`;
-}
-
-// Replacement for window.addReaction
+// window.addReaction — emoji picker
 window.addReaction = function(msgId) {
   // Remove any existing picker
   document.querySelectorAll('.epicker').forEach(p=>p.remove());
@@ -1141,8 +1120,8 @@ window.addReaction = function(msgId) {
   const picker = document.createElement('div');
   picker.className = 'epicker';
   const rect = el.getBoundingClientRect();
-  const top = Math.min(rect.bottom + 4, window.innerHeight - 220);
-  const left = Math.min(rect.left, window.innerWidth - 250);
+  const top = Math.min(rect.bottom + 4, window.innerHeight - 200);
+  const left = Math.min(rect.left, window.innerWidth - 270);
   picker.style.top = (window.scrollY + top) + 'px';
   picker.style.left = left + 'px';
 
@@ -1151,13 +1130,13 @@ window.addReaction = function(msgId) {
     const opt = document.createElement('button');
     opt.className = 'eopt';
     opt.title = def.label;
-    opt.innerHTML = _reactionSVG(key, 16);
+    opt.style.cssText = 'font-size:1.25rem;width:38px;height:38px';
+    opt.textContent = def.emoji;
     opt.addEventListener('click', () => { toggleReaction(msgId, key); picker.remove(); });
     picker.appendChild(opt);
   });
 
   document.body.appendChild(picker);
-  // Close on outside click
   setTimeout(() => {
     function onOutside(e) {
       if(!picker.contains(e.target)) { picker.remove(); document.removeEventListener('click', onOutside); }
@@ -1166,7 +1145,7 @@ window.addReaction = function(msgId) {
   }, 10);
 };
 
-// Replacement for renderReactions — uses SVG icons
+// renderReactions — emoji chips
 function renderReactions(container, reactions, msgId) {
   if(!container) return;
   container.innerHTML = '';
@@ -1174,10 +1153,11 @@ function renderReactions(container, reactions, msgId) {
     if(!uids||!uids.length) return;
     const mine = typeof currentUser !== 'undefined' && uids.includes(currentUser.uid);
     const def = REACTION_DEFS[key];
+    const emoji = def?.emoji || key;
     const chip = document.createElement('span');
     chip.className = `rchip${mine?' mine':''}`;
     chip.title = def?.label || key;
-    chip.innerHTML = `${_reactionSVG(key, 13)} <span class="rcnt">${uids.length}</span>`;
+    chip.innerHTML = `<span style="font-size:.95rem;line-height:1">${emoji}</span><span class="rcnt">${uids.length}</span>`;
     chip.addEventListener('click', () => toggleReaction(msgId, key));
     container.appendChild(chip);
   });
@@ -1205,7 +1185,7 @@ function loadMembers(ch) {
     return `<div class="${itemClass}" onclick="window._openProfile('${u.uid}')" style="cursor:pointer">
       ${avaWrapper}
       <span class="ms-name">${escHtml(u.username)}</span>
-      <span class="rbadge ${u.rank}" style="flex-shrink:0">${u.rank[0].toUpperCase()}</span>
+      <span class="rbadge ${u.rank}" style="flex-shrink:0;font-size:.45rem">${u.rank.toUpperCase()}</span>
     </div>`;
   }
 
@@ -1267,10 +1247,7 @@ function loadMembers(ch) {
 // ── Create Channel Modal ──
 function showCreateChannelModal() {
   showModal(`
-    <h3>
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      New Channel
-    </h3>
+    <h3>➕ New Channel</h3>
     <p class="modal-p">Create a new custom channel.</p>
     <div class="field-group"><label class="field-label">Channel Name</label><input id="m-chname" class="field-input" placeholder="my-channel" maxlength="32"></div>
     <div class="field-group"><label class="field-label">Minimum Rank</label>
@@ -1676,8 +1653,7 @@ function renderProfileEdit() {
   section.innerHTML = `
     <div class="prof-panel" id="prof-color-section">
       <div class="prof-panel-hdr">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-        Avatar
+        🎨 Avatar
       </div>
       <div class="prof-panel-sub">Choose an icon or use your initial. Then pick a color.</div>
       <div class="ava-icon-grid" id="ava-icon-grid"></div>
@@ -1687,8 +1663,7 @@ function renderProfileEdit() {
 
     <div class="prof-panel">
       <div class="prof-panel-hdr">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-        Username
+        ✏️ Username
         ${!canChangeUsername ? '<span class="prof-panel-badge">Available in '+cooldownDays+' day'+(cooldownDays!==1?'s':'')+'</span>' : ''}
       </div>
       <div class="prof-row">
@@ -1701,8 +1676,7 @@ function renderProfileEdit() {
 
     <div class="prof-panel">
       <div class="prof-panel-hdr">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-        Email Address
+        📧 Email Address
       </div>
       <div class="prof-row">
         <input id="prof-email-inp" class="field-input" type="email" value="${escHtml(d.email||auth.currentUser?.email||'')}" placeholder="your@email.com">
@@ -1713,8 +1687,7 @@ function renderProfileEdit() {
 
     <div class="prof-panel">
       <div class="prof-panel-hdr">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
-        Change Password
+        🔒 Change Password
       </div>
       <div class="prof-fields">
         <input id="prof-pass-cur"  class="field-input" type="password" placeholder="Current password">
@@ -2155,11 +2128,14 @@ async function setupAdmin() {
   if(!adminSection) return;
 
   adminSection.innerHTML = `
-  <div class="pad admin-full">
-    <div class="admin-header-row">
-      <div>
-        <div class="pg-title">${isGoat ? '⚙️ Goat Console' : '🛡️ Mod Panel'}</div>
-        <div class="pg-sub">${isGoat ? 'Full system access — user management, data cleanup, moderation' : 'Approve members and manage the community'}</div>
+  <div class="admin-fullpage">
+    <div class="admin-topbar">
+      <div class="admin-topbar-left">
+        <span class="admin-topbar-icon">${isGoat ? '⚙️' : '🛡️'}</span>
+        <div>
+          <div class="admin-topbar-title">${isGoat ? 'Goat Console' : 'Mod Panel'}</div>
+          <div class="admin-topbar-sub">${isGoat ? 'Full system access — user management, data cleanup, moderation' : 'Approve members and manage the community'}</div>
+        </div>
       </div>
       <div class="admin-stats-row" id="admin-stats-row">
         <div class="admin-stat-pill" id="adm-stat-pending"><span id="adm-cnt-pending">…</span> Pending</div>
@@ -2168,27 +2144,17 @@ async function setupAdmin() {
       </div>
     </div>
     <div class="admin-tabs" id="admin-tabs">
-      <button class="adm-tab active" data-tab="pending">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-        Pending
-      </button>
-      <button class="adm-tab" data-tab="members">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
-        Members
-      </button>
-      <button class="adm-tab" data-tab="banned">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
-        Banned
-      </button>
-      ${isGoat ? `<button class="adm-tab" data-tab="cleanup">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
-        DB Cleanup
-      </button>` : ''}
+      <button class="adm-tab active" data-tab="pending">⏳ Pending</button>
+      <button class="adm-tab" data-tab="members">👥 Members</button>
+      <button class="adm-tab" data-tab="banned">🚫 Banned</button>
+      ${isGoat ? `<button class="adm-tab" data-tab="cleanup">🗑️ DB Cleanup</button>` : ''}
     </div>
-    <div class="adm-panel active" id="ap-pending"><div class="adm-loading">Loading…</div></div>
-    <div class="adm-panel" id="ap-members"><div class="adm-loading">Loading…</div></div>
-    <div class="adm-panel" id="ap-banned"><div class="adm-loading">Loading…</div></div>
-    ${isGoat ? '<div class="adm-panel" id="ap-cleanup"><div class="adm-loading">Loading…</div></div>' : ''}
+    <div class="admin-panel-area">
+      <div class="adm-panel active" id="ap-pending"><div class="adm-loading">Loading…</div></div>
+      <div class="adm-panel" id="ap-members"><div class="adm-loading">Loading…</div></div>
+      <div class="adm-panel" id="ap-banned"><div class="adm-loading">Loading…</div></div>
+      ${isGoat ? '<div class="adm-panel" id="ap-cleanup"><div class="adm-loading">Loading…</div></div>' : ''}
+    </div>
   </div>`;
 
   document.querySelectorAll('.adm-tab').forEach(t => {
@@ -2237,7 +2203,7 @@ async function loadAdminPanel(tab) {
 
   if(tab==='pending') {
     const pending = users.filter(u=>u.status==='pending');
-    if(!pending.length) { container.innerHTML='<div class="adm-empty"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg><span>All caught up! No pending accounts.</span></div>'; return; }
+    if(!pending.length) { container.innerHTML='<div class="adm-empty"><span style="font-size:2rem">✅</span><span>All caught up! No pending accounts.</span></div>'; return; }
     container.innerHTML = pending.map(u=>`
       <div class="adm-row">
         <div class="adm-ava" style="background:${u.color||avatarColor(u.uid)}" onclick="window._openProfile('${u.uid}')">${avatarHtml(u.icon,u.username,"60%")}</div>
@@ -2247,8 +2213,8 @@ async function loadAdminPanel(tab) {
         </div>
         <div class="adm-actions">
           <button class="ta-btn ta-ghost" onclick="window._openProfile('${u.uid}')">Profile</button>
-          <button class="ta-btn ta-green" onclick="window.approveUser('${u.uid}')">✓ Approve</button>
-          <button class="ta-btn ta-red" onclick="window.denyUser('${u.uid}','${escHtml(u.username)}')">✗ Deny</button>
+          <button class="ta-btn ta-green" onclick="window.approveUser('${u.uid}')">✅ Approve</button>
+          <button class="ta-btn ta-red" onclick="window.denyUser('${u.uid}','${escHtml(u.username)}')">❌ Deny</button>
         </div>
       </div>`).join('');
   } else if(tab==='members') {
@@ -2276,9 +2242,9 @@ async function loadAdminPanel(tab) {
           </div>
           <div class="adm-actions">
             <span class="rbadge ${u.rank}">${u.rank}</span>
-            <button class="ta-btn ta-ghost" onclick="window._openProfile('${u.uid}')">Profile</button>
-            ${canChangeRank(u) ? `<button class="ta-btn ta-blue" onclick="window.changeRank('${u.uid}','${u.rank}','${escHtml(u.username)}')">Rank</button>` : ''}
-            ${canBan(u) ? `<button class="ta-btn ta-red" onclick="window.banUser('${u.uid}','${escHtml(u.username)}')">Ban</button>` : ''}
+            <button class="ta-btn ta-ghost" onclick="window._openProfile('${u.uid}')">👤 Profile</button>
+            ${canChangeRank(u) ? `<button class="ta-btn ta-blue" onclick="window.changeRank('${u.uid}','${u.rank}','${escHtml(u.username)}')">🏆 Rank</button>` : ''}
+            ${canBan(u) ? `<button class="ta-btn ta-red" onclick="window.banUser('${u.uid}','${escHtml(u.username)}')">🚫 Ban</button>` : ''}
           </div>
         </div>`).join('') : '<div class="adm-empty">No members match search</div>';
     };
@@ -2296,11 +2262,11 @@ async function loadAdminPanel(tab) {
           <div class="adm-meta">${u.email||'No email'}</div>
         </div>
         <div class="adm-actions">
-          <button class="ta-btn ta-ghost" onclick="window._openProfile('${u.uid}')">Profile</button>
-          <button class="ta-btn ta-green" onclick="window.unbanUser('${u.uid}')">Unban</button>
-          ${currentUserData.rank==='goat'?`<button class="ta-btn ta-red" onclick="window.deleteAccount('${u.uid}','${escHtml(u.username)}')">Delete</button>`:''}
+          <button class="ta-btn ta-ghost" onclick="window._openProfile('${u.uid}')">👤 Profile</button>
+          <button class="ta-btn ta-green" onclick="window.unbanUser('${u.uid}')">✅ Unban</button>
+          ${currentUserData.rank==='goat'?`<button class="ta-btn ta-red" onclick="window.deleteAccount('${u.uid}','${escHtml(u.username)}')">🗑️ Delete</button>`:''}
         </div>
-      </div>`).join('') : '<div class="adm-empty"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg><span>No banned users</span></div>';
+      </div>`).join('') : '<div class="adm-empty"><span style="font-size:2rem">🚫</span><span>No banned users</span></div>';
   }
 }
 
@@ -2309,7 +2275,7 @@ async function renderDBCleanup(container) {
   container.innerHTML = `
   <div class="cleanup-panel">
     <div class="cleanup-warning">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      <span>⚠️</span>
       <span><strong>Danger Zone</strong> — All destructive actions are irreversible. Be certain before wiping anything.</span>
     </div>
 
