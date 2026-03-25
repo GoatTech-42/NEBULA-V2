@@ -10,8 +10,24 @@ import {
   doc, getDoc, updateDoc, collection, getDocs, serverTimestamp
 } from './firebase.js';
 import { getDatabase, ref as rtRef, set as rtSet, get as rtGet, update as rtUpdate } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-import { toast, avatarColor, escHtml, avatarHtml } from './app.js';
+import { toast, avatarColor, escHtml, avatarHtml, SVG_ICONS } from './app.js';
 import { getGoatCoinData } from './goatcoin.js';
+
+// Helper to get a shop item's SVG preview icon
+function _shopItemSvg(item) {
+  if(item.iconKey && SVG_ICONS[item.iconKey]) {
+    return `<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${SVG_ICONS[item.iconKey]}</svg>`;
+  }
+  // Flair / badge icons
+  const fallbacks = {
+    flair_rainbow: `<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 17a10 10 0 00-20 0"/><path d="M6 17a6 6 0 0112 0"/><path d="M10 17a2 2 0 014 0"/></svg>`,
+    flair_glow:    `<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`,
+    flair_wave:    `<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6c.6.5 1.2 1 2.5 1C7 7 7 5 9.5 5c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/><path d="M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/><path d="M2 18c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/></svg>`,
+    badge_rich:    `<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`,
+    badge_early:   `<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>`,
+  };
+  return fallbacks[item.id] || `<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg>`;
+}
 
 // ── Module state ──
 let _shopUser   = null;
@@ -29,7 +45,6 @@ export const SHOP_ITEMS = [
     category: 'icons',
     name: 'Crown',
     desc: 'A regal crown for your avatar.',
-    emoji: '👑',
     iconKey: 'crown',
     price: 150,
     type: 'icon',
@@ -39,7 +54,6 @@ export const SHOP_ITEMS = [
     category: 'icons',
     name: 'Rocket',
     desc: 'Blast off with a rocket icon.',
-    emoji: '🚀',
     iconKey: 'rocket',
     price: 120,
     type: 'icon',
@@ -49,7 +63,6 @@ export const SHOP_ITEMS = [
     category: 'icons',
     name: 'Diamond',
     desc: 'Shine bright with a diamond.',
-    emoji: '💎',
     iconKey: 'diamond',
     price: 200,
     type: 'icon',
@@ -59,7 +72,6 @@ export const SHOP_ITEMS = [
     category: 'icons',
     name: 'Flame',
     desc: 'Stay lit.',
-    emoji: '🔥',
     iconKey: 'flame',
     price: 100,
     type: 'icon',
@@ -69,7 +81,6 @@ export const SHOP_ITEMS = [
     category: 'icons',
     name: 'Skull',
     desc: 'Edgy skull icon.',
-    emoji: '💀',
     iconKey: 'skull',
     price: 100,
     type: 'icon',
@@ -79,7 +90,6 @@ export const SHOP_ITEMS = [
     category: 'icons',
     name: 'Ghost',
     desc: 'Boo! A spooky ghost.',
-    emoji: '👻',
     iconKey: 'ghost',
     price: 80,
     type: 'icon',
@@ -89,7 +99,6 @@ export const SHOP_ITEMS = [
     category: 'icons',
     name: 'Music Note',
     desc: 'For the music lovers.',
-    emoji: '🎵',
     iconKey: 'music',
     price: 80,
     type: 'icon',
@@ -99,7 +108,6 @@ export const SHOP_ITEMS = [
     category: 'icons',
     name: 'Planet',
     desc: 'Out of this world.',
-    emoji: '🪐',
     iconKey: 'planet',
     price: 130,
     type: 'icon',
@@ -109,7 +117,6 @@ export const SHOP_ITEMS = [
     category: 'icons',
     name: 'Heart',
     desc: 'Spread some love.',
-    emoji: '❤️',
     iconKey: 'heart',
     price: 60,
     type: 'icon',
@@ -119,7 +126,6 @@ export const SHOP_ITEMS = [
     category: 'icons',
     name: 'Eye',
     desc: 'Always watching.',
-    emoji: '👁️',
     iconKey: 'eye',
     price: 120,
     type: 'icon',
@@ -129,7 +135,6 @@ export const SHOP_ITEMS = [
     category: 'icons',
     name: 'Trophy',
     desc: 'For the true champions.',
-    emoji: '🏆',
     iconKey: 'trophy',
     price: 250,
     type: 'icon',
@@ -139,7 +144,6 @@ export const SHOP_ITEMS = [
     category: 'icons',
     name: 'Controller',
     desc: 'Game on.',
-    emoji: '🎮',
     iconKey: 'controller',
     price: 90,
     type: 'icon',
@@ -149,7 +153,6 @@ export const SHOP_ITEMS = [
     category: 'icons',
     name: 'Moon',
     desc: 'Late night vibes.',
-    emoji: '🌙',
     iconKey: 'moon',
     price: 70,
     type: 'icon',
@@ -159,7 +162,6 @@ export const SHOP_ITEMS = [
     category: 'icons',
     name: 'Sun',
     desc: 'Rise and shine.',
-    emoji: '☀️',
     iconKey: 'sun',
     price: 70,
     type: 'icon',
@@ -169,7 +171,6 @@ export const SHOP_ITEMS = [
     category: 'icons',
     name: 'Compass',
     desc: 'Find your direction.',
-    emoji: '🧭',
     iconKey: 'compass',
     price: 90,
     type: 'icon',
@@ -179,7 +180,6 @@ export const SHOP_ITEMS = [
     category: 'icons',
     name: 'Infinity',
     desc: 'Endless possibilities.',
-    emoji: '∞',
     iconKey: 'infinity',
     price: 180,
     type: 'icon',
@@ -190,7 +190,6 @@ export const SHOP_ITEMS = [
     category: 'flair',
     name: 'Rainbow Name',
     desc: 'Your username shows with a rainbow gradient in chat. Makes you stand out.',
-    emoji: '🌈',
     price: 400,
     type: 'flair',
     flairKey: 'rainbow_name',
@@ -200,7 +199,6 @@ export const SHOP_ITEMS = [
     category: 'flair',
     name: 'Name Glow',
     desc: 'Your username glows with your avatar color in chat messages.',
-    emoji: '✨',
     price: 300,
     type: 'flair',
     flairKey: 'name_glow',
@@ -210,7 +208,6 @@ export const SHOP_ITEMS = [
     category: 'flair',
     name: 'Wave Animation',
     desc: 'A subtle wave animation on your avatar in the members list.',
-    emoji: '🌊',
     price: 350,
     type: 'flair',
     flairKey: 'wave_avatar',
@@ -219,9 +216,8 @@ export const SHOP_ITEMS = [
   {
     id: 'badge_rich',
     category: 'badges',
-    name: 'Whale 🐳',
+    name: 'Whale',
     desc: 'Flex your wealth. Awarded for spending 500+ GC in the shop.',
-    emoji: '🐳',
     price: 500,
     type: 'badge',
     badgeKey: 'whale',
@@ -229,9 +225,8 @@ export const SHOP_ITEMS = [
   {
     id: 'badge_early',
     category: 'badges',
-    name: 'Pioneer 🧭',
+    name: 'Pioneer',
     desc: 'Proof you were here before the shop existed.',
-    emoji: '🧭',
     price: 200,
     type: 'badge',
     badgeKey: 'pioneer',
@@ -239,10 +234,10 @@ export const SHOP_ITEMS = [
 ];
 
 const CATEGORIES = [
-  { id: 'all',    label: '🛍️ All' },
-  { id: 'icons',  label: '🎨 Icons' },
-  { id: 'flair',  label: '✨ Flair' },
-  { id: 'badges', label: '🏅 Badges' },
+  { id: 'all',    label: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg> All' },
+  { id: 'icons',  label: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Icons' },
+  { id: 'flair',  label: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> Flair' },
+  { id: 'badges', label: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Badges' },
 ];
 
 // ══════════════════════════════════════════
@@ -308,13 +303,13 @@ export async function renderShopTab() {
 
       return `
         <div class="shop-card${owned ? ' shop-card-owned' : ''}${!canAfford && !owned ? ' shop-card-cant-afford' : ''}">
-          <div class="shop-card-emoji">${item.emoji}</div>
+          <div class="shop-card-icon">${_shopItemSvg(item)}</div>
           <div class="shop-card-name">${escHtml(item.name)}</div>
           <div class="shop-card-desc">${escHtml(item.desc)}</div>
           <div class="shop-card-price">
             ${owned
-              ? `<span class="shop-owned-tag">✅ Owned</span>`
-              : `<span class="shop-price-tag">🪙 ${item.price.toLocaleString()} GC</span>`
+              ? `<span class="shop-owned-tag"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Owned</span>`
+              : `<span class="shop-price-tag"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> ${item.price.toLocaleString()} GC</span>`
             }
           </div>
           <div class="shop-card-actions">
@@ -345,11 +340,11 @@ export async function renderShopTab() {
     <div class="shop-page">
       <div class="shop-topbar">
         <div class="shop-topbar-left">
-          <div class="shop-title">🛍️ Shop</div>
+          <div class="shop-title"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg> Shop</div>
           <div class="shop-sub">Spend your GoatCoin on cool cosmetics</div>
         </div>
         <div class="shop-balance-chip">
-          <span style="font-size:.85rem">🪙</span>
+          <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></span>
           <span id="shop-balance">${coins.toLocaleString()} GC</span>
         </div>
       </div>
@@ -462,7 +457,7 @@ async function _purchaseItem(item, onDone) {
       }
     }
 
-    toast(`${item.emoji} ${item.name} purchased!`, 'success');
+    toast(`${item.name} purchased!`, 'success');
     if(onDone) onDone();
   } catch(e) {
     toast('Purchase failed: ' + e.message, 'error');
@@ -494,15 +489,15 @@ async function _equipItem(item) {
       if(window.propagateProfileToMessages) {
         window.propagateProfileToMessages(_shopUser.uid, { icon: item.iconKey }).catch(()=>{});
       }
-      toast(`${item.emoji} ${item.name} equipped!`, 'success');
+      toast(`${item.name} equipped!`, 'success');
     } else if(item.type === 'flair') {
       const flairs = [...new Set([...(_shopData.shopFlair || []), item.flairKey])];
       await updateDoc(userRef, { shopFlair: flairs });
       _shopData = { ..._shopData, shopFlair: flairs };
-      toast(`${item.emoji} ${item.name} activated!`, 'success');
+      toast(`${item.name} activated!`, 'success');
     } else if(item.type === 'badge') {
       // Badges are auto-equipped on purchase, just toast
-      toast(`${item.emoji} Badge is already active!`, 'info');
+      toast(`Badge is already active!`, 'info');
     }
   } catch(e) {
     toast('Failed to equip: ' + e.message, 'error');

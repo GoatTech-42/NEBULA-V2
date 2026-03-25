@@ -709,7 +709,7 @@ async function openChannel(ch) {
       const wipeBtn = document.createElement('button');
       wipeBtn.className = 'wipe-thread-btn btn btn-danger btn-sm';
       wipeBtn.style.cssText = 'font-size:.62rem;padding:.28rem .6rem;gap:.3rem;display:flex;align-items:center';
-      wipeBtn.innerHTML = `🗑️ Wipe Thread`;
+      wipeBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg> Wipe Thread`;
       wipeBtn.addEventListener('click', () => wipeThread(ch.id, ch.name));
       ctbRight.appendChild(wipeBtn);
     }
@@ -813,7 +813,7 @@ function renderRankBadge(rank) {
   if(rank === 'goat') {
     return `<span class="rbadge goat">🐐 GOAT</span>`;
   }
-  const labels = { earthbound:'🌍 EARTHBOUND', planetary:'🪐 PLANETARY', solar:'☀️ SOLAR', galactic:'🌌 GALACTIC', universal:'⚡ UNIVERSAL' };
+  const labels = { earthbound:'EARTHBOUND', planetary:'PLANETARY', solar:'SOLAR', galactic:'GALACTIC', universal:'UNIVERSAL' };
   return `<span class="rbadge ${rank||'planetary'}">${labels[rank]||rank||'planetary'}</span>`;
 }
 
@@ -851,9 +851,9 @@ function appendMsg(id, data, container) {
         <div class="msg-reactions" id="reacts-${id}"></div>
       </div>
       <div class="msg-actions">
-        <button class="mab" onclick="window.addReaction('${id}')" title="React">😊</button>
-        ${canEdit?`<button class="mab" onclick="window.editMsg('${id}','${encodeURIComponent(data.text||'')}')">✏️</button>`:''}
-        ${canDelete?`<button class="mab d" onclick="window.deleteMsg('${id}')">🗑️</button>`:''}
+        <button class="mab" onclick="window.addReaction('${id}')" title="React"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 13s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg></button>
+        ${canEdit?`<button class="mab" onclick="window.editMsg('${id}','${encodeURIComponent(data.text||'')}')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>`:''}
+        ${canDelete?`<button class="mab d" onclick="window.deleteMsg('${id}')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg></button>`:''}
       </div>`;
   } else {
     el.innerHTML = `
@@ -865,9 +865,9 @@ function appendMsg(id, data, container) {
       </div>
       <div class="msg-actions">
         <span class="msg-ts-inline">${tsStr}</span>
-        <button class="mab" onclick="window.addReaction('${id}')" title="React">😊</button>
-        ${canEdit?`<button class="mab" onclick="window.editMsg('${id}','${encodeURIComponent(data.text||'')}')">✏️</button>`:''}
-        ${canDelete?`<button class="mab d" onclick="window.deleteMsg('${id}')">🗑️</button>`:''}
+        <button class="mab" onclick="window.addReaction('${id}')" title="React"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 13s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg></button>
+        ${canEdit?`<button class="mab" onclick="window.editMsg('${id}','${encodeURIComponent(data.text||'')}')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>`:''}
+        ${canDelete?`<button class="mab d" onclick="window.deleteMsg('${id}')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg></button>`:''}
       </div>`;
   }
 
@@ -1247,7 +1247,7 @@ function loadMembers(ch) {
 // ── Create Channel Modal ──
 function showCreateChannelModal() {
   showModal(`
-    <h3>➕ New Channel</h3>
+    <h3>New Channel</h3>
     <p class="modal-p">Create a new custom channel.</p>
     <div class="field-group"><label class="field-label">Channel Name</label><input id="m-chname" class="field-input" placeholder="my-channel" maxlength="32"></div>
     <div class="field-group"><label class="field-label">Minimum Rank</label>
@@ -1653,7 +1653,8 @@ function renderProfileEdit() {
   section.innerHTML = `
     <div class="prof-panel" id="prof-color-section">
       <div class="prof-panel-hdr">
-        🎨 Avatar
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 011.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>
+        Avatar
       </div>
       <div class="prof-panel-sub">Choose an icon or use your initial. Then pick a color.</div>
       <div class="ava-icon-grid" id="ava-icon-grid"></div>
@@ -1663,7 +1664,8 @@ function renderProfileEdit() {
 
     <div class="prof-panel">
       <div class="prof-panel-hdr">
-        ✏️ Username
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        Username
         ${!canChangeUsername ? '<span class="prof-panel-badge">Available in '+cooldownDays+' day'+(cooldownDays!==1?'s':'')+'</span>' : ''}
       </div>
       <div class="prof-row">
@@ -1676,7 +1678,8 @@ function renderProfileEdit() {
 
     <div class="prof-panel">
       <div class="prof-panel-hdr">
-        📧 Email Address
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        Email Address
       </div>
       <div class="prof-row">
         <input id="prof-email-inp" class="field-input" type="email" value="${escHtml(d.email||auth.currentUser?.email||'')}" placeholder="your@email.com">
@@ -1687,7 +1690,8 @@ function renderProfileEdit() {
 
     <div class="prof-panel">
       <div class="prof-panel-hdr">
-        🔒 Change Password
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+        Change Password
       </div>
       <div class="prof-fields">
         <input id="prof-pass-cur"  class="field-input" type="password" placeholder="Current password">
@@ -2131,7 +2135,7 @@ async function setupAdmin() {
   <div class="admin-fullpage">
     <div class="admin-topbar">
       <div class="admin-topbar-left">
-        <span class="admin-topbar-icon">${isGoat ? '⚙️' : '🛡️'}</span>
+        <span class="admin-topbar-icon">${isGoat ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>' : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>'}</span>
         <div>
           <div class="admin-topbar-title">${isGoat ? 'Goat Console' : 'Mod Panel'}</div>
           <div class="admin-topbar-sub">${isGoat ? 'Full system access — user management, data cleanup, moderation' : 'Approve members and manage the community'}</div>
@@ -2144,10 +2148,10 @@ async function setupAdmin() {
       </div>
     </div>
     <div class="admin-tabs" id="admin-tabs">
-      <button class="adm-tab active" data-tab="pending">⏳ Pending</button>
-      <button class="adm-tab" data-tab="members">👥 Members</button>
-      <button class="adm-tab" data-tab="banned">🚫 Banned</button>
-      ${isGoat ? `<button class="adm-tab" data-tab="cleanup">🗑️ DB Cleanup</button>` : ''}
+      <button class="adm-tab active" data-tab="pending"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Pending</button>
+      <button class="adm-tab" data-tab="members"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg> Members</button>
+      <button class="adm-tab" data-tab="banned"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg> Banned</button>
+      ${isGoat ? `<button class="adm-tab" data-tab="cleanup"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg> DB Cleanup</button>` : ''
     </div>
     <div class="admin-panel-area">
       <div class="adm-panel active" id="ap-pending"><div class="adm-loading">Loading…</div></div>
@@ -2203,7 +2207,7 @@ async function loadAdminPanel(tab) {
 
   if(tab==='pending') {
     const pending = users.filter(u=>u.status==='pending');
-    if(!pending.length) { container.innerHTML='<div class="adm-empty"><span style="font-size:2rem">✅</span><span>All caught up! No pending accounts.</span></div>'; return; }
+    if(!pending.length) { container.innerHTML='<div class="adm-empty"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:.5"><polyline points="20 6 9 17 4 12"/></svg><span>All caught up! No pending accounts.</span></div>'; return; }
     container.innerHTML = pending.map(u=>`
       <div class="adm-row">
         <div class="adm-ava" style="background:${u.color||avatarColor(u.uid)}" onclick="window._openProfile('${u.uid}')">${avatarHtml(u.icon,u.username,"60%")}</div>
@@ -2213,8 +2217,8 @@ async function loadAdminPanel(tab) {
         </div>
         <div class="adm-actions">
           <button class="ta-btn ta-ghost" onclick="window._openProfile('${u.uid}')">Profile</button>
-          <button class="ta-btn ta-green" onclick="window.approveUser('${u.uid}')">✅ Approve</button>
-          <button class="ta-btn ta-red" onclick="window.denyUser('${u.uid}','${escHtml(u.username)}')">❌ Deny</button>
+          <button class="ta-btn ta-green" onclick="window.approveUser('${u.uid}')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Approve</button>
+          <button class="ta-btn ta-red" onclick="window.denyUser('${u.uid}','${escHtml(u.username)}')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Deny</button>
         </div>
       </div>`).join('');
   } else if(tab==='members') {
@@ -2242,9 +2246,9 @@ async function loadAdminPanel(tab) {
           </div>
           <div class="adm-actions">
             <span class="rbadge ${u.rank}">${u.rank}</span>
-            <button class="ta-btn ta-ghost" onclick="window._openProfile('${u.uid}')">👤 Profile</button>
+            <button class="ta-btn ta-ghost" onclick="window._openProfile('${u.uid}')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Profile</button>
             ${canChangeRank(u) ? `<button class="ta-btn ta-blue" onclick="window.changeRank('${u.uid}','${u.rank}','${escHtml(u.username)}')">🏆 Rank</button>` : ''}
-            ${canBan(u) ? `<button class="ta-btn ta-red" onclick="window.banUser('${u.uid}','${escHtml(u.username)}')">🚫 Ban</button>` : ''}
+            ${canBan(u) ? `<button class="ta-btn ta-red" onclick="window.banUser('${u.uid}','${escHtml(u.username)}')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg> Ban</button>` : ''}
           </div>
         </div>`).join('') : '<div class="adm-empty">No members match search</div>';
     };
@@ -2262,11 +2266,11 @@ async function loadAdminPanel(tab) {
           <div class="adm-meta">${u.email||'No email'}</div>
         </div>
         <div class="adm-actions">
-          <button class="ta-btn ta-ghost" onclick="window._openProfile('${u.uid}')">👤 Profile</button>
-          <button class="ta-btn ta-green" onclick="window.unbanUser('${u.uid}')">✅ Unban</button>
-          ${currentUserData.rank==='goat'?`<button class="ta-btn ta-red" onclick="window.deleteAccount('${u.uid}','${escHtml(u.username)}')">🗑️ Delete</button>`:''}
+          <button class="ta-btn ta-ghost" onclick="window._openProfile('${u.uid}')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Profile</button>
+          <button class="ta-btn ta-green" onclick="window.unbanUser('${u.uid}')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Unban</button>
+          ${currentUserData.rank==='goat'?`<button class="ta-btn ta-red" onclick="window.deleteAccount('${u.uid}','${escHtml(u.username)}')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg> Delete</button>`:''}
         </div>
-      </div>`).join('') : '<div class="adm-empty"><span style="font-size:2rem">🚫</span><span>No banned users</span></div>';
+      </div>`).join('') : '<div class="adm-empty"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:.5"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg><span>No banned users</span></div>';
   }
 }
 
@@ -2275,7 +2279,7 @@ async function renderDBCleanup(container) {
   container.innerHTML = `
   <div class="cleanup-panel">
     <div class="cleanup-warning">
-      <span>⚠️</span>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
       <span><strong>Danger Zone</strong> — All destructive actions are irreversible. Be certain before wiping anything.</span>
     </div>
 
