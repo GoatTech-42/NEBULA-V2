@@ -70,10 +70,12 @@
       <div class="auth-card">
         <div class="auth-tabs">
           <button class="auth-tab active" data-tab="login">
-            🔑 Sign In
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+            Sign In
           </button>
           <button class="auth-tab" data-tab="signup">
-            ✨ Request Access
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+            Request Access
           </button>
         </div>
 
@@ -140,12 +142,13 @@
 <div id="pending-screen" class="hidden">
   <div class="pending-inner">
     <div class="pending-icon">
-      <span style="font-size:3rem">⏳</span>
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
     </div>
     <h2>Awaiting Approval</h2>
     <p>Your account request has been submitted and is will be reviewed soon. You'll get access if you're approved.</p>
     <button class="btn btn-ghost btn-sm" onclick="import('./js/firebase.js').then(m=>m.signOut(m.auth)).then(()=>location.reload())">
-      🚪 Sign Out
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Sign Out
     </button>
   </div>
 </div>
@@ -164,42 +167,60 @@
     </div>
     <div class="sidebar-nav">
       <button class="snav-item active" data-section="home">
-        <span class="snav-icon" style="font-size:1.05rem">🏠</span>
+        <span class="snav-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        </span>
         <span class="snav-label">Home</span>
       </button>
       <button class="snav-item" data-section="chat">
-        <span class="snav-icon" style="font-size:1.05rem">💬</span>
+        <span class="snav-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+        </span>
         <span class="snav-label">Chat</span>
         <span class="snav-badge hidden" id="chat-badge">0</span>
       </button>
       <button class="snav-item" data-section="dms">
-        <span class="snav-icon" style="font-size:1.05rem">📨</span>
+        <span class="snav-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        </span>
         <span class="snav-label">Direct Messages</span>
         <span class="snav-badge hidden" id="dm-badge">0</span>
       </button>
       <button class="snav-item" data-section="games">
-        <span class="snav-icon" style="font-size:1.05rem">🎮</span>
+        <span class="snav-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M7 10v4"/><line x1="5" y1="12" x2="9" y2="12"/><circle cx="15" cy="11" r="1" fill="currentColor"/><circle cx="17" cy="13" r="1" fill="currentColor"/></svg>
+        </span>
         <span class="snav-label">Games</span>
       </button>
       <button class="snav-item" data-section="goatcoin" id="nav-goatcoin">
-        <span class="snav-icon" style="font-size:1.05rem">🪙</span>
+        <span class="snav-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        </span>
         <span class="snav-label">GoatCoin</span>
         <span class="snav-badge hidden" id="bj-nav-badge"></span>
       </button>
       <button class="snav-item" data-section="shop" id="nav-shop">
-        <span class="snav-icon" style="font-size:1.05rem">🛍️</span>
+        <span class="snav-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+        </span>
         <span class="snav-label">Shop</span>
       </button>
       <button class="snav-item" data-section="profile">
-        <span class="snav-icon" style="font-size:1.05rem">👤</span>
+        <span class="snav-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </span>
         <span class="snav-label">Profile</span>
       </button>
       <button class="snav-item" data-section="settings">
-        <span class="snav-icon" style="font-size:1.05rem">⚙️</span>
+        <span class="snav-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+        </span>
         <span class="snav-label">Settings</span>
       </button>
       <button class="snav-item hidden" data-section="admin" id="nav-admin">
-        <span class="snav-icon" style="font-size:1.05rem">🛡️</span>
+        <span class="snav-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </span>
         <span class="snav-label">Admin</span>
       </button>
     </div>
@@ -209,8 +230,8 @@
         <div class="sp-name" id="sp-name"></div>
         <div class="sp-rank" id="sp-rank"></div>
       </div>
-      <button class="sp-signout" id="sp-signout" title="Sign Out" style="font-size:1rem">
-        🚪
+      <button class="sp-signout" id="sp-signout" title="Sign Out">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
       </button>
     </div>
   </nav>
@@ -227,27 +248,27 @@
         </div>
         <div class="home-cards">
           <div class="home-card" data-goto="chat">
-            <div class="hcard-icon" style="font-size:1.7rem">💬</div>
+            <div class="hcard-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div>
             <div class="hcard-title">Chat</div>
             <div class="hcard-sub">Channels & messages</div>
           </div>
           <div class="home-card" data-goto="dms">
-            <div class="hcard-icon" style="font-size:1.7rem">📨</div>
+            <div class="hcard-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
             <div class="hcard-title">DMs</div>
             <div class="hcard-sub">Private conversations</div>
           </div>
           <div class="home-card" data-goto="games">
-            <div class="hcard-icon" style="font-size:1.7rem">🎮</div>
+            <div class="hcard-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M7 10v4"/><line x1="5" y1="12" x2="9" y2="12"/><circle cx="15" cy="11" r="1" fill="currentColor"/><circle cx="17" cy="13" r="1" fill="currentColor"/></svg></div>
             <div class="hcard-title">Games</div>
             <div class="hcard-sub">The vault</div>
           </div>
           <div class="home-card" data-goto="shop">
-            <div class="hcard-icon" style="font-size:1.7rem">🛍️</div>
+            <div class="hcard-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg></div>
             <div class="hcard-title">Shop</div>
             <div class="hcard-sub">Spend your GoatCoin</div>
           </div>
           <div class="home-card" data-goto="settings">
-            <div class="hcard-icon" style="font-size:1.7rem">⚙️</div>
+            <div class="hcard-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg></div>
             <div class="hcard-title">Settings</div>
             <div class="hcard-sub">Themes & alerts</div>
           </div>
@@ -280,7 +301,7 @@
             <button class="ts-add hidden" id="ts-add-channel" title="New Channel" style="font-size:.9rem">
               ＋
             </button>
-            <button class="mobile-menu-btn" style="display:none;font-size:1.1rem" id="chat-mobile-menu">☰</button>
+            <button class="mobile-menu-btn" style="display:none" id="chat-mobile-menu"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
           </div>
           <div class="ts-list" id="channel-list"></div>
         </div>
@@ -288,7 +309,7 @@
         <!-- Chat Area -->
         <div class="chat-area">
           <div class="chat-no-select" id="chat-no-select">
-            <div class="cns-icon" style="font-size:3rem">💬</div>
+            <div class="cns-icon"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" style="opacity:.35"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div>
             <div class="cns-title">Select a Channel</div>
             <div class="cns-sub">Choose a channel from the left to start chatting</div>
           </div>
@@ -298,7 +319,8 @@
                 <span class="ctb-hash" style="color:var(--text-faint);font-size:.95rem">#</span>
                 <span class="ctb-name" id="chat-channel-name"></span>
                 <span class="ctb-announce hidden" id="chat-announce-badge">
-                  📢 Announcements
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 17H2a3 3 0 000 4h20v-4z"/><path d="M14 9v8M9 9v8"/><path d="M12 4C10 4 8 6 8 9h8c0-3-2-5-4-5z"/></svg>
+                  Announcements
                 </span>
               </div>
               <div class="ctb-right"></div>
@@ -314,8 +336,8 @@
               <div class="chat-input-wrap">
                 <input id="chat-input" type="text" placeholder="Select a channel first" maxlength="500" disabled>
                 <span class="char-ctr" id="char-ctr">500</span>
-                <button class="send-btn" id="chat-send-btn" disabled style="font-size:1rem">
-                  ➤
+                <button class="send-btn" id="chat-send-btn" disabled>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
                 </button>
               </div>
             </div>
@@ -344,7 +366,7 @@
         </div>
         <div class="chat-area">
           <div class="chat-no-select" id="dm-no-select">
-            <div class="cns-icon" style="font-size:3rem">📨</div>
+            <div class="cns-icon"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" style="opacity:.35"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
             <div class="cns-title">Your DMs</div>
             <div class="cns-sub">Search for a user above to start a private conversation</div>
           </div>
@@ -361,8 +383,8 @@
             <div class="chat-input-area">
               <div class="chat-input-wrap">
                 <input id="dm-input" type="text" placeholder="Send a message..." maxlength="500">
-                <button class="send-btn" id="dm-send-btn" style="font-size:1rem">
-                  ➤
+                <button class="send-btn" id="dm-send-btn">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
                 </button>
               </div>
             </div>
@@ -377,7 +399,7 @@
         <!-- Topbar -->
         <div class="vault-topbar">
           <div class="vault-search-wrap">
-            <span style="font-size:.9rem;opacity:.6">🔍</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity:.6"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
             <input id="vault-search" type="text" placeholder="Search games...">
           </div>
           <select id="vault-sort">
@@ -386,7 +408,8 @@
             <option value="id">Newest</option>
           </select>
           <button id="fav-filter-btn">
-            ❤️ Favorites
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+            Favorites
           </button>
         </div>
         <!-- Featured Carousel -->
@@ -435,9 +458,18 @@
         <div class="pg-title">Settings</div>
         <div class="pg-sub">Personalize your Nebula experience</div>
         <div class="settings-tabs">
-          <button class="stab active" data-tab="themes">🎨 Themes</button>
-          <button class="stab" data-tab="alerts">🔔 Alerts</button>
-          <button class="stab" data-tab="display">🖥️ Display</button>
+          <button class="stab active" data-tab="themes">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 011.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>
+            Themes
+          </button>
+          <button class="stab" data-tab="alerts">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+            Alerts
+          </button>
+          <button class="stab" data-tab="display">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+            Display
+          </button>
         </div>
 
         <!-- THEMES -->
@@ -543,7 +575,7 @@
         <div class="settings-panel" id="sp-alerts">
           <div class="notif-section-card">
             <div class="nsc-header">
-              <div class="nsc-icon" style="font-size:1.4rem">💬</div>
+              <div class="nsc-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div>
               <div class="nsc-text">
                 <div class="nsc-title">Chat Notifications</div>
                 <div class="nsc-sub">Receive notifications for new messages in channels</div>
@@ -556,7 +588,7 @@
           </div>
           <div class="notif-section-card">
             <div class="nsc-header">
-              <div class="nsc-icon" style="font-size:1.4rem">📨</div>
+              <div class="nsc-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
               <div class="nsc-text">
                 <div class="nsc-title">DM Notifications</div>
                 <div class="nsc-sub">Receive notifications for new direct messages</div>
@@ -569,7 +601,7 @@
           </div>
           <div class="notif-section-card">
             <div class="nsc-header">
-              <div class="nsc-icon" style="font-size:1.4rem">🔔</div>
+              <div class="nsc-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg></div>
               <div class="nsc-text">
                 <div class="nsc-title">Mention Alerts</div>
                 <div class="nsc-sub">Get notified when someone @mentions you</div>
@@ -582,7 +614,7 @@
           </div>
           <div class="notif-section-card">
             <div class="nsc-header" style="flex-wrap:wrap">
-              <div class="nsc-icon" style="font-size:1.4rem">#️⃣</div>
+              <div class="nsc-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></div>
               <div class="nsc-text">
                 <div class="nsc-title">Per-Channel Notifications</div>
                 <div class="nsc-sub">Choose which channels you get notified from</div>
@@ -731,10 +763,12 @@
     </div>
     <div class="ghdr-right">
       <button class="btn btn-ghost btn-sm" onclick="window.fullscreenGame()">
-        ⛶ Fullscreen
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg>
+        Fullscreen
       </button>
       <button class="btn btn-danger btn-sm" onclick="window.closeGameVault()">
-        ✕ Close
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        Close
       </button>
     </div>
   </div>
