@@ -10,12 +10,20 @@ import { getGoatCoinData } from './goatcoin.js';
 
 // ── Badge definitions ──
 export const BADGE_DEFS = {
-  champion:   { label:'Champion',  desc:'Most GoatCoins earned this week',   color:'#fbbf24', emoji:'🏆' },
-  sweat:      { label:'Sweat',     desc:'Most games played this week',        color:'#f97316', emoji:'🎮' },
-  social:     { label:'Social',    desc:'Most time in chat this week',        color:'#38bdf8', emoji:'💬' },
-  lucky:      { label:'Lucky',     desc:'Most blackjack wins this week',      color:'#4ade80', emoji:'🍀' },
-  veteran:    { label:'Veteran',   desc:'Member for 30+ days',                color:'#fde68a', emoji:'⭐' },
-  og:         { label:'OG',        desc:'One of the first members',           color:'#67e8f9', emoji:'🌟' },
+  // ── Weekly award badges ──
+  champion:    { label:'Champion',   desc:'Most GoatCoins earned this week',   color:'#fbbf24', emoji:'🏆' },
+  sweat:       { label:'Sweat',      desc:'Most games played this week',        color:'#f97316', emoji:'🎮' },
+  social:      { label:'Social',     desc:'Most time in chat this week',        color:'#38bdf8', emoji:'💬' },
+  lucky:       { label:'Lucky',      desc:'Most blackjack wins this week',      color:'#4ade80', emoji:'🍀' },
+  // ── Auto-awarded badges ──
+  veteran:     { label:'Veteran',    desc:'Member for 30+ days',                color:'#fde68a', emoji:'⭐' },
+  og:          { label:'OG',         desc:'One of the first members',           color:'#67e8f9', emoji:'🌟' },
+  // ── Shop-purchased badges ──
+  pioneer:     { label:'Pioneer',    desc:'Purchased from the GC Shop',         color:'#a78bfa', emoji:'🧭' },
+  whale:       { label:'Whale',      desc:'Big spender in the GC Shop',         color:'#38bdf8', emoji:'🐳' },
+  chatterbox:  { label:'Chatterbox', desc:'A dedicated conversationalist',      color:'#34d399', emoji:'💬' },
+  gamer:       { label:'Gamer',      desc:'A dedicated gamer of Nebula',        color:'#f97316', emoji:'🎮' },
+  shopkeeper:  { label:'Shopkeeper', desc:'Serious GC Shop investor',           color:'#fbbf24', emoji:'🛒' },
 };
 
 const fmtTime = mins => {
@@ -325,7 +333,7 @@ export async function checkAutoAwards(uid, userData) {
   const rawBadges = userData.badges || [];
   // Always deduplicate first when checking/writing
   // Also remove deprecated badges (customized/stylist)
-  const DEPRECATED = new Set(['customized']);
+  const DEPRECATED = new Set(['customized', 'stylist']);
   const existing = [...new Set(rawBadges)].filter(b => !DEPRECATED.has(b));
   const newBadges = [...existing];
   let changed = existing.length !== rawBadges.length; // changed if we removed deprecated
