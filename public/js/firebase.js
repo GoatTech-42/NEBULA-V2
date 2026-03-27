@@ -7,13 +7,12 @@ import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, si
 import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBkjYpi0MY0JVtSKAmJ-K2Kr93k2F6gqmg",
-  authDomain: "nebulav2.firebaseapp.com",
-  projectId: "nebulav2",
-  storageBucket: "nebulav2.firebasestorage.app",
-  messagingSenderId: "742942256780",
-  appId: "1:742942256780:web:6a231d1480045cedaa95a9",
-  databaseURL: "https://nebulav2-default-rtdb.firebaseio.com"
+  apiKey: "AIzaSyCyIjduPo3L7z0XnoKEamjInTkQWQnGpqI",
+  authDomain: "nebulahistorians.firebaseapp.com",
+  projectId: "nebulahistorians",
+  storageBucket: "nebulahistorians.firebasestorage.app",
+  messagingSenderId: "839196477534",
+  appId: "1:839196477534:web:0ece64201defb6dc178ccf"
 };
 
 const app = initializeApp(firebaseConfig);
