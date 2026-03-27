@@ -8,7 +8,7 @@ import {
   createUserWithEmailAndPassword, signInWithEmailAndPassword,
   signOut, onAuthStateChanged, writeBatch
 } from './firebase.js';
-import { getDatabase, ref as rtRef, set as rtSet, get as rtGet, onValue, onDisconnect, serverTimestamp as rtServerTimestamp, remove, update as rtUpdate } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { getDatabase, ref as rtRef, set as rtSet, get as rtGet, onValue, serverTimestamp as rtServerTimestamp, remove, update as rtUpdate } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 import { updateEmail, updatePassword, EmailAuthProvider, reauthenticateWithCredential } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { initGoatCoin, setActivity, cleanupGoatCoin, getGoatCoinData, renderGoatCoinTab } from './goatcoin.js';
 import { renderBadgeRow, openProfileModal, renderOwnProfile, checkAutoAwards, BADGE_DEFS, checkAdblocker } from './profile.js';
@@ -510,83 +510,10 @@ async function setupBattery() {
   }
 }
 
-// ── Presence — uses Realtime Database if available ──
-let _presenceInterval = null;
+// ── Presence — REMOVED to save Firebase quota ──
+// Typing indicators are kept per-channel via RTDB.
 function setupPresence() {
-  const uid = currentUser.uid;
-
-  if(_rtdb) {
-    const presRef = rtRef(_rtdb, `presence/${uid}`);
-
-    function _presData() {
-      return {
-        uid,
-        username: currentUserData.username,
-        color: currentUserData.color || avatarColor(uid),
-        rank: currentUserData.rank,
-        icon: currentUserData.icon || '',
-        online: true,
-        lastSeen: Date.now()
-      };
-    }
-
-    // Set online immediately
-    rtSet(presRef, _presData()).catch(()=>{});
-
-    // When client disconnects, mark offline and stamp lastSeen
-    onDisconnect(presRef).set({ uid, online: false, lastSeen: Date.now() });
-
-    // Heartbeat every 20s
-    if(_presenceInterval) clearInterval(_presenceInterval);
-    _presenceInterval = setInterval(() => {
-      if(!document.hidden) {
-        rtSet(presRef, _presData()).catch(()=>{});
-      }
-    }, 20000);
-
-    // Visibility changes
-    document.addEventListener('visibilitychange', () => {
-      if(document.hidden) {
-        // Mark as offline when tab is hidden (optional: some prefer keeping online)
-        // We just stop the heartbeat — onDisconnect handles real closure
-        clearInterval(_presenceInterval);
-      } else {
-        // Come back online
-        rtSet(presRef, _presData()).catch(()=>{});
-        if(_presenceInterval) clearInterval(_presenceInterval);
-        _presenceInterval = setInterval(() => {
-          if(!document.hidden) rtSet(presRef, _presData()).catch(()=>{});
-        }, 20000);
-      }
-    });
-
-    // Also set offline on page unload (best-effort)
-    window.addEventListener('beforeunload', () => {
-      // Fire-and-forget: sets to offline
-      rtSet(presRef, { uid, online: false, lastSeen: Date.now() }).catch(()=>{});
-    });
-
-  } else {
-    // Fallback: Firestore presence
-    const ref = doc(db, 'presence', uid);
-    function beat() {
-      setDoc(ref, {
-        uid, username: currentUserData.username,
-        color: currentUserData.color || avatarColor(uid),
-        rank: currentUserData.rank,
-        lastSeen: serverTimestamp(), online: true
-      }, { merge: true }).catch(()=>{});
-    }
-    beat();
-    if(_presenceInterval) clearInterval(_presenceInterval);
-    _presenceInterval = setInterval(beat, 30000);
-    window.addEventListener('beforeunload', () => {
-      setDoc(ref, { online: false, lastSeen: serverTimestamp() }, { merge: true }).catch(()=>{});
-    });
-    document.addEventListener('visibilitychange', () => {
-      if(!document.hidden) beat();
-    });
-  }
+  // No-op: presence system removed to conserve RTDB/Firestore quota
 }
 
 function trackVisits() {
@@ -1181,85 +1108,38 @@ function renderReactions(container, reactions, msgId) {
   });
 }
 
-// ── Members — uses RTDB presence if available ──
+// ── Members — simple list sorted by rank (no presence) ──
 function loadMembers(ch) {
   const list = document.getElementById('members-list');
   if(!list) return;
   if(membersUnsub) membersUnsub();
 
-  let users = [], presenceMap = {};
-  const ACTIVE_THRESHOLD = 75000;
-
-  function _memberItemHtml(u, isOnline) {
+  function _memberItemHtml(u) {
     const avaHtml = avatarHtml(u.icon, u.username, '60%');
     const color = u.color || avatarColor(u.uid);
-    
-    const avaWrapper = isOnline
-      ? `<div class="ms-ava-online-wrap"><div class="ms-ava" style="background:${color}">${avaHtml}</div></div>`
-      : `<div class="ms-ava" style="background:${color}">${avaHtml}</div>`;
-    
-    const itemClass = isOnline ? 'ms-item' : 'ms-item ms-item-offline';
-    
-    return `<div class="${itemClass}" onclick="window._openProfile('${u.uid}')" style="cursor:pointer">
-      ${avaWrapper}
+    return `<div class="ms-item" onclick="window._openProfile('${u.uid}')" style="cursor:pointer">
+      <div class="ms-ava" style="background:${color}">${avaHtml}</div>
       <span class="ms-name">${escHtml(u.username)}</span>
       <span class="rbadge ${u.rank}" style="flex-shrink:0;font-size:.45rem">${u.rank.toUpperCase()}</span>
     </div>`;
   }
 
-  function renderMembers() {
-    const now = Date.now();
-    const online = [], offline = [];
-    users.forEach(u => {
-      if(!ch.adminOnly && !canChat(u.rank)) return;
-      if(ch.adminOnly && !canModerate(u.rank)) return;
-      const p = presenceMap[u.uid];
-      // lastSeen: number (ms) from RTDB, or Firestore Timestamp from fallback
-      const rawLS = p?.lastSeen;
-      const lastSeen = typeof rawLS === 'number' ? rawLS : (rawLS?.toMillis ? rawLS.toMillis() : 0);
-      const isOnline = p?.online && (now - lastSeen) < ACTIVE_THRESHOLD;
-      (isOnline ? online : offline).push({ ...u, isOnline });
-    });
-    online.sort((a,b)=>rankOf(b.rank)-rankOf(a.rank));
-    offline.sort((a,b)=>rankOf(b.rank)-rankOf(a.rank));
-    let html = '';
-    if(online.length) html += `<div class="ms-section-label">Active — ${online.length}</div>`;
-    online.forEach(u => {
-      html += _memberItemHtml(u, true);
-    });
-    if(offline.length) html += `<div class="ms-section-label">Members — ${offline.length}</div>`;
-    offline.forEach(u => {
-      html += _memberItemHtml(u, false);
-    });
-    list.innerHTML = html || '<div class="ms-section-label">No members</div>';
-  }
-
   const userUnsub = onSnapshot(
     query(collection(db,'users'), where('status','==','approved')),
-    snap => { users = snap.docs.map(d=>d.data()); renderMembers(); }
+    snap => {
+      let users = snap.docs.map(d=>d.data());
+      users = users.filter(u => {
+        if(ch.adminOnly) return canModerate(u.rank);
+        return canChat(u.rank);
+      });
+      users.sort((a,b)=>rankOf(b.rank)-rankOf(a.rank));
+      let html = `<div class="ms-section-label">Members — ${users.length}</div>`;
+      users.forEach(u => { html += _memberItemHtml(u); });
+      list.innerHTML = html || '<div class="ms-section-label">No members</div>';
+    }
   );
 
-  let presUnsub = null;
-  const renderTimer = setInterval(renderMembers, 30000);
-  if(_rtdb) {
-    // Listen to RTDB presence — single listener, very cheap
-    const presRef = rtRef(_rtdb, 'presence');
-    const rtPresOff = onValue(presRef, snap => {
-      presenceMap = {};
-      snap.forEach(child => {
-        const d = child.val();
-        presenceMap[child.key] = d;
-      });
-      renderMembers();
-    });
-    membersUnsub = () => { userUnsub(); rtPresOff(); clearInterval(renderTimer); };
-  } else {
-    presUnsub = onSnapshot(collection(db,'presence'), snap => {
-      snap.docs.forEach(d => { presenceMap[d.id] = d.data(); });
-      renderMembers();
-    });
-    membersUnsub = () => { userUnsub(); if(presUnsub) presUnsub(); clearInterval(renderTimer); };
-  }
+  membersUnsub = () => { userUnsub(); };
 }
 
 // ── Create Channel Modal ──
@@ -1592,8 +1472,8 @@ export const SVG_ICONS = {
     shield:  '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
     crown:   '<path d="M2 4l3 12h14l3-12-6 7-4-7-4 7-6-7z"/><path d="M5 20h14"/>',
     trophy:  '<path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4H4v7a8 8 0 0016 0V4h-3"/><path d="M7 4h10"/>',
-    controller:'<rect x="2" y="6" width="20" height="12" rx="2"/><path d="M7 10v4"/><line x1="5" y1="12" x2="9" y2="12"/><circle cx="15" cy="11" r="1" fill="currentColor"/><circle cx="17" cy="13" r="1" fill="currentColor"/>',
-    dice:    '<rect x="2" y="2" width="20" height="20" rx="2"/><circle cx="8" cy="8" r="1.5" fill="currentColor"/><circle cx="16" cy="16" r="1.5" fill="currentColor"/><circle cx="8" cy="16" r="1.5" fill="currentColor"/><circle cx="16" cy="8" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/>',
+    controller:'<rect x="2" y="6" width="20" height="12" rx="2"/><path d="M7 10v4"/><line x1="5" y1="12" x2="9" y2="12"/><circle cx="15" cy="11" r="1"/><circle cx="17" cy="13" r="1"/>',
+    dice:    '<rect x="2" y="2" width="20" height="20" rx="2"/><circle cx="8" cy="8" r="1.5"/><circle cx="16" cy="16" r="1.5"/><circle cx="8" cy="16" r="1.5"/><circle cx="16" cy="8" r="1.5"/><circle cx="12" cy="12" r="1.5"/>',
     planet:  '<circle cx="12" cy="12" r="7"/><path d="M21.17 8.17C22.87 5.52 23.1 3.16 22 2.06c-1.1-1.1-3.46-.87-6.11.83"/><path d="M2.83 15.83C1.13 18.48.9 20.84 2 21.94c1.1 1.1 3.46.87 6.11-.83"/>',
     heart:   '<path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>',
     eye:     '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>',
