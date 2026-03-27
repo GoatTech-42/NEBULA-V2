@@ -5,26 +5,45 @@ import {
   db, auth,
   doc, getDoc, updateDoc, collection, getDocs, serverTimestamp
 } from './firebase.js';
-import { toast, avatarColor, avatarInitial, escHtml, canModerate, RANK_COLORS, avatarHtml } from './app.js';
+import { toast, avatarColor, avatarInitial, escHtml, canModerate, RANK_COLORS, avatarHtml, renderRankBadge } from './app.js';
 import { getGoatCoinData } from './goatcoin.js';
 
 // ── Badge definitions ──
 export const BADGE_DEFS = {
   // ── Weekly award badges ──
-  champion:    { label:'Champion',   desc:'Most GoatCoins earned this week',   color:'#fbbf24', emoji:'🏆' },
-  sweat:       { label:'Sweat',      desc:'Most games played this week',        color:'#f97316', emoji:'🎮' },
-  social:      { label:'Social',     desc:'Most time in chat this week',        color:'#38bdf8', emoji:'💬' },
-  lucky:       { label:'Lucky',      desc:'Most blackjack wins this week',      color:'#4ade80', emoji:'🍀' },
+  champion:    { label:'Champion',   desc:'Most GoatCoins earned this week',   color:'#fbbf24' },
+  sweat:       { label:'Sweat',      desc:'Most games played this week',        color:'#f97316' },
+  social:      { label:'Social',     desc:'Most time in chat this week',        color:'#38bdf8' },
+  lucky:       { label:'Lucky',      desc:'Most blackjack wins this week',      color:'#4ade80' },
   // ── Auto-awarded badges ──
-  veteran:     { label:'Veteran',    desc:'Member for 30+ days',                color:'#fde68a', emoji:'⭐' },
-  og:          { label:'OG',         desc:'One of the first members',           color:'#67e8f9', emoji:'🌟' },
+  veteran:     { label:'Veteran',    desc:'Member for 30+ days',                color:'#fde68a' },
+  og:          { label:'OG',         desc:'One of the first members',           color:'#67e8f9' },
   // ── Shop-purchased badges ──
-  pioneer:     { label:'Pioneer',    desc:'Purchased from the GC Shop',         color:'#a78bfa', emoji:'🧭' },
-  whale:       { label:'Whale',      desc:'Big spender in the GC Shop',         color:'#38bdf8', emoji:'🐳' },
-  chatterbox:  { label:'Chatterbox', desc:'A dedicated conversationalist',      color:'#34d399', emoji:'💬' },
-  gamer:       { label:'Gamer',      desc:'A dedicated gamer of Nebula',        color:'#f97316', emoji:'🎮' },
-  shopkeeper:  { label:'Shopkeeper', desc:'Serious GC Shop investor',           color:'#fbbf24', emoji:'🛒' },
+  pioneer:     { label:'Pioneer',    desc:'Purchased from the GC Shop',         color:'#a78bfa' },
+  whale:       { label:'Whale',      desc:'Big spender in the GC Shop',         color:'#38bdf8' },
+  chatterbox:  { label:'Chatterbox', desc:'A dedicated conversationalist',      color:'#34d399' },
+  gamer:       { label:'Gamer',      desc:'A dedicated gamer of Nebula',        color:'#f97316' },
+  shopkeeper:  { label:'Shopkeeper', desc:'Serious GC Shop investor',           color:'#fbbf24' },
 };
+
+const BADGE_ICON_SVGS = {
+  champion: '<svg class="badge-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4h10v3a5 5 0 0 1-10 0V4z"/><path d="M7 6H5a2 2 0 0 0 0 4h2"/><path d="M17 6h2a2 2 0 0 1 0 4h-2"/></svg>',
+  sweat: '<svg class="badge-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="10" rx="4"/><path d="M7 12h3"/><path d="M8.5 10.5v3"/><circle cx="15.5" cy="10.5" r="1" fill="currentColor" stroke="none"/><circle cx="17.5" cy="13.5" r="1" fill="currentColor" stroke="none"/></svg>',
+  social: '<svg class="badge-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-8 8H6l-3 3V12a8 8 0 0 1 8-8h2a8 8 0 0 1 8 8z"/></svg>',
+  lucky: '<svg class="badge-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="3"/><circle cx="16" cy="8" r="3"/><circle cx="8" cy="16" r="3"/><circle cx="16" cy="16" r="3"/><path d="M12 11v10"/></svg>',
+  veteran: '<svg class="badge-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1-4.4-4.3 6.1-.9L12 3z"/></svg>',
+  og: '<svg class="badge-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l1.8 3.8L18 7.2l-3 2.9.7 4.2-3.7-2-3.7 2 .7-4.2-3-2.9 4.2-1.4L12 2z"/><path d="M5 19h14"/></svg>',
+  pioneer: '<svg class="badge-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><path d="M12 2v4"/><path d="M12 18v4"/><path d="M2 12h4"/><path d="M18 12h4"/><polygon points="12 9 14.8 14.8 9 12" fill="currentColor" stroke="none"/></svg>',
+  whale: '<svg class="badge-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14c1.8-3.6 5.8-6 10-6 4 0 7.3 2.1 8 5.2-.8.8-1.9 1.4-3.1 1.4-1.2 0-2.4-.5-3.2-1.5-.9 1-2.1 1.5-3.3 1.5-1.2 0-2.4-.5-3.2-1.5-.7.9-1.7 1.4-2.8 1.4-.9 0-1.7-.2-2.4-.5z"/><path d="M16 7c0-1.5 1-2.5 2.5-2.5"/></svg>',
+  chatterbox: '<svg class="badge-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16v9H8l-4 4V6z"/></svg>',
+  gamer: '<svg class="badge-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="10" rx="4"/><path d="M7 12h3"/><path d="M8.5 10.5v3"/><circle cx="15.5" cy="10.5" r="1" fill="currentColor" stroke="none"/><circle cx="17.5" cy="13.5" r="1" fill="currentColor" stroke="none"/></svg>',
+  shopkeeper: '<svg class="badge-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="19" r="1.6"/><circle cx="17" cy="19" r="1.6"/><path d="M3 5h2l2 10h11l2-7H7"/></svg>'
+};
+
+function badgeIconSvg(key) {
+  return BADGE_ICON_SVGS[key]
+    || '<svg class="badge-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l7 4v6c0 5-3.4 8.6-7 10-3.6-1.4-7-5-7-10V6l7-4z"/></svg>';
+}
 
 const fmtTime = mins => {
   if(!mins||mins<1) return '0m';
@@ -43,12 +62,12 @@ export function renderBadgeRow(badges, compact=false) {
   if(!unique.length) return '';
 
   return unique.map(b => {
-    const def = BADGE_DEFS[b] || { label: b, color:'var(--accent)', emoji:'🏅' };
-    const emojiEl = `<span class="badge-emoji">${def.emoji || '🏅'}</span>`;
+    const def = BADGE_DEFS[b] || { label: b, color:'var(--accent)' };
+    const iconEl = `<span class="badge-icon" aria-hidden="true">${badgeIconSvg(b)}</span>`;
     if(compact) {
-      return `<span class="badge-chip badge-compact" style="--bc:${def.color}" title="${escHtml(def.desc||b)}">${emojiEl}<span class="badge-label">${escHtml(def.label)}</span></span>`;
+      return `<span class="badge-chip badge-compact" style="--bc:${def.color}" title="${escHtml(def.desc||b)}">${iconEl}<span class="badge-label">${escHtml(def.label)}</span></span>`;
     }
-    return `<span class="badge-chip" style="--bc:${def.color}" title="${escHtml(def.desc||b)}">${emojiEl}<span class="badge-label">${escHtml(def.label)}</span></span>`;
+    return `<span class="badge-chip" style="--bc:${def.color}" title="${escHtml(def.desc||b)}">${iconEl}<span class="badge-label">${escHtml(def.label)}</span></span>`;
   }).join('');
 }
 
@@ -128,7 +147,7 @@ export async function openProfileModal(uid, currentUserData) {
           <div class="prof-modal-identity">
             <div class="prof-modal-name">${escHtml(u.username)}</div>
             <div class="prof-modal-sub">
-              <span class="rbadge ${u.rank}">${u.rank}</span>
+              ${renderRankBadge(u.rank)}
               <span class="prof-modal-joined">Joined ${joinedDate}</span>
             </div>
           </div>
@@ -315,7 +334,7 @@ export function renderOwnProfile(user, userData, gcData) {
         <div class="prof-hero-info">
           <div class="prof-hero-name" id="prof-name">${escHtml(d.username)}</div>
           <div class="prof-hero-sub">
-            <span class="rbadge ${d.rank}" id="prof-rank">${d.rank}</span>
+            <span id="prof-rank">${renderRankBadge(d.rank)}</span>
             ${joinedDate ? `<span class="prof-hero-joined">Member since ${joinedDate}</span>` : ''}
           </div>
           <div class="prof-hero-badges" id="prof-badges">
