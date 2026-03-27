@@ -13,6 +13,7 @@ import { updateEmail, updatePassword, EmailAuthProvider, reauthenticateWithCrede
 import { initGoatCoin, setActivity, cleanupGoatCoin, getGoatCoinData, renderGoatCoinTab } from './goatcoin.js';
 import { renderBadgeRow, openProfileModal, renderOwnProfile, checkAutoAwards, BADGE_DEFS, checkAdblocker } from './profile.js';
 import { renderShopTab, initShop } from './shop.js';
+import { CMD_ICONS } from './icons.js';
 
 // ── State ──
 let currentUser = null;
@@ -435,8 +436,15 @@ function initHome() {
     if(_tooltipInterval) clearInterval(_tooltipInterval);
     _tooltipInterval = setInterval(cycle, 4200);
     document.addEventListener('visibilitychange', () => {
-      if(!document.hidden) {
-        wrap.querySelectorAll('.tt-el').forEach((el, i) => { if(i > 0) el.remove(); });
+      if(document.hidden) {
+        // Tab lost focus — immediately remove ALL tooltip elements to prevent overlap on return
+        wrap.querySelectorAll('.tt-el').forEach(el => el.remove());
+        if(_tooltipInterval) { clearInterval(_tooltipInterval); _tooltipInterval = null; }
+      } else {
+        // Tab regained focus — clean start with a single fresh tooltip
+        wrap.querySelectorAll('.tt-el').forEach(el => el.remove());
+        cycle();
+        if(!_tooltipInterval) _tooltipInterval = setInterval(cycle, 4200);
       }
     });
   }
@@ -2600,7 +2608,6 @@ document.addEventListener('DOMContentLoaded', boot);
 
 // ── Keyboard Shortcuts ──
 function setupKeyboardShortcuts() {
-  const NAV_SECTIONS = ['home','chat','dms','games','goatcoin','shop','profile','settings'];
   document.addEventListener('keydown', e => {
     // Don't trigger shortcuts when typing in inputs
     const tag = document.activeElement?.tagName;
@@ -2635,15 +2642,25 @@ function setupKeyboardShortcuts() {
 
     if(isInput) return;
 
-    // Number keys 1-9 — navigate sections
+    // Number keys — navigate sections (1-8 for regular, 1-9 if admin)
+    const navSections = _getNavSections();
     if(e.key >= '1' && e.key <= '9') {
       const idx = parseInt(e.key) - 1;
-      if(idx < NAV_SECTIONS.length) {
+      if(idx < navSections.length) {
         e.preventDefault();
-        navigate(NAV_SECTIONS[idx]);
+        navigate(navSections[idx]);
       }
     }
   });
+}
+
+/** Returns the ordered nav sections, including 'admin' only for moderators */
+function _getNavSections() {
+  const base = ['home','chat','dms','games','goatcoin','shop','profile','settings'];
+  if(currentUserData && canModerate(currentUserData.rank)) {
+    base.push('admin');
+  }
+  return base;
 }
 
 // ── Command Palette ──
@@ -2656,26 +2673,34 @@ function setupCommandPalette() {
 
   overlay?.addEventListener('click', () => palette.classList.add('hidden'));
 
-  const COMMANDS = [
-    { label: 'Home', desc: 'Go to home page', action: () => navigate('home'), icon: '🏠', keys: '1' },
-    { label: 'Chat', desc: 'Open channels', action: () => navigate('chat'), icon: '💬', keys: '2' },
-    { label: 'Direct Messages', desc: 'Open DMs', action: () => navigate('dms'), icon: '✉️', keys: '3' },
-    { label: 'Games', desc: 'Game vault', action: () => navigate('games'), icon: '🎮', keys: '4' },
-    { label: 'GoatCoin', desc: 'Currency & blackjack', action: () => navigate('goatcoin'), icon: '🪙', keys: '5' },
-    { label: 'Shop', desc: 'Spend your GoatCoin', action: () => navigate('shop'), icon: '🛍️', keys: '6' },
-    { label: 'Profile', desc: 'Your identity', action: () => navigate('profile'), icon: '👤', keys: '7' },
-    { label: 'Settings', desc: 'Themes & display', action: () => navigate('settings'), icon: '⚙️', keys: '8' },
-    { label: 'Sign Out', desc: 'Log out of Nebula', action: () => document.getElementById('sp-signout')?.click(), icon: '🚪' },
-  ];
+  function _buildCommands() {
+    const isAdmin = currentUserData && canModerate(currentUserData.rank);
+    const cmds = [
+      { label: 'Home',            desc: 'Go to home page',        action: () => navigate('home'),      svgKey: 'home',     keys: '1' },
+      { label: 'Chat',            desc: 'Open channels',          action: () => navigate('chat'),      svgKey: 'chat',     keys: '2' },
+      { label: 'Direct Messages', desc: 'Open DMs',               action: () => navigate('dms'),       svgKey: 'dms',      keys: '3' },
+      { label: 'Games',           desc: 'Game vault',             action: () => navigate('games'),     svgKey: 'games',    keys: '4' },
+      { label: 'GoatCoin',        desc: 'Currency & blackjack',   action: () => navigate('goatcoin'),  svgKey: 'goatcoin', keys: '5' },
+      { label: 'Shop',            desc: 'Spend your GoatCoin',    action: () => navigate('shop'),      svgKey: 'shop',     keys: '6' },
+      { label: 'Profile',         desc: 'Your identity',          action: () => navigate('profile'),   svgKey: 'profile',  keys: '7' },
+      { label: 'Settings',        desc: 'Themes & display',       action: () => navigate('settings'),  svgKey: 'settings', keys: '8' },
+    ];
+    if(isAdmin) {
+      cmds.push({ label: 'Admin', desc: 'Moderation & management', action: () => navigate('admin'), svgKey: 'admin', keys: '9' });
+    }
+    cmds.push({ label: 'Sign Out', desc: 'Log out of Nebula', action: () => document.getElementById('sp-signout')?.click(), svgKey: 'signout' });
+    return cmds;
+  }
 
   function renderResults(filter = '') {
+    const COMMANDS = _buildCommands();
     const q = filter.toLowerCase();
     const filtered = q
       ? COMMANDS.filter(c => c.label.toLowerCase().includes(q) || c.desc.toLowerCase().includes(q))
       : COMMANDS;
     results.innerHTML = filtered.map((c, i) => `
       <div class="cmd-item${i === 0 ? ' active' : ''}" data-idx="${i}">
-        <span class="cmd-icon">${c.icon}</span>
+        <span class="cmd-icon cmd-icon-svg">${CMD_ICONS[c.svgKey] || ''}</span>
         <div class="cmd-item-info">
           <div class="cmd-item-label">${c.label}</div>
           <div class="cmd-item-desc">${c.desc}</div>

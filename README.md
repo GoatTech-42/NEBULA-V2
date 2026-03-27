@@ -1,221 +1,23 @@
 # NEBULA V2
 
-## Project Overview
-- **Name**: Nebula V2
-- **Goal**: A private, invite-only social platform for chat, gaming, and GoatCoin economy
-- **Features**: Multi-channel chat, DMs, game vault, GoatCoin gambling/economy, user profiles & badges, admin tools
+> A private, invite-only social platform with real-time chat, gaming, and its own in-app economy.
 
 ---
 
-## 🌐 URLs
-- **Production**: Hosted via Firebase Hosting
-- **Entry Point**: `index.html` → Nebula Historians page (secret portal to main app via Konami Code on Louisiana Purchase article)
-- **Main App**: `main.html` (launched from the Konami Code easter egg)
-- **RTDB Migration Tool**: `migrate-to-rtdb.html` (admin use only)
+## Overview
+
+Nebula V2 is a zero-framework web app built entirely with vanilla HTML/CSS/JS and Firebase. It features multi-channel chat, direct messages, a game vault with 100+ titles, a full GoatCoin currency/gambling system, rich user profiles with badges, 16 color themes, and a comprehensive admin panel. The entry point is disguised as a legitimate academic history website with a hidden Konami Code portal.
 
 ---
 
-## 🏗️ Architecture
-
-### Tech Stack
-- **Frontend**: Vanilla JS with ES Modules
-- **Backend**: Firebase (Firestore + Realtime Database + Auth + App Check)
-- **Hosting**: Firebase Hosting
-- **No framework**: Pure HTML/CSS/JS for minimal bundle size
-
-### Firebase Services Used
-| Service | Usage |
-|---|---|
-| Firestore | User profiles, messages, DMs, channels, GoatCoin docs |
-| Realtime Database (RTDB) | Presence (online status), typing indicators, visit counter |
-| Firebase Auth | Email/password authentication |
-| App Check (reCAPTCHA v3) | Bot protection |
-
-### Why RTDB for Presence/Typing?
-Firestore charges per document read/write. With 10 users, presence heartbeats and typing indicators were exhausting the free quota. RTDB uses a persistent connection model — one listener covers all users' presence for fractions of the Firestore cost.
-
----
-
-## 📁 File Structure
-
-```
-public/
-├── index.html              # Nebula Historians (light theme website, secret portal)
-├── main.html               # Main app shell
-├── migrate-to-rtdb.html    # One-time migration tool (admin only)
-├── css/
-│   ├── layout.css          # Main layout & component styles
-│   └── themes/             # 16 color themes (og, dark, light, aurora, etc.)
-└── js/
-    ├── firebase.js         # Firebase init & exports
-    ├── app.js              # Core app logic (auth, chat, DMs, admin, nav)
-    ├── goatcoin.js         # GoatCoin economy, blackjack, leaderboard
-    ├── games.js            # Game vault (lazy-loaded)
-    └── profile.js          # Profiles, badges, adblocker notice
-```
-
----
-
-## 🔐 Authentication & Ranks
-
-| Rank | Access |
-|---|---|
-| `earthbound` | Blocked (can't use app) |
-| `planetary` | Default approved rank; full chat/DM access |
-| `solar` | Same as planetary + higher-tier channels |
-| `galactic` | Higher visibility |
-| `universal` | Moderation: approve/ban users, change ranks of lower users |
-| `goat` | Full admin: all moderation + rank changes + DB cleanup |
-
-### Auth Flow
-1. User registers → status `pending`
-2. Admin approves → status `approved`, rank `planetary`
-3. User logs in → sees main app
-
----
-
-## 💬 Chat System
-
-### Channels
-- Two hardcoded channels: `general` (all users) and `admin` (universal+ only)
-- Custom channels can be created by moderators
-- Password-protected channels, announcement-only channels supported
-- Messages pruned to 100, trimmed to 80 when exceeded (Firestore quota protection)
-
-### Typing Indicators
-- Uses RTDB (cheap): `typing/{channelId}/{uid}` and `typing_dm/{dmId}/{uid}`
-- Auto-expires after 4 seconds via client-side `setTimeout` + RTDB `remove()`
-
-### Direct Messages
-- Firestore `dms/{dmId}/messages` subcollection
-- Typing indicators via RTDB `typing_dm/` path
-
----
-
-## 🟡 GoatCoin Economy
-
-### Earning
-- 1 GC per minute of active use (must interact every 3 min, 3+ interactions)
-- Tracks `weekChatMins`, `weekGameMins`, `weekSiteMins` separately
-- Weekly reset (Sunday-based) with automatic badge awards
-
-### Blackjack (Multiplayer)
-- Challenge 1-2 players, set stake and best-of rounds
-- **No dealer**: Pure player-vs-player comparison after both draw
-- **Tie handling**: If series ends tied, extra tiebreaker round is played (no push/coin return)
-- Stakes transferred at series end based on net win delta
-- Identity hidden until challenge accepted (mystery opponent)
-
-### Weekly Badges (Auto-awarded on week reset)
-| Badge | Criteria |
-|---|---|
-| `champion` | Most GoatCoins earned that week |
-| `sweat` | Most game minutes that week |
-| `social` | Most chat minutes that week |
-| `lucky` | Most blackjack wins that week |
-
-### Permanent Badges
-| Badge | Criteria |
-|---|---|
-| `veteran` | Member for 30+ days |
-| `og` | One of the first members (admin-awarded) |
-| `customized` | Customized avatar (admin-awarded) |
-
----
-
-## 👤 Profiles & Badges
-
-- Custom avatar: 40+ SVG icons or initial letter
-- 16 avatar colors to choose from
-- Username change cooldown: 7 days
-- Badges render in chat messages, profile modal, and own profile page
-- Badge deduplication runs on every write to prevent duplicate badges from appearing
-
----
-
-## 🛡️ Admin Panel (`/admin` section)
-
-Only visible to `universal`+ ranks.
-
-### Tabs
-1. **Pending** — Approve or deny account requests with search
-2. **Members** — View all approved users, change ranks, ban — with live search
-3. **Banned** — View banned users, unban, or permanently delete (goat only)
-4. **DB Cleanup** (goat only) — See below
-
-### DB Cleanup Panel
-| Action | Description |
-|---|---|
-| Wipe All GoatCoin | Reset every user's balance and stats to 0 |
-| Reset Weekly Stats | Reset only weekly fields (coins, mins, BJ wins) |
-| Delete User GC | Remove a specific user's GoatCoin document |
-| Wipe Channel | Delete all messages in a channel |
-| Wipe All DMs | Delete all DM threads and messages |
-| Clear Offline Presence | Remove Firestore presence docs (RTDB is auto-managed) |
-| Purge Stale BJ Games | Delete stuck/old blackjack games |
-| Clear BJ Challenges | Delete all pending challenges |
-| Reset Visit Counter | Set visits to 0 in both RTDB and Firestore |
-
----
-
-## 🔄 RTDB Migration (`migrate-to-rtdb.html`)
-
-Run **once** after deploying to move existing Firestore presence data and visit counter to RTDB:
-
-1. Navigate to `migrate-to-rtdb.html`
-2. Sign in with a Goat-rank account
-3. Click "Migrate Presence → RTDB"
-4. Click "Migrate Visits Counter → RTDB"
-5. Verify with "Verify RTDB Data"
-6. Delete old Firestore docs with "Delete Old Firestore Presence Docs"
-
-After migration, app.js automatically uses RTDB for all presence/typing/visits.
-
----
-
-## 🎮 Game Vault
-
-- Games loaded from external CDN (`gn-math/assets` on jsDelivr)
-- Lazy-loaded images, infinite scroll
-- Favorites stored in cookies
-- Ad injection cleaned from game HTML before display
-
----
-
-## 🏛️ Nebula Historians (index.html)
-
-The public-facing entry point — styled as a real academic history website.
-
-- **Light theme** with parchment/ink aesthetic
-- **9 pages**: Overview, 6 articles, References, Key Figures, About NHS
-- **Did You Know** rotating facts panel
-- **Search** across all articles (client-side)
-- **Navigation**: Top nav bar, sidebar with article list + stats, breadcrumbs
-- **Konami Code easter egg** on the Louisiana Purchase page (`↑↑↓↓←→←→BA`) — reveals hidden portal to main app
-
----
-
-## ⚙️ Settings
-
-### Themes (16 total)
-OG, Dark, Light, Aurora, Synthwave, Crimson, Midnight, Slate, Forest, Ocean, Rose, Solar, Void, Neon, Blush, Ice
-
-### Display Options
-- Layout: Left sidebar, Right sidebar, Top bar, Bottom bar
-- Font size: XS–XL
-- Compact mode, timestamps on hover, message animations
-- Background blur intensity, parallax speed
-- Focus mode, high contrast, reduce motion
-
----
-
-## 🚀 Deployment
+## Quick Start
 
 ```bash
-# Deploy to Firebase Hosting
-firebase deploy
+# Install Firebase CLI (if you don't have it)
+npm install -g firebase-tools
 
-# Or just the hosting
+# Login & deploy
+firebase login
 firebase deploy --only hosting
 ```
 
@@ -224,25 +26,219 @@ firebase deploy --only hosting
 
 ---
 
-## 🔧 Recent Changes (March 2025)
+## Architecture
 
-### Major Features
-- ✅ **Presence in members sidebar**: RTDB presence now correctly shows online (green dot) / offline members in real time
-- ✅ **Channel list unread badges**: Fixed `data-cid` attribute lookup bug
-- ✅ **Blackjack tie fix**: Removed dealer entirely; tied series → extra tiebreaker round played
-- ✅ **Admin panel overhaul**: Dynamic HTML build, stats pills, member search, DB cleanup tab
-- ✅ **DB Cleanup Panel**: Full Goat-rank tool to wipe/modify all database collections
-- ✅ **RTDB migration**: Visits counter now reads/writes to RTDB; migrator script provided
-- ✅ **Badge rendering fix**: Badge row now in proper wrapper in chat messages; deduplicated
-- ✅ **Nebula Historians**: Full rewrite — proper light-theme website with 9 pages, search, team page, Did You Know panel, key figures grid, navigation bar
-- ✅ **RTDB `databaseURL`**: Added to firebase config so RTDB initializes correctly
+| Layer | Technology |
+|---|---|
+| Frontend | Vanilla JS (ES Modules), no framework |
+| Backend | Firebase Firestore + Realtime Database |
+| Auth | Firebase Auth (email/password) |
+| Security | Firebase App Check (reCAPTCHA v3) |
+| Hosting | Firebase Hosting |
 
-### Bug Fixes
-- Fixed `membersUnsub` not being set in RTDB branch (missing `renderTimer`)
-- Fixed channel list badge selector using wrong attribute (`data-chid` → `data-cid`)
-- Fixed BJ `bjNextRound` to allow continuation when `gameDone` but no winner (tiebreaker)
-- Fixed RTDB visit counter to keep the higher value during migration
+### Why RTDB for Presence & Typing?
+
+Firestore bills per document read/write. With even 10 active users, presence heartbeats and typing indicators burned through the free tier fast. RTDB uses a persistent WebSocket connection, so one listener covers all users for a fraction of the cost.
 
 ---
 
-*Nebula V2 — Beyond The Stars*
+## File Structure
+
+```
+public/
+├── index.html                # Nebula Historians — disguised entry point
+├── main.html                 # Main app shell
+├── construction.html         # Maintenance page
+├── css/
+│   ├── layout.css            # Core layout & component styles
+│   └── themes/               # 16 color themes
+│       ├── og.css            # Default theme
+│       ├── dark.css
+│       ├── light.css
+│       ├── aurora.css
+│       ├── synthwave.css
+│       ├── crimson.css
+│       ├── midnight.css
+│       ├── slate.css
+│       ├── forest.css
+│       ├── ocean.css
+│       ├── rose.css
+│       ├── solar.css
+│       ├── void.css
+│       ├── neon.css
+│       ├── blush.css
+│       └── ice.css
+└── js/
+    ├── firebase.js           # Firebase init, config & re-exports
+    ├── app.js                # Core app: auth, chat, DMs, admin, nav, settings
+    ├── icons.js              # SVG icon library for command palette & UI
+    ├── goatcoin.js           # GoatCoin economy, blackjack, leaderboard
+    ├── games.js              # Game vault (lazy-loaded, infinite scroll)
+    ├── profile.js            # Profiles, badges, auto-awards, adblocker notice
+    └── shop.js               # GoatCoin shop
+```
+
+---
+
+## Ranks & Permissions
+
+| Rank | Level | Abilities |
+|---|---|---|
+| `earthbound` | 0 | Blocked — cannot access the app |
+| `planetary` | 1 | Default rank after approval — chat, DMs, games, GoatCoin |
+| `solar` | 2 | Access to higher-tier channels |
+| `galactic` | 3 | Increased visibility |
+| `universal` | 4 | Moderation: approve/ban users, manage ranks below own level |
+| `goat` | 5 | Full admin: everything above + DB cleanup panel |
+
+### Auth Flow
+
+1. User signs up with email/password &rarr; Firestore doc created with `status: 'pending'`
+2. An admin (universal+) approves them &rarr; `status: 'approved'`, `rank: 'planetary'`
+3. User logs in &rarr; full app access
+
+---
+
+## Features
+
+### Chat System
+- **Channels**: Two built-in (`general`, `admin`) plus unlimited custom channels
+- **Channel options**: Password-protected, announcement-only, minimum rank requirement
+- **Message pruning**: Auto-trims to 80 messages when a channel exceeds 100 (Firestore quota protection)
+- **Typing indicators**: Real-time via RTDB, auto-expire after 4 seconds
+- **Reactions**: 12 emoji reactions per message with toggle support
+- **Message editing**: Authors can edit their own messages inline
+- **Moderation**: Admins can delete any message; Goat rank can wipe entire threads
+
+### Direct Messages
+- Search for any approved user to start a conversation
+- Real-time updates via Firestore `dms/{dmId}/messages` subcollection
+- Typing indicators via RTDB `typing_dm/` path
+- Unread badges in sidebar and nav
+
+### Game Vault
+- 100+ games loaded from external CDN (jsDelivr)
+- Lazy-loaded thumbnails with infinite scroll
+- Favorites stored in cookies
+- Ad injection stripped from game HTML before rendering
+- Fullscreen support
+
+### GoatCoin Economy
+- **Earning**: 1 GC per minute of active use (requires interaction every 3 min)
+- **Tracking**: Separate weekly counters for chat, game, and site activity minutes
+- **Blackjack**: Multiplayer PvP (1v1 or 1v2), hidden identity until accepted, tiebreaker rounds, stake transfers
+- **Weekly badges**: Automatically awarded on Sunday reset
+- **Leaderboard**: Real-time ranking by balance
+
+### Profiles & Badges
+- 40+ SVG avatar icons or initial letter
+- 16 avatar colors
+- Username change cooldown: 7 days
+- Badge deduplication on every write
+
+| Badge | Type | Criteria |
+|---|---|---|
+| `champion` | Weekly | Most GoatCoins earned |
+| `sweat` | Weekly | Most game minutes |
+| `social` | Weekly | Most chat minutes |
+| `lucky` | Weekly | Most blackjack wins |
+| `veteran` | Permanent | Member for 30+ days |
+| `og` | Permanent | Early member (admin-awarded) |
+| `customized` | Permanent | Custom avatar (admin-awarded) |
+
+### Command Palette (Ctrl+K)
+- Quick-jump to any section with fuzzy search
+- Custom SVG icons for every item
+- Keyboard shortcut hints (1-8 for all users, 1-9 if you're an admin)
+- Arrow keys + Enter navigation
+
+### Settings
+- **16 themes**: OG, Dark, Light, Aurora, Synthwave, Crimson, Midnight, Slate, Forest, Ocean, Rose, Solar, Void, Neon, Blush, Ice
+- **Layouts**: Left sidebar, Right sidebar, Top bar, Bottom bar
+- **Font size**: XS through XL
+- **Display toggles**: Compact mode, timestamps on hover, message animations, parallax speed, background blur, focus mode, high contrast, reduce motion, nav glow, typing indicators, and more
+- **Per-channel notification control**
+
+---
+
+## Admin Panel
+
+Only visible to `universal`+ ranks. Goat-rank users get additional DB cleanup tools.
+
+### Tabs
+1. **Pending** &mdash; Approve or deny account requests
+2. **Members** &mdash; View all users, change ranks, ban (with live search)
+3. **Banned** &mdash; Unban users or permanently delete accounts (Goat only)
+4. **DB Cleanup** (Goat only) &mdash; Bulk data operations:
+
+| Action | What it does |
+|---|---|
+| Wipe All GoatCoin | Resets every user's balance and stats to 0 |
+| Reset Weekly Stats | Clears weekly counters without touching balances |
+| Delete User GC | Removes a specific user's GoatCoin document |
+| Wipe Channel | Deletes all messages in a channel |
+| Wipe All DMs | Deletes all DM threads and messages across the platform |
+| Clear Offline Presence | Removes stale Firestore presence docs |
+| Purge Stale BJ Games | Deletes stuck or expired blackjack games |
+| Clear BJ Challenges | Deletes all pending/cancelled challenges |
+| Reset Visit Counter | Sets visits to 0 in both RTDB and Firestore |
+
+---
+
+## Nebula Historians (index.html)
+
+The public-facing disguise &mdash; a convincing academic history website.
+
+- Light parchment/ink theme
+- 9 pages: Overview, 6 articles, References, Key Figures, About NHS
+- Client-side search across all articles
+- Rotating "Did You Know" facts panel
+- **Konami Code** on the Louisiana Purchase page (`Up Up Down Down Left Right Left Right B A`) reveals the hidden portal to the main app
+
+---
+
+## RTDB Migration
+
+One-time migration from Firestore to RTDB for presence and visit data. Only needed on first deploy.
+
+1. Navigate to `migrate-to-rtdb.html`
+2. Sign in with a Goat-rank account
+3. Run "Migrate Presence" then "Migrate Visits Counter"
+4. Verify with "Verify RTDB Data"
+5. Clean up with "Delete Old Firestore Presence Docs"
+
+---
+
+## Keyboard Shortcuts
+
+| Shortcut | Action |
+|---|---|
+| `Ctrl+K` / `Cmd+K` | Open command palette |
+| `Escape` | Close palette / modal / game vault |
+| `1` - `8` | Jump to section (Home, Chat, DMs, Games, GoatCoin, Shop, Profile, Settings) |
+| `9` | Jump to Admin (admins only) |
+
+---
+
+## Changelog
+
+### March 2026
+- Command palette icons replaced with custom SVGs (moved to `icons.js`)
+- Keyboard shortcut numbering now role-aware (1-8 for regular users, 1-9 for admins)
+- Fixed tooltip overlap bug when switching tabs
+- Added `icons.js` module for centralized icon management
+- README rewritten
+
+### March 2025
+- RTDB presence system for real-time online/offline status
+- Channel list unread badges fix (`data-cid` attribute)
+- Blackjack: removed dealer, added tiebreaker rounds for tied series
+- Admin panel overhaul with dynamic build, stats pills, member search, DB cleanup
+- Nebula Historians full rewrite (9 pages, search, key figures grid)
+- RTDB `databaseURL` added to Firebase config
+- Badge rendering fix (proper wrapper in chat, deduplication)
+- RTDB visit counter migration tool
+
+---
+
+*Nebula V2 &mdash; Beyond The Stars*

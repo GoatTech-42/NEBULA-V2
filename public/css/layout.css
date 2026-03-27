@@ -2300,7 +2300,14 @@ body.layout-bottombar #main { flex: 1; overflow: hidden; min-height: 0; }
   cursor: pointer; transition: background .08s ease;
 }
 .cmd-item:hover, .cmd-item.active { background: var(--nav-active-bg); }
-.cmd-icon { font-size: 1rem; width: 28px; text-align: center; flex-shrink: 0; }
+.cmd-icon {
+  font-size: 1rem; width: 28px; height: 28px; text-align: center; flex-shrink: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 8px; background: var(--input-bg); border: 1px solid var(--border2);
+  color: var(--accent, #4fc9ea);
+}
+.cmd-icon-svg svg { display: block; }
+.cmd-item:hover .cmd-icon, .cmd-item.active .cmd-icon { background: var(--border2); }
 .cmd-item-info { flex: 1; min-width: 0; }
 .cmd-item-label { font-size: .84rem; font-weight: 700; }
 .cmd-item-desc { font-size: .66rem; color: var(--text-faint); }
