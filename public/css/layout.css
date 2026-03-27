@@ -2222,3 +2222,248 @@ body.layout-bottombar #main { flex: 1; overflow: hidden; min-height: 0; }
 .credits-card-link:hover { opacity: .7; }
 .credits-divider { height: 1px; background: var(--border2); margin: 1.5rem 0; }
 .credits-footer { text-align: center; font-size: .6rem; color: var(--text-faint); letter-spacing: 1.5px; text-transform: uppercase; margin-top: 2rem; }
+
+/* ══════════════════════════════════════════
+   HOME SHORTCUTS / SESSION TIMER
+══════════════════════════════════════════ */
+.home-shortcuts {
+  margin-top: 1.2rem;
+  font-size: .58rem;
+  color: var(--text-faint);
+  letter-spacing: .5px;
+  display: flex;
+  align-items: center;
+  gap: .3rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  opacity: .55;
+  transition: opacity var(--tm);
+}
+.home-shortcuts:hover { opacity: 1; }
+.home-shortcuts kbd {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 20px; height: 18px; padding: 0 4px;
+  background: var(--input-bg); border: 1px solid var(--border2);
+  border-radius: 4px; font-size: .52rem; font-weight: 700;
+  font-family: var(--font-body); color: var(--text-muted);
+  box-shadow: 0 1px 0 var(--border2);
+}
+
+/* ══════════════════════════════════════════
+   COMMAND PALETTE (Ctrl+K)
+══════════════════════════════════════════ */
+#cmd-palette {
+  position: fixed; inset: 0; z-index: 9500;
+  display: flex; align-items: flex-start; justify-content: center;
+  padding-top: min(20vh, 140px);
+}
+#cmd-palette.hidden { display: none !important; }
+.cmd-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.65); backdrop-filter: blur(8px);
+  animation: fadeIn .12s ease;
+}
+.cmd-box {
+  position: relative; z-index: 1;
+  width: 100%; max-width: 520px;
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 16px; overflow: hidden;
+  box-shadow: 0 24px 80px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.06);
+  animation: modalIn .18s cubic-bezier(.16,1,.3,1);
+}
+.cmd-search-wrap {
+  display: flex; align-items: center; gap: .65rem;
+  padding: .85rem 1.1rem;
+  border-bottom: 1px solid var(--border2);
+}
+.cmd-search-wrap svg { color: var(--text-faint); flex-shrink: 0; opacity: .7; }
+.cmd-search-wrap input {
+  flex: 1; background: transparent; border: none;
+  color: var(--text); font-size: .92rem; font-family: var(--font-body);
+  outline: none;
+}
+.cmd-search-wrap input::placeholder { color: var(--text-faint); }
+.cmd-esc {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 28px; height: 22px; padding: 0 5px;
+  background: var(--input-bg); border: 1px solid var(--border2);
+  border-radius: 5px; font-size: .52rem; font-weight: 700;
+  font-family: var(--font-body); color: var(--text-faint);
+  flex-shrink: 0;
+}
+.cmd-results { max-height: 340px; overflow-y: auto; padding: .4rem; }
+.cmd-results::-webkit-scrollbar { width: 3px; }
+.cmd-results::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 3px; }
+.cmd-item {
+  display: flex; align-items: center; gap: .75rem;
+  padding: .6rem .85rem; border-radius: var(--r);
+  cursor: pointer; transition: background .08s ease;
+}
+.cmd-item:hover, .cmd-item.active { background: var(--nav-active-bg); }
+.cmd-icon { font-size: 1rem; width: 28px; text-align: center; flex-shrink: 0; }
+.cmd-item-info { flex: 1; min-width: 0; }
+.cmd-item-label { font-size: .84rem; font-weight: 700; }
+.cmd-item-desc { font-size: .66rem; color: var(--text-faint); }
+.cmd-key {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 22px; height: 20px; padding: 0 5px;
+  background: var(--input-bg); border: 1px solid var(--border2);
+  border-radius: 4px; font-size: .56rem; font-weight: 700;
+  font-family: var(--font-body); color: var(--text-faint);
+  flex-shrink: 0;
+}
+.cmd-empty {
+  padding: 1.5rem; text-align: center;
+  font-size: .8rem; color: var(--text-faint);
+}
+
+/* ══════════════════════════════════════════
+   DM SCROLL-TO-BOTTOM BUTTON
+══════════════════════════════════════════ */
+.dm-scroll-btn {
+  position: absolute; bottom: 80px; right: 14px;
+}
+#section-dms .chat-area { position: relative; }
+
+/* ══════════════════════════════════════════
+   IMPROVED HOME TITLE GRADIENT
+══════════════════════════════════════════ */
+.home-title {
+  background: linear-gradient(135deg, var(--text) 0%, var(--accent) 50%, var(--text) 100%);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gradientShift 6s ease-in-out infinite;
+}
+@keyframes gradientShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* ══════════════════════════════════════════
+   BETTER HOVER MICRO-INTERACTIONS
+══════════════════════════════════════════ */
+.home-card {
+  position: relative; overflow: hidden;
+}
+.home-card::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgba(255,255,255,.06) 0%, transparent 60%);
+  opacity: 0; transition: opacity .3s ease;
+  pointer-events: none;
+}
+.home-card:hover::after { opacity: 1; }
+
+/* Sidebar item active pulse effect */
+.snav-item.active .snav-icon svg {
+  filter: drop-shadow(0 0 4px var(--accent-glow));
+}
+
+/* Better toast entrance */
+.notif {
+  box-shadow: 0 8px 24px rgba(0,0,0,.3), 0 1px 3px rgba(0,0,0,.15);
+}
+
+/* Channel/DM item hover indicator */
+.titem::after {
+  content: '';
+  position: absolute; right: 8px; top: 50%;
+  width: 4px; height: 4px; border-radius: 50%;
+  background: var(--accent);
+  transform: translateY(-50%) scale(0);
+  transition: transform .2s ease;
+}
+.titem:hover::after { transform: translateY(-50%) scale(1); }
+.titem.active::after { display: none; }
+
+/* Message hover glow accent line */
+.msg::before {
+  content: '';
+  position: absolute; left: 0; top: 0; bottom: 0;
+  width: 2px; background: var(--accent);
+  opacity: 0; transition: opacity .12s ease;
+  border-radius: 0 2px 2px 0;
+}
+.msg:hover::before { opacity: .4; }
+
+/* ══════════════════════════════════════════
+   IMPROVED FOCUS STATES
+══════════════════════════════════════════ */
+.btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.snav-item:focus-visible,
+.stab:focus-visible,
+.theme-card:focus-visible,
+.layout-opt:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+/* ══════════════════════════════════════════
+   SMOOTHER SKELETON LOADING
+══════════════════════════════════════════ */
+.skel-pulse {
+  background: linear-gradient(90deg, var(--card-bg) 25%, var(--border2) 50%, var(--card-bg) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+@keyframes shimmer {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
+}
+
+/* ══════════════════════════════════════════
+   CONNECTION STATUS INDICATOR
+══════════════════════════════════════════ */
+.logo-pulse {
+  background: var(--success, #4ade80);
+  box-shadow: 0 0 6px var(--success, #4ade80);
+}
+
+/* ══════════════════════════════════════════
+   GLASSMORPHISM POLISH ON CARDS
+══════════════════════════════════════════ */
+.home-card {
+  backdrop-filter: blur(calc(var(--ui-blur, 20px) * 0.5));
+  -webkit-backdrop-filter: blur(calc(var(--ui-blur, 20px) * 0.5));
+}
+
+/* ══════════════════════════════════════════
+   IMPROVED EMPTY STATE ILLUSTRATIONS
+══════════════════════════════════════════ */
+.chat-no-select {
+  transition: opacity .3s ease;
+}
+.chat-no-select .cns-icon {
+  animation: float 3s ease-in-out infinite;
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+/* ══════════════════════════════════════════
+   BETTER MOBILE TOUCH TARGETS
+══════════════════════════════════════════ */
+@media (max-width: 680px) {
+  .snav-item { min-height: 44px; }
+  .titem { min-height: 42px; }
+  .ms-item { min-height: 40px; }
+  .btn-sm { min-height: 36px; }
+  .cmd-box { max-width: calc(100vw - 24px); margin: 0 12px; }
+}
+
+/* ══════════════════════════════════════════
+   SMOOTH PAGE TRANSITIONS
+══════════════════════════════════════════ */
+.section.active {
+  animation: sectionFadeScale .28s cubic-bezier(.16,1,.3,1);
+}
+@keyframes sectionFadeScale {
+  from { opacity: 0; transform: scale(.995) translateY(4px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
