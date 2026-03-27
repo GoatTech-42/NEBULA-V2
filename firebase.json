@@ -1,6 +1,6 @@
 {
   "hosting": {
-    "public": "C:/Users/lukep/Desktop/Coding/Nebula V2/public",
+    "public": "C:/Users/lukep/Desktop/Coding/Nebula Historians/public",
     "ignore": [
       "firebase.json",
       "firestore.rules",
