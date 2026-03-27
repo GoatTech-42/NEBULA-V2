@@ -336,6 +336,8 @@ async function initApp(user) {
   };
   checkAutoAwards(user.uid, data);
   setTimeout(checkAdblocker, 2000);
+  setupKeyboardShortcuts();
+  setupCommandPalette();
   hideSkeleton();
 }
 
@@ -392,7 +394,7 @@ function navigate(section) {
 
 // ── Home / Visits ──
 const TOOLTIPS_RAW = [
-  "nebula never dies", "disable your adblocker for goatcoin", "lock in gng", "stfu fleece", "dm me for tooltip suggestions", "now with more customization", "plz dont hack", "find the tabernacle", "is ts peak", "goattech is better", "proxies dont take the internet", "no goofy ahh minecraft kids", "defenitley not vibe coded", "join hackclub", "67 67 676767 hahahhahahah", "great uncle tup tup never dies", "lightsped", "why are you reading this", "in the big 26", "touch grass gng", "lets go gambling", "all on red", "ask not what nebula can do for you", "imagine not having the goat rank", "goatcoin > bitcoin",
+  "nebula never dies", "disable your adblocker for goatcoin", "lock in gng", "stfu fleece", "dm me for tooltip suggestions", "now with more customization", "plz dont hack", "find the tabernacle", "is ts peak", "goattech is better", "proxies dont take the internet", "no goofy ahh minecraft kids", "definitely not vibe coded", "join hackclub", "67 67 676767 hahahhahahah", "great uncle tup tup never dies", "lightspeed", "why are you reading this", "in the big 26", "touch grass gng", "lets go gambling", "all on red", "ask not what nebula can do for you", "imagine not having the goat rank", "goatcoin > bitcoin", "ctrl+k to search anything", "new features every week", "the stars are watching",
 ];
 
 function shuffleArray(arr) {
@@ -465,10 +467,29 @@ function initHome() {
 
   setupFPS();
   setupBattery();
+  setupUptime();
 
   document.querySelectorAll('.home-card[data-goto]').forEach(c => {
     c.addEventListener('click', () => navigate(c.dataset.goto));
   });
+}
+
+// Session uptime counter
+let _uptimeStart = Date.now();
+function setupUptime() {
+  const el = document.getElementById('uptime-val');
+  if(!el) return;
+  function updateUptime() {
+    const elapsed = Math.floor((Date.now() - _uptimeStart) / 1000);
+    const hrs = Math.floor(elapsed / 3600);
+    const mins = Math.floor((elapsed % 3600) / 60);
+    const secs = elapsed % 60;
+    el.textContent = hrs > 0
+      ? `${hrs}:${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`
+      : `${mins}:${String(secs).padStart(2,'0')}`;
+    requestAnimationFrame(()=>setTimeout(updateUptime, 1000));
+  }
+  updateUptime();
 }
 
 function setupFPS() {
@@ -2576,3 +2597,146 @@ function boot() {
 }
 
 document.addEventListener('DOMContentLoaded', boot);
+
+// ── Keyboard Shortcuts ──
+function setupKeyboardShortcuts() {
+  const NAV_SECTIONS = ['home','chat','dms','games','goatcoin','shop','profile','settings'];
+  document.addEventListener('keydown', e => {
+    // Don't trigger shortcuts when typing in inputs
+    const tag = document.activeElement?.tagName;
+    const isInput = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || document.activeElement?.isContentEditable;
+
+    // Ctrl+K / Cmd+K — command palette (always works)
+    if((e.ctrlKey || e.metaKey) && e.key === 'k') {
+      e.preventDefault();
+      toggleCommandPalette();
+      return;
+    }
+
+    // Escape — close things
+    if(e.key === 'Escape') {
+      const cmd = document.getElementById('cmd-palette');
+      if(cmd && !cmd.classList.contains('hidden')) {
+        cmd.classList.add('hidden');
+        return;
+      }
+      const ov = document.getElementById('modal-overlay');
+      if(ov && !ov.classList.contains('hidden')) {
+        ov.click();
+        return;
+      }
+      const vault = document.getElementById('game-vault');
+      if(vault && vault.style.display === 'flex') {
+        window.closeGameVault();
+        return;
+      }
+      return;
+    }
+
+    if(isInput) return;
+
+    // Number keys 1-9 — navigate sections
+    if(e.key >= '1' && e.key <= '9') {
+      const idx = parseInt(e.key) - 1;
+      if(idx < NAV_SECTIONS.length) {
+        e.preventDefault();
+        navigate(NAV_SECTIONS[idx]);
+      }
+    }
+  });
+}
+
+// ── Command Palette ──
+function setupCommandPalette() {
+  const palette = document.getElementById('cmd-palette');
+  const overlay = document.getElementById('cmd-overlay');
+  const input = document.getElementById('cmd-input');
+  const results = document.getElementById('cmd-results');
+  if(!palette || !input || !results) return;
+
+  overlay?.addEventListener('click', () => palette.classList.add('hidden'));
+
+  const COMMANDS = [
+    { label: 'Home', desc: 'Go to home page', action: () => navigate('home'), icon: '🏠', keys: '1' },
+    { label: 'Chat', desc: 'Open channels', action: () => navigate('chat'), icon: '💬', keys: '2' },
+    { label: 'Direct Messages', desc: 'Open DMs', action: () => navigate('dms'), icon: '✉️', keys: '3' },
+    { label: 'Games', desc: 'Game vault', action: () => navigate('games'), icon: '🎮', keys: '4' },
+    { label: 'GoatCoin', desc: 'Currency & blackjack', action: () => navigate('goatcoin'), icon: '🪙', keys: '5' },
+    { label: 'Shop', desc: 'Spend your GoatCoin', action: () => navigate('shop'), icon: '🛍️', keys: '6' },
+    { label: 'Profile', desc: 'Your identity', action: () => navigate('profile'), icon: '👤', keys: '7' },
+    { label: 'Settings', desc: 'Themes & display', action: () => navigate('settings'), icon: '⚙️', keys: '8' },
+    { label: 'Sign Out', desc: 'Log out of Nebula', action: () => document.getElementById('sp-signout')?.click(), icon: '🚪' },
+  ];
+
+  function renderResults(filter = '') {
+    const q = filter.toLowerCase();
+    const filtered = q
+      ? COMMANDS.filter(c => c.label.toLowerCase().includes(q) || c.desc.toLowerCase().includes(q))
+      : COMMANDS;
+    results.innerHTML = filtered.map((c, i) => `
+      <div class="cmd-item${i === 0 ? ' active' : ''}" data-idx="${i}">
+        <span class="cmd-icon">${c.icon}</span>
+        <div class="cmd-item-info">
+          <div class="cmd-item-label">${c.label}</div>
+          <div class="cmd-item-desc">${c.desc}</div>
+        </div>
+        ${c.keys ? `<kbd class="cmd-key">${c.keys}</kbd>` : ''}
+      </div>
+    `).join('') || '<div class="cmd-empty">No results</div>';
+
+    results.querySelectorAll('.cmd-item').forEach((el, i) => {
+      el.addEventListener('click', () => {
+        filtered[i]?.action();
+        palette.classList.add('hidden');
+      });
+    });
+  }
+
+  input.addEventListener('input', () => renderResults(input.value));
+  input.addEventListener('keydown', e => {
+    const items = results.querySelectorAll('.cmd-item');
+    const active = results.querySelector('.cmd-item.active');
+    let idx = [...items].indexOf(active);
+
+    if(e.key === 'ArrowDown') { e.preventDefault(); idx = Math.min(idx+1, items.length-1); }
+    else if(e.key === 'ArrowUp') { e.preventDefault(); idx = Math.max(idx-1, 0); }
+    else if(e.key === 'Enter') {
+      e.preventDefault();
+      active?.click();
+      return;
+    } else return;
+
+    items.forEach(i => i.classList.remove('active'));
+    items[idx]?.classList.add('active');
+    items[idx]?.scrollIntoView({ block: 'nearest' });
+  });
+
+  renderResults();
+}
+
+function toggleCommandPalette() {
+  const p = document.getElementById('cmd-palette');
+  const inp = document.getElementById('cmd-input');
+  if(!p) return;
+  const isHidden = p.classList.contains('hidden');
+  p.classList.toggle('hidden', !isHidden);
+  if(isHidden) {
+    inp.value = '';
+    inp.focus();
+    // Re-render default results
+    inp.dispatchEvent(new Event('input'));
+  }
+}
+
+// ── DM char counter ──
+(function() {
+  const dmInput = document.getElementById('dm-input');
+  const dmCtr = document.getElementById('dm-char-ctr');
+  if(dmInput && dmCtr) {
+    dmInput.addEventListener('input', () => {
+      const len = dmInput.value.length;
+      dmCtr.textContent = 500 - len;
+      dmCtr.className = 'char-ctr' + (len > 450 ? ' warn' : '') + (len > 490 ? ' danger' : '');
+    });
+  }
+})();
