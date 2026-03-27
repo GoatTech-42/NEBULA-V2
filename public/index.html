@@ -25,23 +25,25 @@
   --tag-bg:#eeeeee;--tag-text:#444444;
   --nav-h:52px;
 }
-html,body{height:100%;overflow:hidden;background:#ffffff;color:#111}
+html,body{height:100%;overflow:hidden;background:#f1efe9;color:#111}
 body{font-family:'Crimson Text',Georgia,serif;display:flex;flex-direction:column}
 
 /* ── Site nav (top) ── */
 .site-nav{
-  height:var(--nav-h);flex-shrink:0;background:#111;
-  display:flex;align-items:center;padding:0 1.4rem;gap:1.2rem;
-  border-bottom:1px solid #333;
+  height:var(--nav-h);flex-shrink:0;
+  display:flex;align-items:center;padding:0 1.4rem;gap:1rem;
+  border-bottom:1px solid #ddd7c8;
+  background:linear-gradient(180deg,#fdfbf7,#f5f2e9);
+  box-shadow:0 1px 0 rgba(255,255,255,.8) inset;
 }
-.site-nav-logo{font-family:'Playfair Display',serif;font-size:.9rem;font-weight:900;color:#fff;white-space:nowrap;letter-spacing:.5px;flex-shrink:0}
-.site-nav-links{display:flex;gap:.1rem;flex:1;overflow:hidden}
-.snl{color:rgba(255,255,255,.55);font-size:.68rem;font-weight:600;letter-spacing:.3px;text-transform:uppercase;padding:.3rem .65rem;border-radius:3px;cursor:pointer;transition:color .12s,background .12s;white-space:nowrap}
-.snl:hover{color:#fff;background:rgba(255,255,255,.08)}
-.snl.active{color:#fff}
-.site-nav-search{margin-left:auto;display:flex;align-items:center;gap:.4rem;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:4px;padding:.26rem .7rem;cursor:text}
-.site-nav-search input{background:none;border:none;color:#fff;font-family:'Crimson Text',serif;font-size:.72rem;width:130px;outline:none}
-.site-nav-search input::placeholder{color:rgba(255,255,255,.35)}
+.site-nav-logo{font-family:'Playfair Display',serif;font-size:.95rem;font-weight:900;color:#2d261f;white-space:nowrap;letter-spacing:.4px;flex-shrink:0}
+.site-nav-links{display:flex;gap:.15rem;flex:1;overflow:hidden}
+.snl{color:#6b6254;font-size:.68rem;font-weight:700;letter-spacing:.4px;text-transform:uppercase;padding:.35rem .66rem;border-radius:3px;cursor:pointer;transition:color .12s,background .12s;white-space:nowrap}
+.snl:hover{color:#2b231a;background:rgba(106,89,67,.11)}
+.snl.active{color:#3f1f1f;background:rgba(122,24,24,.08)}
+.site-nav-search{margin-left:auto;display:flex;align-items:center;gap:.45rem;background:#fff;border:1px solid #d8cfbd;border-radius:3px;padding:.26rem .55rem;cursor:text;box-shadow:0 1px 2px rgba(0,0,0,.04) inset}
+.site-nav-search input{background:none;border:none;color:#28231c;font-family:'Crimson Text',serif;font-size:.74rem;width:150px;outline:none}
+.site-nav-search input::placeholder{color:#9d917f}
 
 /* ── Site layout ── */
 .site{flex:1;display:flex;overflow:hidden;background:#fff}
@@ -184,13 +186,12 @@ body{font-family:'Crimson Text',Georgia,serif;display:flex;flex-direction:column
 .team-card .tc-bio{font-size:.73rem;color:#666;line-height:1.55}
 
 /* ── Louisiana nested page ── */
-.lp-wrap{margin:1.5rem 0 .9rem;border:2px solid #e0e0e0;border-radius:3px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.06)}
-.lp-bar{background:#1a1a1a;padding:5px 11px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #333}
-.lp-dots{display:flex;gap:4px}
-.lp-dot{width:9px;height:9px;border-radius:50%}
-.lpd-r{background:#ff5f57}.lpd-y{background:#ffbd2e}.lpd-g{background:#28c840}
-.lp-url{flex:1;background:#111;border:1px solid #333;border-radius:3px;padding:2px 8px;font-size:.63rem;color:#aaa;font-family:monospace}
-.lp-pg{height:440px;overflow-y:auto;overflow-x:hidden;background:#fafafa;position:relative}
+.lp-wrap{margin:1.5rem 0 .9rem;border:1px solid #d9d0c1;border-radius:3px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.06)}
+.lp-bar{background:linear-gradient(180deg,#f8f5ee,#f0ebdf);padding:.52rem .9rem;display:flex;align-items:center;justify-content:space-between;gap:.8rem;border-bottom:1px solid #ddd4c5}
+.lp-meta-kicker{font-size:.55rem;letter-spacing:1.7px;text-transform:uppercase;color:#8d826f;font-family:'IM Fell English',serif}
+.lp-meta-title{font-family:'Playfair Display',serif;font-size:.74rem;color:#2d251b;font-weight:700}
+.lp-meta-year{font-size:.58rem;color:#8f8575;font-style:italic}
+.lp-pg{height:440px;overflow-y:auto;overflow-x:hidden;background:#fcfbf8;position:relative}
 .lp-pg::-webkit-scrollbar{width:4px}
 .lp-pg::-webkit-scrollbar-thumb{background:#ddd}
 .lp-cnt{padding:1.5rem 1.7rem 1.8rem;font-family:'Crimson Text',Georgia,serif}
@@ -239,7 +240,17 @@ body{font-family:'Crimson Text',Georgia,serif;display:flex;flex-direction:column
 @keyframes fi{from{opacity:0}to{opacity:1}}
 @keyframes fu{from{opacity:0;transform:translateY(13px)}to{opacity:1;transform:translateY(0)}}
 
+.sb-access{margin:.1rem .8rem .75rem;padding:.58rem .65rem;background:#fdfbf7;border:1px solid #e3dbcd;border-radius:3px}
+.sb-access-title{font-size:.57rem;letter-spacing:1.2px;text-transform:uppercase;color:#7f7566;font-weight:700;margin-bottom:.16rem}
+.sb-access-copy{font-size:.66rem;line-height:1.45;color:#5f5548}
+.sb-access-copy strong{color:#4b241f}
+
 @media(max-width:680px){
+  .site-nav{padding:0 .7rem;gap:.55rem}
+  .site-nav-logo{font-size:.82rem}
+  .site-nav-links{display:none}
+  .site-nav-search{margin-left:0;flex:1}
+  .site-nav-search input{width:100%}
   .sb{display:none}
   .cards{grid-template-columns:1fr}
   .fb{float:none;width:100%;margin:0 0 .8rem 0}
@@ -268,7 +279,7 @@ body{font-family:'Crimson Text',Georgia,serif;display:flex;flex-direction:column
   </div>
   <div class="site-nav-search">
     <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#aaa" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-    <input placeholder="Search articles…" id="nav-search-inp" oninput="doSearch(this.value)">
+    <input placeholder="Search articles…" id="nav-search-inp" oninput="queueSearch(this.value)">
   </div>
 </div>
 
@@ -281,7 +292,7 @@ body{font-family:'Crimson Text',Georgia,serif;display:flex;flex-direction:column
       <div class="sb-brand-vol">Digital Archive · Vol. III</div>
     </div>
     <div class="sb-search">
-      <input placeholder="Search articles…" id="sb-search-inp" oninput="doSearch(this.value)">
+      <input placeholder="Search articles…" id="sb-search-inp" oninput="queueSearch(this.value)">
     </div>
     <nav class="sb-nav">
       <div class="sb-sec">Main</div>
@@ -330,6 +341,10 @@ body{font-family:'Crimson Text',Georgia,serif;display:flex;flex-direction:column
       <div class="sb-stat-row"><span class="sb-stat-label">Period covered</span><span class="sb-stat-val">1492–1850</span></div>
       <div class="sb-stat-row"><span class="sb-stat-label">Sources cited</span><span class="sb-stat-val">40+</span></div>
       <div class="sb-stat-row"><span class="sb-stat-label">Last updated</span><span class="sb-stat-val">2024</span></div>
+    </div>
+    <div class="sb-access">
+      <div class="sb-access-title">Nebula Member Access</div>
+      <div class="sb-access-copy">The hidden archive portal is still active. Open the <strong>Louisiana Purchase</strong> page and enter the classic Konami sequence to reveal access.</div>
     </div>
     <div class="sb-foot">Nebula Historical Society · Educational Resource<br>All sources peer-reviewed · © 2024 NHS</div>
   </aside>
@@ -455,8 +470,11 @@ body{font-family:'Crimson Text',Georgia,serif;display:flex;flex-direction:column
 
           <div class="lp-wrap">
             <div class="lp-bar">
-              <div class="lp-dots"><div class="lp-dot lpd-r"></div><div class="lp-dot lpd-y"></div><div class="lp-dot lpd-g"></div></div>
-              <div class="lp-url">nebula-historians.edu/louisiana-purchase/full-record</div>
+              <div>
+                <div class="lp-meta-kicker">Primary Source Dossier</div>
+                <div class="lp-meta-title">Louisiana Purchase — Extended Historical Record</div>
+              </div>
+              <div class="lp-meta-year">Archive Edition · 2024</div>
             </div>
             <div class="lp-pg" id="lp-pg">
               <div id="ko">
@@ -667,6 +685,12 @@ const SEARCH_INDEX = [
   {id:'figures', cat:'Reference', title:'Key Figures of the Founding Era', excerpt:'Biographical summaries.', keywords:['washington','jefferson','adams','hamilton','franklin','madison','sacagawea']},
   {id:'about', cat:'About', title:'About the Nebula Historical Society', excerpt:'Our mission and team.', keywords:['about','mission','team','nhs','nebula']},
 ];
+
+let searchDebounce = null;
+function queueSearch(q) {
+  clearTimeout(searchDebounce);
+  searchDebounce = setTimeout(() => doSearch(q), 120);
+}
 
 function doSearch(q) {
   const v = q;

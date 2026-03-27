@@ -35,8 +35,13 @@ let _mpChalUnsub   = null; // Firestore challenges listener
 let _mpChalUnsub2  = null; // Firestore sent-challenge listener
 let _cachedIncoming = [];
 let _myRole        = null;
+let _bjDocClickBound = false;
 
 let _rtdb = null;
+
+const GOATCOIN_ICON_SVG = '<svg class="gc-title-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><defs><linearGradient id="gcCoinGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#fde68a"/><stop offset="55%" stop-color="#f59e0b"/><stop offset="100%" stop-color="#d97706"/></linearGradient></defs><circle cx="12" cy="12" r="9" fill="url(#gcCoinGrad)"/><circle cx="12" cy="12" r="6.5" fill="none" stroke="rgba(255,255,255,.45)" stroke-width="1.2"/><path d="M9.2 14.6h4.5c1.2 0 2-.7 2-1.7 0-1-.7-1.5-1.9-1.7l-2.4-.3c-1-.2-1.4-.5-1.4-1.1 0-.7.6-1.2 1.7-1.2h3.9" stroke="#4a2b00" stroke-width="1.5" stroke-linecap="round"/><path d="M12 7.1v9.8" stroke="#4a2b00" stroke-width="1.5" stroke-linecap="round"/></svg>';
+const BJ_DECK_ICON_SVG = '<svg class="bj-lobby-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="12" height="15" rx="2"/><path d="M8 9h4"/><path d="M10 7v4"/><path d="M9 15l2-2 2 2"/><path d="M9 13h4"/><path d="M10 16h2"/><rect x="9" y="3" width="11" height="15" rx="2" opacity=".6"/></svg>';
+const BJ_COIN_ICON_SVG = '<svg class="bj-inline-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="currentColor" opacity=".14"/><circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1.8"/><path d="M10 14h3.2c1 0 1.7-.5 1.7-1.3 0-.8-.6-1.2-1.6-1.3l-1.7-.2c-.9-.1-1.3-.4-1.3-.9 0-.6.5-1 1.4-1h3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M12 8.2v7.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>';
 
 // ──────────────────────────────────────────────────
 //  WEEK KEY
@@ -257,7 +262,7 @@ function _renderTab() {
     <div class="pad gc-page">
       <div class="gc-header-row">
         <div>
-          <div class="pg-title">🪙 GoatCoin</div>
+          <div class="pg-title gc-title-wrap">${GOATCOIN_ICON_SVG}<span>GoatCoin</span></div>
           <div class="pg-sub">Earn coins for being here. Bet in blackjack. Climb the weekly board.</div>
         </div>
         <div style="display:flex;flex-direction:column;gap:.5rem;align-items:flex-end">
@@ -323,7 +328,7 @@ function _renderBJLobby() {
   return `<div class="bj-lobby">
     <div class="bj-lobby-card">
       <div class="bj-lobby-intro">
-        <span style="font-size:1.8rem">🃏</span>
+        ${BJ_DECK_ICON_SVG}
         <div>
           <div class="bj-lobby-title">1v1 Blackjack</div>
           <div class="bj-lobby-sub">Challenge one opponent. Closest to 21 wins each round — no dealer advantage. Most round wins takes the pot.</div>
@@ -344,7 +349,7 @@ function _renderBJLobby() {
 
       <div class="bj-form-row-inline">
         <div class="bj-form-section" style="flex:1">
-          <div class="bj-form-label">🪙 Stake per round (GC)</div>
+          <div class="bj-form-label">${BJ_COIN_ICON_SVG} Stake per round (GC)</div>
           <div class="bj-chips-row">
             <button class="bj-chip" data-bet="10">10</button>
             <button class="bj-chip" data-bet="25">25</button>
@@ -428,10 +433,14 @@ function _wireBJLobby() {
       clearTimeout(t);
       t = setTimeout(() => _searchOpponents(inp.value.trim()), 250);
     });
-    document.addEventListener('click', e => {
-      if(!e.target.closest('#bj-search-results') && !e.target.closest('#bj-opp-inp'))
-        document.getElementById('bj-search-results')?.classList.add('hidden');
-    }, {passive:true});
+    if(!_bjDocClickBound) {
+      document.addEventListener('click', e => {
+        if(!e.target.closest('#bj-search-results') && !e.target.closest('#bj-opp-inp')) {
+          document.getElementById('bj-search-results')?.classList.add('hidden');
+        }
+      }, { passive: true });
+      _bjDocClickBound = true;
+    }
   }
 
   panel.querySelector('#bj-send-challenge')?.addEventListener('click', _sendChallenge);

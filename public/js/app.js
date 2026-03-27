@@ -809,12 +809,30 @@ function subscribeChannel(channelId) {
 
 let lastMsgSender = null, lastMsgTime = null;
 
-function renderRankBadge(rank) {
-  if(rank === 'goat') {
-    return `<span class="rbadge goat">🐐 GOAT</span>`;
-  }
-  const labels = { earthbound:'EARTHBOUND', planetary:'PLANETARY', solar:'SOLAR', galactic:'GALACTIC', universal:'UNIVERSAL' };
-  return `<span class="rbadge ${rank||'planetary'}">${labels[rank]||rank||'planetary'}</span>`;
+const RANK_LABELS = {
+  earthbound:'EARTHBOUND',
+  planetary:'PLANETARY',
+  solar:'SOLAR',
+  galactic:'GALACTIC',
+  universal:'UNIVERSAL',
+  goat:'GOAT'
+};
+
+function rankIconSvg(rank) {
+  const icons = {
+    earthbound: '<svg class="rbadge-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 0 20"/><path d="M12 2a15.3 15.3 0 0 0 0 20"/></svg>',
+    planetary: '<svg class="rbadge-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M2 12c2.5-2 6.3-3 10-3s7.5 1 10 3c-2.5 2-6.3 3-10 3s-7.5-1-10-3z"/></svg>',
+    solar: '<svg class="rbadge-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v3"/><path d="M12 19v3"/><path d="M2 12h3"/><path d="M19 12h3"/><path d="m4.9 4.9 2.1 2.1"/><path d="m17 17 2.1 2.1"/><path d="m19.1 4.9-2.1 2.1"/><path d="m7 17-2.1 2.1"/></svg>',
+    galactic: '<svg class="rbadge-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"/><path d="M3 12c2-4 5-6 9-6s7 2 9 6c-2 4-5 6-9 6s-7-2-9-6z"/><path d="M12 3v3"/><path d="M12 18v3"/></svg>',
+    universal: '<svg class="rbadge-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 5 5.6.8-4 3.9.9 5.5-4.9-2.6-4.9 2.6.9-5.5-4-3.9 5.6-.8L12 2z"/></svg>',
+    goat: '<svg class="rbadge-icon goat-badge-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 9V7a2 2 0 0 0-2-2h-1a2 2 0 0 0-2 2v1"/><path d="M4 9V7a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v1"/><path d="M8 9h8"/><ellipse cx="12" cy="13" rx="5" ry="4"/><path d="M9 17v2"/><path d="M15 17v2"/></svg>'
+  };
+  return icons[rank] || icons.planetary;
+}
+
+export function renderRankBadge(rank) {
+  const safeRank = rank || 'planetary';
+  return `<span class="rbadge ${safeRank}">${rankIconSvg(safeRank)}${RANK_LABELS[safeRank] || String(safeRank).toUpperCase()}</span>`;
 }
 
 function appendMsg(id, data, container) {
