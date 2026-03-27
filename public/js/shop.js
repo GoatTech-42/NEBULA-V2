@@ -10,23 +10,35 @@ import {
   doc, getDoc, updateDoc, collection, getDocs, serverTimestamp
 } from './firebase.js';
 import { getDatabase, ref as rtRef, set as rtSet, get as rtGet, update as rtUpdate } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-import { toast, avatarColor, escHtml, avatarHtml, SVG_ICONS } from './app.js';
+import { toast, avatarColor, escHtml, avatarHtml, SVG_ICONS, RANKS, rankOf } from './app.js';
 import { getGoatCoinData } from './goatcoin.js';
 
+// GC coin SVG (simple coin icon)
+const GC_COIN_SVG = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v2m0 8v2m-4-7h2.5a1.5 1.5 0 010 3H8m0 0h2.5a1.5 1.5 0 010 3H8"/></svg>`;
+
+// Lock SVG for locked items
+const LOCK_SVG = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>`;
+
 // Helper to get a shop item's SVG preview icon
-function _shopItemSvg(item) {
-  if(item.iconKey && SVG_ICONS[item.iconKey]) {
-    return `<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${SVG_ICONS[item.iconKey]}</svg>`;
+function _shopItemSvg(item, size = 32) {
+  const s = size;
+  if (item.iconKey && SVG_ICONS[item.iconKey]) {
+    return `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${SVG_ICONS[item.iconKey]}</svg>`;
   }
-  // Flair / badge icons
+  // Flair / badge icons by item id
   const fallbacks = {
-    flair_rainbow: `<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 17a10 10 0 00-20 0"/><path d="M6 17a6 6 0 0112 0"/><path d="M10 17a2 2 0 014 0"/></svg>`,
-    flair_glow:    `<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`,
-    flair_wave:    `<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6c.6.5 1.2 1 2.5 1C7 7 7 5 9.5 5c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/><path d="M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/><path d="M2 18c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/></svg>`,
-    badge_rich:    `<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`,
-    badge_early:   `<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>`,
+    flair_rainbow: `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 17a10 10 0 00-20 0"/><path d="M6 17a6 6 0 0112 0"/><path d="M10 17a2 2 0 014 0"/></svg>`,
+    flair_glow:    `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`,
+    flair_wave:    `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6c.6.5 1.2 1 2.5 1C7 7 7 5 9.5 5c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/><path d="M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/><path d="M2 18c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/></svg>`,
+    flair_bold:    `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4h8a4 4 0 010 8H6z"/><path d="M6 12h9a4 4 0 010 8H6z"/></svg>`,
+    flair_shadow:  `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18M9 9c-2 2-2 5 0 7s5 2 7 0"/><circle cx="12" cy="12" r="10"/></svg>`,
+    badge_rich:    `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`,
+    badge_early:   `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>`,
+    badge_veteran: `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`,
+    badge_social:  `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>`,
+    badge_gamer:   `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M7 10v4"/><line x1="5" y1="12" x2="9" y2="12"/><circle cx="15" cy="11" r="1" fill="currentColor"/><circle cx="17" cy="13" r="1" fill="currentColor"/></svg>`,
   };
-  return fallbacks[item.id] || `<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg>`;
+  return fallbacks[item.id] || `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg>`;
 }
 
 // ── Module state ──
@@ -37,60 +49,28 @@ let _ownedItems = {}; // { itemId: true }
 
 // ══════════════════════════════════════════
 //  SHOP CATALOGUE
+//  Lock types:
+//    rank: { minRank: 'solar' }         — requires minimum rank
+//    spend: { totalSpend: 300 }         — requires total GC spent
+//    balance: { minBalance: 1000 }      — requires current balance
 // ══════════════════════════════════════════
 export const SHOP_ITEMS = [
-  // ── Profile Icons ──
-  {
-    id: 'icon_crown',
-    category: 'icons',
-    name: 'Crown',
-    desc: 'A regal crown for your avatar.',
-    iconKey: 'crown',
-    price: 150,
-    type: 'icon',
-  },
-  {
-    id: 'icon_rocket',
-    category: 'icons',
-    name: 'Rocket',
-    desc: 'Blast off with a rocket icon.',
-    iconKey: 'rocket',
-    price: 120,
-    type: 'icon',
-  },
-  {
-    id: 'icon_diamond',
-    category: 'icons',
-    name: 'Diamond',
-    desc: 'Shine bright with a diamond.',
-    iconKey: 'diamond',
-    price: 200,
-    type: 'icon',
-  },
+  // ── Profile Icons — Tier 1 (cheap) ──
   {
     id: 'icon_flame',
     category: 'icons',
     name: 'Flame',
     desc: 'Stay lit.',
     iconKey: 'flame',
-    price: 100,
+    price: 80,
     type: 'icon',
   },
   {
-    id: 'icon_skull',
+    id: 'icon_heart',
     category: 'icons',
-    name: 'Skull',
-    desc: 'Edgy skull icon.',
-    iconKey: 'skull',
-    price: 100,
-    type: 'icon',
-  },
-  {
-    id: 'icon_ghost',
-    category: 'icons',
-    name: 'Ghost',
-    desc: 'Boo! A spooky ghost.',
-    iconKey: 'ghost',
+    name: 'Heart',
+    desc: 'Spread some love.',
+    iconKey: 'heart',
     price: 80,
     type: 'icon',
   },
@@ -104,47 +84,11 @@ export const SHOP_ITEMS = [
     type: 'icon',
   },
   {
-    id: 'icon_planet',
+    id: 'icon_ghost',
     category: 'icons',
-    name: 'Planet',
-    desc: 'Out of this world.',
-    iconKey: 'planet',
-    price: 130,
-    type: 'icon',
-  },
-  {
-    id: 'icon_heart',
-    category: 'icons',
-    name: 'Heart',
-    desc: 'Spread some love.',
-    iconKey: 'heart',
-    price: 60,
-    type: 'icon',
-  },
-  {
-    id: 'icon_eye',
-    category: 'icons',
-    name: 'Eye',
-    desc: 'Always watching.',
-    iconKey: 'eye',
-    price: 120,
-    type: 'icon',
-  },
-  {
-    id: 'icon_trophy',
-    category: 'icons',
-    name: 'Trophy',
-    desc: 'For the true champions.',
-    iconKey: 'trophy',
-    price: 250,
-    type: 'icon',
-  },
-  {
-    id: 'icon_controller',
-    category: 'icons',
-    name: 'Controller',
-    desc: 'Game on.',
-    iconKey: 'controller',
+    name: 'Ghost',
+    desc: 'Boo! A spooky ghost.',
+    iconKey: 'ghost',
     price: 90,
     type: 'icon',
   },
@@ -154,7 +98,7 @@ export const SHOP_ITEMS = [
     name: 'Moon',
     desc: 'Late night vibes.',
     iconKey: 'moon',
-    price: 70,
+    price: 90,
     type: 'icon',
   },
   {
@@ -163,7 +107,62 @@ export const SHOP_ITEMS = [
     name: 'Sun',
     desc: 'Rise and shine.',
     iconKey: 'sun',
-    price: 70,
+    price: 90,
+    type: 'icon',
+  },
+  {
+    id: 'icon_skull',
+    category: 'icons',
+    name: 'Skull',
+    desc: 'Edgy skull icon.',
+    iconKey: 'skull',
+    price: 100,
+    type: 'icon',
+  },
+  {
+    id: 'icon_controller',
+    category: 'icons',
+    name: 'Controller',
+    desc: 'Game on.',
+    iconKey: 'controller',
+    price: 100,
+    type: 'icon',
+  },
+  {
+    id: 'icon_dice',
+    category: 'icons',
+    name: 'Dice',
+    desc: 'Roll the dice.',
+    iconKey: 'dice',
+    price: 100,
+    type: 'icon',
+  },
+  {
+    id: 'icon_anchor',
+    category: 'icons',
+    name: 'Anchor',
+    desc: 'Stay grounded.',
+    iconKey: 'anchor',
+    price: 100,
+    type: 'icon',
+  },
+  {
+    id: 'icon_feather',
+    category: 'icons',
+    name: 'Feather',
+    desc: 'Light as a feather.',
+    iconKey: 'feather',
+    price: 110,
+    type: 'icon',
+  },
+  // ── Profile Icons — Tier 2 (mid) ──
+  {
+    id: 'icon_rocket',
+    category: 'icons',
+    name: 'Rocket',
+    desc: 'Blast off with a rocket icon.',
+    iconKey: 'rocket',
+    price: 130,
     type: 'icon',
   },
   {
@@ -172,8 +171,92 @@ export const SHOP_ITEMS = [
     name: 'Compass',
     desc: 'Find your direction.',
     iconKey: 'compass',
-    price: 90,
+    price: 130,
     type: 'icon',
+  },
+  {
+    id: 'icon_planet',
+    category: 'icons',
+    name: 'Planet',
+    desc: 'Out of this world.',
+    iconKey: 'planet',
+    price: 140,
+    type: 'icon',
+  },
+  {
+    id: 'icon_eye',
+    category: 'icons',
+    name: 'Eye',
+    desc: 'Always watching.',
+    iconKey: 'eye',
+    price: 140,
+    type: 'icon',
+  },
+  {
+    id: 'icon_activity',
+    category: 'icons',
+    name: 'Activity',
+    desc: 'Always in motion.',
+    iconKey: 'activity',
+    price: 120,
+    type: 'icon',
+  },
+  {
+    id: 'icon_wave',
+    category: 'icons',
+    name: 'Wave',
+    desc: 'Ride the wave.',
+    iconKey: 'wave',
+    price: 120,
+    type: 'icon',
+  },
+  {
+    id: 'icon_bolt',
+    category: 'icons',
+    name: 'Lightning',
+    desc: 'Strike like lightning.',
+    iconKey: 'bolt',
+    price: 150,
+    type: 'icon',
+  },
+  {
+    id: 'icon_target',
+    category: 'icons',
+    name: 'Target',
+    desc: 'Locked on target.',
+    iconKey: 'target',
+    price: 150,
+    type: 'icon',
+  },
+  {
+    id: 'icon_crown',
+    category: 'icons',
+    name: 'Crown',
+    desc: 'A regal crown for your avatar.',
+    iconKey: 'crown',
+    price: 175,
+    type: 'icon',
+  },
+  {
+    id: 'icon_diamond',
+    category: 'icons',
+    name: 'Diamond',
+    desc: 'Shine bright with a diamond.',
+    iconKey: 'diamond',
+    price: 200,
+    type: 'icon',
+  },
+  // ── Profile Icons — Tier 3 (locked / premium) ──
+  {
+    id: 'icon_trophy',
+    category: 'icons',
+    name: 'Trophy',
+    desc: 'For the true champions.',
+    iconKey: 'trophy',
+    price: 300,
+    type: 'icon',
+    lock: { spend: 200 },
+    lockDesc: 'Spend 200 GC total to unlock',
   },
   {
     id: 'icon_infinity',
@@ -181,46 +264,112 @@ export const SHOP_ITEMS = [
     name: 'Infinity',
     desc: 'Endless possibilities.',
     iconKey: 'infinity',
-    price: 180,
+    price: 250,
     type: 'icon',
+    lock: { spend: 150 },
+    lockDesc: 'Spend 150 GC total to unlock',
+  },
+  {
+    id: 'icon_shield',
+    category: 'icons',
+    name: 'Shield',
+    desc: 'Protector of the realm.',
+    iconKey: 'shield',
+    price: 350,
+    type: 'icon',
+    lock: { rank: 'solar' },
+    lockDesc: 'Requires Solar rank or higher',
+  },
+  {
+    id: 'icon_key',
+    category: 'icons',
+    name: 'Key',
+    desc: 'Unlocks the secrets.',
+    iconKey: 'key',
+    price: 400,
+    type: 'icon',
+    lock: { rank: 'galactic' },
+    lockDesc: 'Requires Galactic rank or higher',
+  },
+  {
+    id: 'icon_star',
+    category: 'icons',
+    name: 'Star',
+    desc: 'You\'re a star.',
+    iconKey: 'star',
+    price: 500,
+    type: 'icon',
+    lock: { spend: 500, rank: 'solar' },
+    lockDesc: 'Requires Solar rank and 500 GC spent',
   },
   // ── Flair / Cosmetics ──
   {
-    id: 'flair_rainbow',
+    id: 'flair_bold',
     category: 'flair',
-    name: 'Rainbow Name',
-    desc: 'Your username shows with a rainbow gradient in chat. Makes you stand out.',
-    price: 400,
+    name: 'Bold Name',
+    desc: 'Your username appears extra bold in chat. Simple but effective.',
+    price: 150,
     type: 'flair',
-    flairKey: 'rainbow_name',
+    flairKey: 'bold_name',
   },
   {
     id: 'flair_glow',
     category: 'flair',
     name: 'Name Glow',
-    desc: 'Your username glows with your avatar color in chat messages.',
+    desc: 'Your username glows with your avatar colour in chat messages.',
     price: 300,
     type: 'flair',
     flairKey: 'name_glow',
+  },
+  {
+    id: 'flair_rainbow',
+    category: 'flair',
+    name: 'Rainbow Name',
+    desc: 'Your username shows with a rainbow gradient in chat. Makes you stand out.',
+    price: 500,
+    type: 'flair',
+    flairKey: 'rainbow_name',
+    lock: { spend: 300 },
+    lockDesc: 'Spend 300 GC total to unlock',
   },
   {
     id: 'flair_wave',
     category: 'flair',
     name: 'Wave Animation',
     desc: 'A subtle wave animation on your avatar in the members list.',
-    price: 350,
+    price: 400,
     type: 'flair',
     flairKey: 'wave_avatar',
+    lock: { spend: 200 },
+    lockDesc: 'Spend 200 GC total to unlock',
+  },
+  {
+    id: 'flair_shadow',
+    category: 'flair',
+    name: 'Shadow Name',
+    desc: 'Your username appears with a subtle drop shadow in chat.',
+    price: 250,
+    type: 'flair',
+    flairKey: 'shadow_name',
   },
   // ── Badges ──
   {
-    id: 'badge_rich',
+    id: 'badge_social',
     category: 'badges',
-    name: 'Whale',
-    desc: 'Flex your wealth. Awarded for spending 500+ GC in the shop.',
-    price: 500,
+    name: 'Chatterbox',
+    desc: 'Proof that you\'re always in the conversation.',
+    price: 200,
     type: 'badge',
-    badgeKey: 'whale',
+    badgeKey: 'chatterbox',
+  },
+  {
+    id: 'badge_gamer',
+    category: 'badges',
+    name: 'Gamer',
+    desc: 'A badge for the dedicated gamers of Nebula.',
+    price: 250,
+    type: 'badge',
+    badgeKey: 'gamer',
   },
   {
     id: 'badge_early',
@@ -230,6 +379,28 @@ export const SHOP_ITEMS = [
     price: 200,
     type: 'badge',
     badgeKey: 'pioneer',
+  },
+  {
+    id: 'badge_rich',
+    category: 'badges',
+    name: 'Whale',
+    desc: 'Flex your wealth. Awarded for the big spenders.',
+    price: 600,
+    type: 'badge',
+    badgeKey: 'whale',
+    lock: { spend: 400 },
+    lockDesc: 'Spend 400 GC total to unlock',
+  },
+  {
+    id: 'badge_veteran',
+    category: 'badges',
+    name: 'Shopkeeper',
+    desc: 'For those who\'ve spent a serious amount in the shop.',
+    price: 1000,
+    type: 'badge',
+    badgeKey: 'shopkeeper',
+    lock: { spend: 800 },
+    lockDesc: 'Spend 800 GC total to unlock',
   },
 ];
 
@@ -251,29 +422,54 @@ export function initShop(user, userData, rtdb) {
 }
 
 async function _loadOwnedItems() {
-  if(!_shopUser) return;
+  if (!_shopUser) return;
   try {
-    if(_rtdb) {
+    if (_rtdb) {
       const snap = await rtGet(rtRef(_rtdb, `shop_owned/${_shopUser.uid}`));
       _ownedItems = snap.val() || {};
     } else {
       const snap = await getDoc(doc(db, 'shop_owned', _shopUser.uid));
       _ownedItems = snap.exists() ? snap.data() : {};
     }
-  } catch(e) {
+  } catch (e) {
     _ownedItems = {};
   }
 }
 
 async function _saveOwnedItems() {
-  if(!_shopUser) return;
+  if (!_shopUser) return;
   try {
-    if(_rtdb) {
+    if (_rtdb) {
       await rtSet(rtRef(_rtdb, `shop_owned/${_shopUser.uid}`), _ownedItems);
-    } else {
-      // fallback Firestore
     }
-  } catch(e) {}
+    // Firestore fallback could go here if needed
+  } catch (e) {}
+}
+
+// Compute total GC spent from owned items
+function _totalSpent() {
+  let total = 0;
+  for (const itemId of Object.keys(_ownedItems)) {
+    const item = SHOP_ITEMS.find(i => i.id === itemId);
+    if (item) total += item.price;
+  }
+  return total;
+}
+
+// Check if an item's lock conditions are met
+function _isUnlocked(item) {
+  if (!item.lock) return true;
+  const myRank = _shopData?.rank || 'earthbound';
+  const spent = _totalSpent();
+
+  if (item.lock.rank && rankOf(myRank) < rankOf(item.lock.rank)) return false;
+  if (item.lock.spend && spent < item.lock.spend) return false;
+  if (item.lock.balance) {
+    const gcData = getGoatCoinData();
+    const coins = gcData ? Math.floor(gcData.coins || 0) : 0;
+    if (coins < item.lock.balance) return false;
+  }
+  return true;
 }
 
 // ══════════════════════════════════════════
@@ -281,7 +477,7 @@ async function _saveOwnedItems() {
 // ══════════════════════════════════════════
 export async function renderShopTab() {
   const container = document.getElementById('section-shop');
-  if(!container) return;
+  if (!container) return;
 
   // Re-load owned items fresh
   await _loadOwnedItems();
@@ -296,32 +492,55 @@ export async function renderShopTab() {
       ? SHOP_ITEMS
       : SHOP_ITEMS.filter(i => i.category === activeCategory);
 
+    if (!items.length) return '<div class="shop-empty">No items in this category yet.</div>';
+
     return items.map(item => {
       const owned = !!_ownedItems[item.id];
+      const unlocked = _isUnlocked(item);
       const canAfford = coins >= item.price;
       const isEquipped = _isEquipped(item);
 
+      let cardClass = 'shop-card';
+      if (owned) cardClass += ' shop-card-owned';
+      else if (!unlocked) cardClass += ' shop-card-locked';
+      else if (!canAfford) cardClass += ' shop-card-cant-afford';
+
+      let actionHtml = '';
+      if (!unlocked) {
+        // Locked state
+        actionHtml = `<button class="btn btn-sm btn-disabled" disabled title="${escHtml(item.lockDesc || 'Locked')}">${LOCK_SVG} Locked</button>`;
+      } else if (owned) {
+        // Owned — show equip/unequip or badge info
+        if (item.type === 'badge') {
+          actionHtml = `<button class="btn btn-sm btn-ghost btn-disabled" disabled>Badge active</button>`;
+        } else if (isEquipped) {
+          actionHtml = `<button class="btn btn-sm shop-unequip-btn" data-itemid="${item.id}">Unequip</button>`;
+        } else {
+          actionHtml = `<button class="btn btn-sm shop-equip-btn" data-itemid="${item.id}">Equip</button>`;
+        }
+      } else {
+        // Not owned — buy button
+        actionHtml = `<button class="btn btn-sm${!canAfford ? ' btn-disabled' : ' btn-accent'} shop-buy-btn" data-itemid="${item.id}" ${!canAfford ? 'disabled' : ''}>${canAfford ? 'Buy' : 'Need more GC'}</button>`;
+      }
+
+      const lockBadge = !unlocked
+        ? `<div class="shop-card-lock-badge" title="${escHtml(item.lockDesc || 'Locked')}">${LOCK_SVG}</div>`
+        : '';
+
+      const priceLine = owned
+        ? `<span class="shop-owned-tag"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Owned</span>`
+        : !unlocked
+          ? `<span class="shop-locked-tag">${LOCK_SVG} ${escHtml(item.lockDesc || 'Locked')}</span>`
+          : `<span class="shop-price-tag">${GC_COIN_SVG} ${item.price.toLocaleString()} GC</span>`;
+
       return `
-        <div class="shop-card${owned ? ' shop-card-owned' : ''}${!canAfford && !owned ? ' shop-card-cant-afford' : ''}">
+        <div class="${cardClass}">
+          ${lockBadge}
           <div class="shop-card-icon">${_shopItemSvg(item)}</div>
           <div class="shop-card-name">${escHtml(item.name)}</div>
           <div class="shop-card-desc">${escHtml(item.desc)}</div>
-          <div class="shop-card-price">
-            ${owned
-              ? `<span class="shop-owned-tag"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Owned</span>`
-              : `<span class="shop-price-tag"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> ${item.price.toLocaleString()} GC</span>`
-            }
-          </div>
-          <div class="shop-card-actions">
-            ${owned
-              ? (isEquipped
-                  ? `<button class="btn btn-sm shop-unequip-btn" data-itemid="${item.id}">Unequip</button>`
-                  : `<button class="btn btn-sm shop-equip-btn" data-itemid="${item.id}">Equip</button>`)
-              : `<button class="btn btn-sm${!canAfford ? ' btn-disabled' : ''} shop-buy-btn" data-itemid="${item.id}" ${!canAfford ? 'disabled' : ''}>
-                  ${canAfford ? 'Buy' : 'Not enough GC'}
-                </button>`
-            }
-          </div>
+          <div class="shop-card-price">${priceLine}</div>
+          <div class="shop-card-actions">${actionHtml}</div>
         </div>`;
     }).join('');
   }
@@ -330,22 +549,37 @@ export async function renderShopTab() {
     const freshGC = getGoatCoinData();
     const freshCoins = freshGC ? Math.floor(freshGC.coins || 0) : 0;
     const grid = document.getElementById('shop-grid');
-    if(grid) grid.innerHTML = _renderGrid();
+    if (grid) grid.innerHTML = _renderGrid();
     const balEl = document.getElementById('shop-balance');
-    if(balEl) balEl.textContent = freshCoins.toLocaleString() + ' GC';
+    if (balEl) balEl.textContent = freshCoins.toLocaleString() + ' GC';
+    // Re-update coins for afford checks
+    Object.assign(window, { _shopFreshCoins: freshCoins });
     _wireButtons();
   }
+
+  const totalSpent = _totalSpent();
+  const ownedCount = Object.keys(_ownedItems).length;
 
   container.innerHTML = `
     <div class="shop-page">
       <div class="shop-topbar">
         <div class="shop-topbar-left">
-          <div class="shop-title"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg> Shop</div>
-          <div class="shop-sub">Spend your GoatCoin on cool cosmetics</div>
+          <div class="shop-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+            Shop
+          </div>
+          <div class="shop-sub">Spend your GoatCoin on cosmetics &amp; badges</div>
         </div>
-        <div class="shop-balance-chip">
-          <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></span>
-          <span id="shop-balance">${coins.toLocaleString()} GC</span>
+        <div class="shop-balance-area">
+          <div class="shop-balance-chip">
+            ${GC_COIN_SVG}
+            <span id="shop-balance">${coins.toLocaleString()} GC</span>
+          </div>
+          <div class="shop-stats-row">
+            <span class="shop-stat">${ownedCount} owned</span>
+            <span class="shop-stat-sep">·</span>
+            <span class="shop-stat">${totalSpent.toLocaleString()} GC spent</span>
+          </div>
         </div>
       </div>
 
@@ -374,15 +608,17 @@ export async function renderShopTab() {
 
   function _wireButtons() {
     const grid = document.getElementById('shop-grid');
-    if(!grid) return;
+    if (!grid) return;
 
     // Buy
     grid.querySelectorAll('.shop-buy-btn:not([disabled])').forEach(btn => {
       btn.addEventListener('click', async () => {
         const itemId = btn.dataset.itemid;
         const item = SHOP_ITEMS.find(i => i.id === itemId);
-        if(!item) return;
+        if (!item) return;
+        btn.disabled = true;
         await _purchaseItem(item, _render);
+        btn.disabled = false;
       });
     });
 
@@ -391,7 +627,7 @@ export async function renderShopTab() {
       btn.addEventListener('click', async () => {
         const itemId = btn.dataset.itemid;
         const item = SHOP_ITEMS.find(i => i.id === itemId);
-        if(!item) return;
+        if (!item) return;
         await _equipItem(item);
         _render();
       });
@@ -402,7 +638,7 @@ export async function renderShopTab() {
       btn.addEventListener('click', async () => {
         const itemId = btn.dataset.itemid;
         const item = SHOP_ITEMS.find(i => i.id === itemId);
-        if(!item) return;
+        if (!item) return;
         await _unequipItem(item);
         _render();
       });
@@ -414,19 +650,21 @@ export async function renderShopTab() {
 //  PURCHASE LOGIC
 // ══════════════════════════════════════════
 async function _purchaseItem(item, onDone) {
-  if(!_shopUser) return;
+  if (!_shopUser) return;
+  if (!_isUnlocked(item)) { toast('This item is locked!', 'warning'); return; }
+
   const gcData = getGoatCoinData();
   const coins = gcData ? Math.floor(gcData.coins || 0) : 0;
-  if(coins < item.price) { toast('Not enough GoatCoin!', 'error'); return; }
-  if(_ownedItems[item.id]) { toast('You already own this!', 'warning'); return; }
+  if (coins < item.price) { toast('Not enough GoatCoin!', 'error'); return; }
+  if (_ownedItems[item.id]) { toast('You already own this!', 'warning'); return; }
 
   try {
-    // Deduct coins from goatcoin doc
+    // Deduct coins from goatcoin doc (double-check server-side)
     const gcRef = doc(db, 'goatcoin', _shopUser.uid);
     const gcSnap = await getDoc(gcRef);
-    if(!gcSnap.exists()) { toast('GoatCoin data not found.', 'error'); return; }
+    if (!gcSnap.exists()) { toast('GoatCoin data not found.', 'error'); return; }
     const currentCoins = Math.floor(gcSnap.data().coins || 0);
-    if(currentCoins < item.price) { toast('Not enough GoatCoin!', 'error'); return; }
+    if (currentCoins < item.price) { toast('Not enough GoatCoin!', 'error'); return; }
     await updateDoc(gcRef, { coins: currentCoins - item.price });
 
     // Record purchase in RTDB
@@ -434,23 +672,23 @@ async function _purchaseItem(item, onDone) {
     await _saveOwnedItems();
 
     // If it's a badge, award it automatically
-    if(item.type === 'badge' && item.badgeKey) {
+    if (item.type === 'badge' && item.badgeKey) {
       const userRef = doc(db, 'users', _shopUser.uid);
       const userSnap = await getDoc(userRef);
-      if(userSnap.exists()) {
+      if (userSnap.exists()) {
         const existing = [...new Set(userSnap.data().badges || [])];
-        if(!existing.includes(item.badgeKey)) {
+        if (!existing.includes(item.badgeKey)) {
           await updateDoc(userRef, { badges: [...existing, item.badgeKey] });
           _shopData = { ..._shopData, badges: [...existing, item.badgeKey] };
         }
       }
     }
 
-    // If it's a flair, apply it
-    if(item.type === 'flair' && item.flairKey) {
+    // If it's a flair, add it to the user's active flair list
+    if (item.type === 'flair' && item.flairKey) {
       const userRef = doc(db, 'users', _shopUser.uid);
       const flairs = _shopData?.shopFlair || [];
-      if(!flairs.includes(item.flairKey)) {
+      if (!flairs.includes(item.flairKey)) {
         const updated = [...flairs, item.flairKey];
         await updateDoc(userRef, { shopFlair: updated });
         _shopData = { ..._shopData, shopFlair: updated };
@@ -458,8 +696,8 @@ async function _purchaseItem(item, onDone) {
     }
 
     toast(`${item.name} purchased!`, 'success');
-    if(onDone) onDone();
-  } catch(e) {
+    if (onDone) onDone();
+  } catch (e) {
     toast('Purchase failed: ' + e.message, 'error');
   }
 }
@@ -468,62 +706,61 @@ async function _purchaseItem(item, onDone) {
 //  EQUIP / UNEQUIP
 // ══════════════════════════════════════════
 function _isEquipped(item) {
-  if(!_shopData) return false;
-  if(item.type === 'icon') return _shopData.icon === item.iconKey;
-  if(item.type === 'flair') return (_shopData.shopFlair || []).includes(item.flairKey);
-  if(item.type === 'badge') return (_shopData.badges || []).includes(item.badgeKey);
+  if (!_shopData) return false;
+  if (item.type === 'icon') return _shopData.icon === item.iconKey;
+  if (item.type === 'flair') return (_shopData.shopFlair || []).includes(item.flairKey);
+  if (item.type === 'badge') return (_shopData.badges || []).includes(item.badgeKey);
   return false;
 }
 
 async function _equipItem(item) {
-  if(!_shopUser || !_ownedItems[item.id]) return;
+  if (!_shopUser || !_ownedItems[item.id]) return;
   try {
     const userRef = doc(db, 'users', _shopUser.uid);
-    if(item.type === 'icon') {
+    if (item.type === 'icon') {
       await updateDoc(userRef, { icon: item.iconKey });
       _shopData = { ..._shopData, icon: item.iconKey };
       // Update sidebar avatar
       const sp = document.getElementById('sp-ava');
-      if(sp) sp.innerHTML = avatarHtml(item.iconKey, _shopData.username, '60%');
-      // Propagate
-      if(window.propagateProfileToMessages) {
-        window.propagateProfileToMessages(_shopUser.uid, { icon: item.iconKey }).catch(()=>{});
+      if (sp) sp.innerHTML = avatarHtml(item.iconKey, _shopData.username, '60%');
+      // Propagate to messages
+      if (window.propagateProfileToMessages) {
+        window.propagateProfileToMessages(_shopUser.uid, { icon: item.iconKey }).catch(() => {});
       }
       toast(`${item.name} equipped!`, 'success');
-    } else if(item.type === 'flair') {
+    } else if (item.type === 'flair') {
       const flairs = [...new Set([...(_shopData.shopFlair || []), item.flairKey])];
       await updateDoc(userRef, { shopFlair: flairs });
       _shopData = { ..._shopData, shopFlair: flairs };
       toast(`${item.name} activated!`, 'success');
-    } else if(item.type === 'badge') {
-      // Badges are auto-equipped on purchase, just toast
-      toast(`Badge is already active!`, 'info');
+    } else if (item.type === 'badge') {
+      toast('Badge is already active!', 'info');
     }
-  } catch(e) {
+  } catch (e) {
     toast('Failed to equip: ' + e.message, 'error');
   }
 }
 
 async function _unequipItem(item) {
-  if(!_shopUser) return;
+  if (!_shopUser) return;
   try {
     const userRef = doc(db, 'users', _shopUser.uid);
-    if(item.type === 'icon') {
+    if (item.type === 'icon') {
       await updateDoc(userRef, { icon: '' });
       _shopData = { ..._shopData, icon: '' };
       const sp = document.getElementById('sp-ava');
-      if(sp) sp.innerHTML = avatarHtml('', _shopData.username, '60%');
-      if(window.propagateProfileToMessages) {
-        window.propagateProfileToMessages(_shopUser.uid, { icon: '' }).catch(()=>{});
+      if (sp) sp.innerHTML = avatarHtml('', _shopData.username, '60%');
+      if (window.propagateProfileToMessages) {
+        window.propagateProfileToMessages(_shopUser.uid, { icon: '' }).catch(() => {});
       }
       toast('Icon removed.', 'info');
-    } else if(item.type === 'flair') {
+    } else if (item.type === 'flair') {
       const flairs = (_shopData.shopFlair || []).filter(f => f !== item.flairKey);
       await updateDoc(userRef, { shopFlair: flairs });
       _shopData = { ..._shopData, shopFlair: flairs };
       toast(`${item.name} deactivated.`, 'info');
     }
-  } catch(e) {
+  } catch (e) {
     toast('Failed to unequip: ' + e.message, 'error');
   }
 }
