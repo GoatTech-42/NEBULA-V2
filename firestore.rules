@@ -1,170 +1,31 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    // ── Helper functions ──
-    function isAuth() {
-      return request.auth != null;
+    // Collections with explicit rules
+    match /presence/{uid} {
+      allow read, write: if request.auth != null;
     }
-    function uid() {
-      return request.auth.uid;
-    }
-    function userData() {
-      return get(/databases/$(database)/documents/users/$(uid())).data;
-    }
-    function rankOf(r) {
-      return ['earthbound','planetary','solar','galactic','universal','goat'].indexOf(r);
-    }
-    function myRank() {
-      return userData().rank;
-    }
-    function isModerator() {
-      return isAuth() && rankOf(myRank()) >= rankOf('universal');
-    }
-    function isGoat() {
-      return isAuth() && myRank() == 'goat';
-    }
-    function isApproved() {
-      return isAuth() && userData().status == 'approved';
-    }
-    function canChat() {
-      return isAuth() && rankOf(myRank()) >= rankOf('planetary') && isApproved();
-    }
-    function isOwner(docUid) {
-      return isAuth() && uid() == docUid;
-    }
-    function validUsername(name) {
-      return name is string && name.size() >= 3 && name.size() <= 20 && name.matches('^[a-zA-Z0-9_]+$');
-    }
-    function validMessage(text) {
-      return text is string && text.size() > 0 && text.size() <= 500;
-    }
-
-    // ── Users collection ──
-    match /users/{userId} {
-      // Anyone authenticated can read user profiles (needed for search, DMs, etc.)
-      allow read: if isAuth();
-      // Only the owner can create their own document, and only with safe fields
-      allow create: if isOwner(userId)
-        && request.resource.data.uid == userId
-        && validUsername(request.resource.data.username)
-        && request.resource.data.rank == 'earthbound'
-        && request.resource.data.status == 'pending'
-        && !('gamesPlayed' in request.resource.data)
-        && !('badges' in request.resource.data);
-      // Owner can update own non-privileged fields; moderators can update rank/status
-      allow update: if (isOwner(userId) && onlyUpdatingAllowedUserFields())
-        || (isModerator() && onlyUpdatingModFields())
-        || (isGoat() && onlyUpdatingGoatFields());
-      // Only goat can delete user docs
-      allow delete: if isGoat();
-    }
-
-    function onlyUpdatingAllowedUserFields() {
-      let allowed = ['username', 'color', 'icon', 'email', 'lastUsernameChange', 'gamesPlayed'];
-      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(allowed);
-    }
-    function onlyUpdatingModFields() {
-      let modAllowed = ['status', 'rank'];
-      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(modAllowed);
-    }
-    function onlyUpdatingGoatFields() {
-      // Goat can change anything except uid
-      return !('uid' in request.resource.data.diff(resource.data).affectedKeys());
-    }
-
-    // ── Channels collection ──
-    match /channels/{channelId} {
-      allow read: if canChat();
-      allow create: if isModerator();
-      allow update: if isModerator();
-      allow delete: if isModerator();
-
-      // Messages subcollection
-      match /messages/{msgId} {
-        allow read: if canChat();
-        allow create: if canChat()
-          && request.resource.data.uid == uid()
-          && validMessage(request.resource.data.text)
-          && request.resource.data.ts == request.time;
-        // Edit own message or moderator
-        allow update: if canChat() && (
-          (isOwner(resource.data.uid) && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['text','edited','reactions']))
-          || isModerator()
-        );
-        allow delete: if canChat() && (isOwner(resource.data.uid) || isModerator());
-      }
-
-      // Typing subcollection (just status doc)
-      match /typing/{doc} {
-        allow read, write: if canChat();
-      }
-    }
-
-    // ── Direct Messages ──
-    match /dms/{dmId} {
-      // Only participants can read the DM thread
-      allow read: if isAuth() && uid() in resource.data.participants;
-      allow create: if canChat()
-        && uid() in request.resource.data.participants
-        && request.resource.data.participants.size() == 2;
-      allow update: if isAuth() && uid() in resource.data.participants;
-      allow delete: if isModerator();
-
-      match /messages/{msgId} {
-        allow read: if isAuth() && uid() in get(/databases/$(database)/documents/dms/$(dmId)).data.participants;
-        allow create: if canChat()
-          && request.resource.data.uid == uid()
-          && validMessage(request.resource.data.text)
-          && uid() in get(/databases/$(database)/documents/dms/$(dmId)).data.participants;
-        allow update: if canChat() && (isOwner(resource.data.uid) || isModerator());
-        allow delete: if canChat() && (isOwner(resource.data.uid) || isModerator());
-      }
-    }
-
-    // ── GoatCoin ──
-    match /goatcoin/{userId} {
-      allow read: if isAuth();
-      // Only owner can write their own doc, goat can write any
-      allow write: if isOwner(userId) || isGoat();
-    }
-
-    // ── BJ Games (blackjack) ──
-    match /bj_games/{gameId} {
-      allow read: if isAuth();
-      // Only approved users can create/update games
-      allow create: if canChat();
-      allow update: if canChat();
-      allow delete: if isModerator();
-    }
-
-    // ── BJ Challenges ──
-    match /bj_challenges/{challengeId} {
-      allow read: if isAuth();
-      allow create: if canChat()
-        && request.resource.data.fromUid == uid();
-      allow update: if isAuth() && (
-        resource.data.fromUid == uid()
-        || resource.data.toUid == uid()
-        || isModerator()
-      );
-      allow delete: if isAuth() && (
-        resource.data.fromUid == uid()
-        || resource.data.toUid == uid()
-        || isModerator()
-      );
-    }
-
-    // ── Meta (visits counter, etc.) ──
     match /meta/{doc} {
-      allow read: if isAuth();
-      // Only allow incrementing the visit counter or goat-level writes
-      allow write: if isAuth() || isGoat();
+      allow read, write: if request.auth != null;
     }
 
-    // ── Deny all other paths ──
+    // Explicit collection rules
+    match /bj_challenges/{id} {
+      allow read, write: if request.auth != null;
+    }
+
+    match /bj_games/{id} {
+      allow read, write: if request.auth != null;
+    }
+
+    match /goatcoin/{uid} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // Catch-all for all other documents
     match /{document=**} {
-      allow read, write: if false;
+      allow read, write: if request.auth != null;
     }
   }
 }

@@ -19,9 +19,6 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-// Expose app globally for Cloud Function calls from admin panel
-window._firebaseApp = app;
-
 // Initialize Firebase App Check with reCAPTCHA v3
 // Use the SITE KEY (public key) only, never the secret key in frontend code
 initializeAppCheck(app, {
