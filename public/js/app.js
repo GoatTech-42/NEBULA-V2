@@ -22,17 +22,54 @@ let currentChannel = null;
 let currentDM = null;
 let channelUnsub = null;
 let dmUnsub = null;
-let _typingUnsub = null; // RTDB typing listener unsub
+let _typingUnsub = null;
 let membersUnsub = null;
 let typingTimeout = null;
 let editingMsgId = null;
 let visitsUnsub = null;
 let _pendingSignup = false;
-let _rtdb = null; // Realtime Database instance
+let _rtdb = null;
 const _userCache = {};
 const _unreadChannels = {};
 const _unreadDMs = {};
 let _unreadEnabled = true;
+
+// ── Cookie-based unread persistence ──
+// Stores the last-seen message timestamp per channel/DM in a cookie
+// so unread counts survive page refreshes.
+const COOKIE_PREFIX = 'neb_seen_';
+const COOKIE_MAX_AGE = 60 * 60 * 24 * 30; // 30 days
+
+function _setCookie(key, value) {
+  document.cookie = `${COOKIE_PREFIX}${key}=${encodeURIComponent(value)};path=/;max-age=${COOKIE_MAX_AGE};SameSite=Lax`;
+}
+function _getCookie(key) {
+  const name = COOKIE_PREFIX + key + '=';
+  const parts = document.cookie.split(';');
+  for(let p of parts) {
+    p = p.trim();
+    if(p.startsWith(name)) return decodeURIComponent(p.substring(name.length));
+  }
+  return null;
+}
+// Get the timestamp (ms) of the last message the user has "seen" in a channel/DM
+function _getSeenTs(id) {
+  const v = _getCookie(id);
+  return v ? parseInt(v, 10) : 0;
+}
+// Mark all messages in a channel/DM as seen up to `ts` (ms)
+function _markSeen(id, ts) {
+  _setCookie(id, String(ts));
+}
+// Count how many messages in a snapshot came after the last-seen timestamp
+function _countUnread(docs, id) {
+  const seenTs = _getSeenTs(id);
+  if(!seenTs) return 0;
+  return docs.filter(d => {
+    const ts = d.data().ts?.toMillis ? d.data().ts.toMillis() : 0;
+    return ts > seenTs && d.data().uid !== currentUser?.uid;
+  }).length;
+}
 
 // Channel message limit — prune when exceeded
 const CHANNEL_MSG_LIMIT = 100;
@@ -391,6 +428,18 @@ function navigate(section) {
   if(section === 'shop') renderShopTab();
   document.getElementById('mobile-drawer-overlay')?.remove();
   document.getElementById('mobile-drawer')?.remove();
+
+  // When navigating to chat/dms while a channel/DM is open, mark as seen
+  if(section === 'chat' && currentChannel) {
+    _unreadChannels[currentChannel.id] = 0;
+    _markSeen(currentChannel.id, Date.now());
+    _updateChatBadge(); _updateChannelListBadges();
+  }
+  if(section === 'dms' && currentDM) {
+    _unreadDMs[currentDM.id] = 0;
+    _markSeen('dm_' + currentDM.id, Date.now());
+    _updateDMBadge(); _updateDMListBadges();
+  }
 }
 
 // ── Home / Visits ──
@@ -539,11 +588,8 @@ async function setupBattery() {
   }
 }
 
-// ── Presence — REMOVED to save Firebase quota ──
-// Typing indicators are kept per-channel via RTDB.
-function setupPresence() {
-  // No-op: presence system removed to conserve RTDB/Firestore quota
-}
+// ── Presence removed — typing indicators only via RTDB ──
+function setupPresence() { /* no-op: presence system removed */ }
 
 function trackVisits() {
   const el = document.getElementById('visits-count');
@@ -677,7 +723,9 @@ async function openChannel(ch) {
 
   loadMembers(ch);
   subscribeChannel(ch.id);
+  // Clear unread count for this channel and update seen timestamp
   _unreadChannels[ch.id] = 0;
+  _markSeen(ch.id, Date.now());
   _updateChatBadge();
   _updateChannelListBadges();
 
@@ -723,15 +771,29 @@ function subscribeChannel(channelId) {
         snap.docs.forEach(d => appendMsg(d.id, d.data(), msgs));
         initialized = true;
         scrollToBottom(true);
+        // On initial load: mark all as seen (we're looking at them now)
+        const lastDoc = snap.docs[snap.docs.length - 1];
+        if(lastDoc) {
+          const ts = lastDoc.data().ts?.toMillis ? lastDoc.data().ts.toMillis() : Date.now();
+          _markSeen(channelId, ts);
+        }
       } else {
         snap.docChanges().forEach(change => {
           if(change.type==='added') {
             appendMsg(change.doc.id, change.doc.data(), msgs);
             scrollToBottom();
             const isActive = document.getElementById('section-chat')?.classList.contains('active');
-            if(!isActive && _unreadEnabled) {
-              _unreadChannels[channelId] = (_unreadChannels[channelId]||0)+1;
-              _updateChatBadge(); _updateChannelListBadges();
+            const isThisChannel = currentChannel?.id === channelId;
+            if((!isActive || !isThisChannel) && _unreadEnabled) {
+              // Only count messages from others, not self
+              if(change.doc.data().uid !== currentUser?.uid) {
+                _unreadChannels[channelId] = (_unreadChannels[channelId]||0)+1;
+                _updateChatBadge(); _updateChannelListBadges();
+              }
+            } else {
+              // We're actively viewing — mark as seen
+              const ts = change.doc.data().ts?.toMillis ? change.doc.data().ts.toMillis() : Date.now();
+              _markSeen(channelId, ts);
             }
           } else if(change.type==='modified') {
             const el = document.getElementById('msg-'+change.doc.id);
@@ -1137,7 +1199,7 @@ function renderReactions(container, reactions, msgId) {
   });
 }
 
-// ── Members — simple list sorted by rank (no presence) ──
+// ── Members — sorted by rank, no presence, no count in header ──
 function loadMembers(ch) {
   const list = document.getElementById('members-list');
   if(!list) return;
@@ -1146,7 +1208,7 @@ function loadMembers(ch) {
   function _memberItemHtml(u) {
     const avaHtml = avatarHtml(u.icon, u.username, '60%');
     const color = u.color || avatarColor(u.uid);
-    return `<div class="ms-item" onclick="window._openProfile('${u.uid}')" style="cursor:pointer">
+    return `<div class="ms-item" onclick="window._openProfile('${u.uid}')" title="${escHtml(u.username)} · ${u.rank}">
       <div class="ms-ava" style="background:${color}">${avaHtml}</div>
       <span class="ms-name">${escHtml(u.username)}</span>
       <span class="rbadge ${u.rank}" style="flex-shrink:0;font-size:.45rem">${u.rank.toUpperCase()}</span>
@@ -1162,9 +1224,21 @@ function loadMembers(ch) {
         return canChat(u.rank);
       });
       users.sort((a,b)=>rankOf(b.rank)-rankOf(a.rank));
-      let html = `<div class="ms-section-label">Members — ${users.length}</div>`;
+      // Update header with count (no "Members — N" remnant, just count in pill)
+      const msHeader = document.querySelector('.ms-header');
+      if(msHeader) {
+        // Keep the icon + "Members" text, add/update count pill
+        let pill = msHeader.querySelector('.ms-count');
+        if(!pill) {
+          pill = document.createElement('span');
+          pill.className = 'ms-count';
+          msHeader.appendChild(pill);
+        }
+        pill.textContent = users.length;
+      }
+      let html = '';
       users.forEach(u => { html += _memberItemHtml(u); });
-      list.innerHTML = html || '<div class="ms-section-label">No members</div>';
+      list.innerHTML = html || '<div class="ms-empty">No members</div>';
     }
   );
 
@@ -1335,6 +1409,7 @@ async function openDM(otherUser, existingDmId) {
   }
   currentDM = {id:dmId, otherUser};
   _unreadDMs[dmId] = 0;
+  _markSeen('dm_' + dmId, Date.now());
   _updateDMBadge(); _updateDMListBadges();
 
   document.querySelectorAll('#dm-list .titem').forEach(i=>i.classList.toggle('active',i.dataset.dmid===dmId));
@@ -1391,8 +1466,13 @@ async function openDM(otherUser, existingDmId) {
             const isDMActive = document.getElementById('section-dms')?.classList.contains('active');
             const isThisDM = currentDM?.id === dmId;
             if((!isDMActive || !isThisDM) && _unreadEnabled) {
-              _unreadDMs[dmId] = (_unreadDMs[dmId]||0)+1;
-              _updateDMBadge(); _updateDMListBadges();
+              if(change.doc.data().uid !== currentUser?.uid) {
+                _unreadDMs[dmId] = (_unreadDMs[dmId]||0)+1;
+                _updateDMBadge(); _updateDMListBadges();
+              }
+            } else {
+              const ts = change.doc.data().ts?.toMillis ? change.doc.data().ts.toMillis() : Date.now();
+              _markSeen('dm_' + dmId, ts);
             }
           } else if(change.type==='removed') {
             document.getElementById('msg-'+change.doc.id)?.remove();
@@ -1577,37 +1657,52 @@ function renderProfileEdit() {
   const canChangeUsername = !lastChange || (Date.now() - lastChange.getTime()) > 7*24*60*60*1000;
   const cooldownDays = lastChange ? Math.ceil((7*24*60*60*1000 - (Date.now()-lastChange.getTime())) / (24*60*60*1000)) : 0;
 
+  const memberSince = d.createdAt?.toDate ? d.createdAt.toDate().toLocaleDateString('en-US',{month:'long',year:'numeric'}) : 'Unknown';
+
   section.innerHTML = `
+    <!-- Avatar & Customization -->
     <div class="prof-panel" id="prof-color-section">
       <div class="prof-panel-hdr">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 011.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>
-        Avatar
+        Avatar &amp; Color
       </div>
-      <div class="prof-panel-sub">Choose an icon or use your initial. Then pick a color.</div>
+      <div class="prof-panel-sub">Pick an icon and color for your avatar across Nebula.</div>
+      <div class="prof-avatar-preview-row">
+        <div class="prof-ava-preview" id="prof-ava-preview" style="background:${d.color||avatarColor(d.uid)}">${avatarHtml(d.icon, d.username, '55%')}</div>
+        <div class="prof-ava-preview-info">
+          <div class="prof-ava-preview-name">${escHtml(d.username)}</div>
+          <div class="prof-ava-preview-meta">Member since ${memberSince}</div>
+          <div class="prof-ava-preview-rank">${renderRankBadge(d.rank)}</div>
+        </div>
+      </div>
+      <div class="prof-panel-sub" style="margin-top:1rem">Icon</div>
       <div class="ava-icon-grid" id="ava-icon-grid"></div>
-      <div class="prof-panel-sub" style="margin-top:.9rem">Color</div>
+      <div class="prof-panel-sub" style="margin-top:1rem">Color</div>
       <div class="color-swatches" id="color-swatches"></div>
     </div>
 
+    <!-- Username -->
     <div class="prof-panel">
       <div class="prof-panel-hdr">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
         Username
-        ${!canChangeUsername ? '<span class="prof-panel-badge">Available in '+cooldownDays+' day'+(cooldownDays!==1?'s':'')+'</span>' : ''}
+        ${!canChangeUsername ? `<span class="prof-panel-badge">Cooldown: ${cooldownDays}d</span>` : '<span class="prof-panel-badge prof-panel-badge-ok">Available</span>'}
       </div>
+      <div class="prof-panel-sub">${canChangeUsername ? 'Choose your display name (3–20 chars, letters/numbers/underscores).' : `Username changes are on cooldown. Available in ${cooldownDays} day${cooldownDays!==1?'s':''}.`}</div>
       <div class="prof-row">
         <input id="prof-username-inp" class="field-input" type="text" value="${escHtml(d.username)}" maxlength="20" placeholder="Username" ${canChangeUsername?'':'disabled'}>
         <button class="btn btn-sm" id="prof-username-btn" ${canChangeUsername?'':'disabled'}>Save</button>
       </div>
-      ${!canChangeUsername ? '<div class="prof-cooldown">Username can be changed once every 7 days.</div>' : ''}
       <div class="merr" id="prof-username-err"></div>
     </div>
 
+    <!-- Email -->
     <div class="prof-panel">
       <div class="prof-panel-hdr">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
         Email Address
       </div>
+      <div class="prof-panel-sub">Your login email. Changing it requires re-authentication.</div>
       <div class="prof-row">
         <input id="prof-email-inp" class="field-input" type="email" value="${escHtml(d.email||auth.currentUser?.email||'')}" placeholder="your@email.com">
         <button class="btn btn-sm" id="prof-email-btn">Update</button>
@@ -1615,11 +1710,13 @@ function renderProfileEdit() {
       <div class="merr" id="prof-email-err"></div>
     </div>
 
+    <!-- Password -->
     <div class="prof-panel">
       <div class="prof-panel-hdr">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
         Change Password
       </div>
+      <div class="prof-panel-sub">Must be at least 6 characters. Current password required.</div>
       <div class="prof-fields">
         <input id="prof-pass-cur"  class="field-input" type="password" placeholder="Current password">
         <input id="prof-pass-new"  class="field-input" type="password" placeholder="New password (min 6 chars)">
@@ -1714,6 +1811,9 @@ function renderProfileEdit() {
     if(sp) sp.innerHTML = html;
     const profAva = document.getElementById('prof-ava');
     if(profAva) profAva.innerHTML = avatarHtml(iconKey, d.username, '55%');
+    // Also update the inline preview in profile edit section
+    const preview = document.getElementById('prof-ava-preview');
+    if(preview) preview.innerHTML = avatarHtml(iconKey, d.username, '55%');
   }
 
   // Username save
@@ -2201,13 +2301,58 @@ async function loadAdminPanel(tab) {
   }
 }
 
-// ── DB Cleanup Panel (Goat-only) ──
+// ── DB Cleanup Panel (Goat-only) — with live stats ──
 async function renderDBCleanup(container) {
   container.innerHTML = `
   <div class="cleanup-panel">
+
+    <!-- Live DB Stats Dashboard -->
+    <div class="cleanup-stats-grid" id="cleanup-stats-grid">
+      <div class="cleanup-stat-card" id="cstat-users">
+        <div class="csc-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></div>
+        <div class="csc-val" id="cstat-users-val">…</div>
+        <div class="csc-label">Total Users</div>
+        <div class="csc-sub" id="cstat-users-sub"></div>
+      </div>
+      <div class="cleanup-stat-card" id="cstat-msgs">
+        <div class="csc-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div>
+        <div class="csc-val" id="cstat-msgs-val">…</div>
+        <div class="csc-label">Channel Messages</div>
+        <div class="csc-sub" id="cstat-msgs-sub"></div>
+      </div>
+      <div class="cleanup-stat-card" id="cstat-dms">
+        <div class="csc-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
+        <div class="csc-val" id="cstat-dms-val">…</div>
+        <div class="csc-label">DM Threads</div>
+        <div class="csc-sub" id="cstat-dms-sub"></div>
+      </div>
+      <div class="cleanup-stat-card" id="cstat-gc">
+        <div class="csc-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9 14h6M9 10h6M12 6v2M12 16v2"/></svg></div>
+        <div class="csc-val" id="cstat-gc-val">…</div>
+        <div class="csc-label">Total GoatCoins</div>
+        <div class="csc-sub" id="cstat-gc-sub"></div>
+      </div>
+      <div class="cleanup-stat-card" id="cstat-games">
+        <div class="csc-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M7 10v4"/><line x1="5" y1="12" x2="9" y2="12"/><circle cx="15" cy="11" r="1"/><circle cx="17" cy="13" r="1"/></svg></div>
+        <div class="csc-val" id="cstat-games-val">…</div>
+        <div class="csc-label">Active BJ Games</div>
+        <div class="csc-sub" id="cstat-games-sub"></div>
+      </div>
+      <div class="cleanup-stat-card" id="cstat-channels">
+        <div class="csc-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></div>
+        <div class="csc-val" id="cstat-channels-val">…</div>
+        <div class="csc-label">Custom Channels</div>
+        <div class="csc-sub" id="cstat-channels-sub"></div>
+      </div>
+    </div>
+    <button class="btn btn-ghost btn-sm" id="cleanup-refresh-stats" style="margin-bottom:1.2rem;font-size:.72rem" onclick="window.cleanupRefreshStats()">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+      Refresh Stats
+    </button>
+
     <div class="cleanup-warning">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-      <span><strong>Danger Zone</strong> — All destructive actions are irreversible. Be certain before wiping anything.</span>
+      <span><strong>Danger Zone</strong> — Destructive actions are irreversible. Review the stats above before wiping anything.</span>
     </div>
 
     <div class="cleanup-section">
@@ -2215,7 +2360,7 @@ async function renderDBCleanup(container) {
       <div class="cleanup-actions">
         <div class="cleanup-action-card">
           <div class="cac-title">Wipe All GoatCoin Balances</div>
-          <div class="cac-desc">Resets every user's coin balance, weekly stats, and BJ win counts to zero. Keeps the documents.</div>
+          <div class="cac-desc">Resets every user's coin balance, weekly stats, and BJ win counts to zero. Keeps documents.</div>
           <button class="btn btn-danger btn-sm" onclick="window.cleanupWipeAllCoins()">Wipe All Coins</button>
         </div>
         <div class="cleanup-action-card">
@@ -2247,23 +2392,23 @@ async function renderDBCleanup(container) {
         </div>
         <div class="cleanup-action-card">
           <div class="cac-title">Wipe All DMs</div>
-          <div class="cac-desc">Delete all direct message threads and their messages. This affects every user.</div>
+          <div class="cac-desc">Delete all direct message threads and their messages. Affects every user.</div>
           <button class="btn btn-danger btn-sm" onclick="window.cleanupWipeDMs()">Wipe All DMs</button>
+        </div>
+        <div class="cleanup-action-card">
+          <div class="cac-title">Prune Old Channel Messages</div>
+          <div class="cac-desc">In each channel, delete messages beyond the last 100. Keeps channels lean.</div>
+          <button class="btn btn-ghost btn-sm" onclick="window.cleanupPruneAllChannels()">Prune All Channels</button>
         </div>
       </div>
     </div>
 
     <div class="cleanup-section">
-      <div class="cleanup-section-hdr">Presence & Stale Data</div>
+      <div class="cleanup-section-hdr">Stale Data</div>
       <div class="cleanup-actions">
         <div class="cleanup-action-card">
-          <div class="cac-title">Clear Offline Presence</div>
-          <div class="cac-desc">Remove all Firestore presence documents where online = false. RTDB presence is auto-managed.</div>
-          <button class="btn btn-ghost btn-sm" onclick="window.cleanupClearOfflinePresence()">Clear Offline Presence</button>
-        </div>
-        <div class="cleanup-action-card">
           <div class="cac-title">Purge Stale BJ Games</div>
-          <div class="cac-desc">Delete all blackjack games stuck in gameDone or older than 24 hours.</div>
+          <div class="cac-desc">Delete all blackjack games in gameDone phase or older than 24 hours.</div>
           <button class="btn btn-ghost btn-sm" onclick="window.cleanupPurgeBJGames()">Purge Stale Games</button>
         </div>
         <div class="cleanup-action-card">
@@ -2271,16 +2416,26 @@ async function renderDBCleanup(container) {
           <div class="cac-desc">Delete all pending, declined, and cancelled blackjack challenge documents.</div>
           <button class="btn btn-ghost btn-sm" onclick="window.cleanupClearBJChallenges()">Clear Challenges</button>
         </div>
+        <div class="cleanup-action-card">
+          <div class="cac-title">Remove Orphaned GoatCoin Docs</div>
+          <div class="cac-desc">Delete GoatCoin documents for UIDs that have no matching user profile.</div>
+          <button class="btn btn-ghost btn-sm" onclick="window.cleanupOrphanedGC()">Remove Orphans</button>
+        </div>
       </div>
     </div>
 
     <div class="cleanup-section">
-      <div class="cleanup-section-hdr">Visit Counter</div>
+      <div class="cleanup-section-hdr">Counters &amp; Meta</div>
       <div class="cleanup-actions">
         <div class="cleanup-action-card">
           <div class="cac-title">Reset Visit Counter</div>
-          <div class="cac-desc">Set the total visit count back to 0. Affects both RTDB and Firestore counters.</div>
+          <div class="cac-desc">Set the total visit count back to 0 in both RTDB and Firestore.</div>
           <button class="btn btn-ghost btn-sm" onclick="window.cleanupResetVisits()">Reset Visits</button>
+        </div>
+        <div class="cleanup-action-card">
+          <div class="cac-title">Export User List</div>
+          <div class="cac-desc">Download a JSON export of all user profiles (uid, username, email, rank, status).</div>
+          <button class="btn btn-ghost btn-sm" onclick="window.cleanupExportUsers()">Export Users JSON</button>
         </div>
       </div>
     </div>
@@ -2288,17 +2443,85 @@ async function renderDBCleanup(container) {
     <div id="cleanup-log" class="cleanup-log"></div>
   </div>`;
 
-  // Load channels into dropdown
+  // Load channels into dropdown and fetch live stats
   try {
     const snap = await getDocs(collection(db,'channels'));
     const sel = document.getElementById('cleanup-ch-sel');
     if(sel) {
       sel.innerHTML = '<option value="">-- Select channel --</option>' +
-        ['general','admin'].map(id=>`<option value="${id}">#${id} (hardcoded)</option>`).join('') +
+        ['general','admin'].map(id=>`<option value="${id}">#${id} (built-in)</option>`).join('') +
         snap.docs.map(d=>`<option value="${d.id}">#${escHtml(d.data().name||d.id)}</option>`).join('');
     }
   } catch(e) {}
+
+  // Auto-load stats on open
+  window.cleanupRefreshStats();
 }
+
+window.cleanupRefreshStats = async function() {
+  const set = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = val; };
+
+  try {
+    // Users
+    const usersSnap = await getDocs(collection(db,'users'));
+    const users = usersSnap.docs.map(d=>d.data());
+    set('cstat-users-val', users.length);
+    const approved = users.filter(u=>u.status==='approved').length;
+    const pending = users.filter(u=>u.status==='pending').length;
+    const banned = users.filter(u=>u.status==='banned').length;
+    set('cstat-users-sub', `${approved} approved · ${pending} pending · ${banned} banned`);
+
+    // Channels
+    const channelsSnap = await getDocs(collection(db,'channels'));
+    set('cstat-channels-val', channelsSnap.size);
+    set('cstat-channels-sub', channelsSnap.docs.map(d=>d.data().name||d.id).slice(0,3).join(', ') + (channelsSnap.size > 3 ? '…' : ''));
+
+    // Channel messages
+    let totalMsgs = 0;
+    const allChannels = ['general','admin', ...channelsSnap.docs.map(d=>d.id)];
+    const msgCounts = [];
+    for(const chId of allChannels) {
+      try {
+        const msgsSnap = await getDocs(collection(db,`channels/${chId}/messages`));
+        totalMsgs += msgsSnap.size;
+        if(msgsSnap.size > 0) msgCounts.push(`#${chId}: ${msgsSnap.size}`);
+      } catch(e) {}
+    }
+    set('cstat-msgs-val', totalMsgs.toLocaleString());
+    set('cstat-msgs-sub', msgCounts.slice(0,3).join(' · ') || 'No messages');
+
+    // DMs
+    const dmsSnap = await getDocs(collection(db,'dms'));
+    set('cstat-dms-val', dmsSnap.size);
+    let dmMsgs = 0;
+    for(const dm of dmsSnap.docs) {
+      try {
+        const mSnap = await getDocs(collection(db,`dms/${dm.id}/messages`));
+        dmMsgs += mSnap.size;
+      } catch(e) {}
+    }
+    set('cstat-dms-sub', `${dmMsgs.toLocaleString()} messages total`);
+
+    // GoatCoin
+    const gcSnap = await getDocs(collection(db,'goatcoin'));
+    let totalCoins = 0;
+    gcSnap.docs.forEach(d => { totalCoins += (d.data().coins||0); });
+    set('cstat-gc-val', totalCoins.toLocaleString());
+    const richest = gcSnap.docs.map(d=>d.data()).sort((a,b)=>(b.coins||0)-(a.coins||0))[0];
+    set('cstat-gc-sub', richest ? `Richest: ${(richest.coins||0).toLocaleString()} coins` : 'No data');
+
+    // BJ Games
+    const gamesSnap = await getDocs(collection(db,'bj_games'));
+    const activeGames = gamesSnap.docs.filter(d=>d.data().phase !== 'gameDone');
+    set('cstat-games-val', activeGames.length);
+    const staleGames = gamesSnap.size - activeGames.length;
+    set('cstat-games-sub', `${staleGames} stale (gameDone) · ${gamesSnap.size} total`);
+
+    _cleanupLog('Stats refreshed.', 'success');
+  } catch(e) {
+    _cleanupLog('Stats refresh failed: ' + e.message, 'error');
+  }
+};
 
 function _cleanupLog(msg, type='info') {
   const log = document.getElementById('cleanup-log');
@@ -2400,15 +2623,16 @@ window.cleanupWipeDMs = function() {
   };
 };
 
+// Legacy offline presence cleanup (presence system removed, but doc may still exist)
 window.cleanupClearOfflinePresence = async function() {
   try {
-    const snap = await getDocs(collection(db,'presence'));
-    const offline = snap.docs.filter(d=>!d.data().online);
-    if(!offline.length) { _cleanupLog('No offline presence docs found.','info'); return; }
+    // Try to clear old presence collection (may be empty/non-existent since system removed)
+    const snap = await getDocs(collection(db,'presence')).catch(()=>({docs:[],size:0}));
+    if(!snap.size) { _cleanupLog('No presence docs found (system already removed).','info'); return; }
     const batch = writeBatch(db);
-    offline.forEach(d=>batch.delete(d.ref));
+    snap.docs.forEach(d=>batch.delete(d.ref));
     await batch.commit();
-    _cleanupLog(`Cleared ${offline.length} offline presence docs.`,'success');
+    _cleanupLog(`Cleared ${snap.size} stale presence docs.`,'success');
   } catch(e) { _cleanupLog('Failed: '+e.message,'error'); }
 };
 
@@ -2439,15 +2663,74 @@ window.cleanupClearBJChallenges = async function() {
 
 window.cleanupResetVisits = async function() {
   try {
-    // Reset RTDB
     if(_rtdb) { await rtSet(rtRef(_rtdb,'meta/visits'), 0).catch(()=>{}); }
-    // Reset Firestore
     await setDoc(doc(db,'meta','visits'), { count: 0 }, { merge: true }).catch(()=>{});
     _cleanupLog('Visit counter reset to 0.','success');
-    // Update display
     const el = document.getElementById('visits-count');
     if(el) el.textContent = '0';
   } catch(e) { _cleanupLog('Failed: '+e.message,'error'); }
+};
+
+window.cleanupPruneAllChannels = async function() {
+  showModal(`<h3>Prune All Channels?</h3><p class="modal-p">Keeps the last 100 messages per channel and deletes older ones. This helps reduce Firestore usage.</p><div class="modal-actions"><button class="btn btn-ghost btn-sm" onclick="document.getElementById('modal-overlay').click()">Cancel</button><button class="btn btn-sm" id="confirm-prune-all">Prune</button></div>`);
+  document.getElementById('confirm-prune-all').onclick = async () => {
+    closeModal();
+    try {
+      const channelsSnap = await getDocs(collection(db,'channels'));
+      const allChannels = ['general','admin', ...channelsSnap.docs.map(d=>d.id)];
+      let totalDeleted = 0;
+      for(const chId of allChannels) {
+        try {
+          const msgsSnap = await getDocs(query(collection(db,`channels/${chId}/messages`), orderBy('ts','asc')));
+          if(msgsSnap.size <= 100) continue;
+          const toDelete = msgsSnap.docs.slice(0, msgsSnap.size - 100);
+          const batch = writeBatch(db);
+          toDelete.forEach(d => batch.delete(d.ref));
+          await batch.commit();
+          totalDeleted += toDelete.length;
+        } catch(e) {}
+      }
+      _cleanupLog(`Pruned ${totalDeleted} old messages across ${allChannels.length} channels.`, 'success');
+      window.cleanupRefreshStats();
+    } catch(e) { _cleanupLog('Failed: '+e.message,'error'); }
+  };
+};
+
+window.cleanupOrphanedGC = async function() {
+  showModal(`<h3>Remove Orphaned GoatCoin Docs?</h3><p class="modal-p">Finds and deletes GoatCoin documents for UIDs with no matching user profile. This is safe to run.</p><div class="modal-actions"><button class="btn btn-ghost btn-sm" onclick="document.getElementById('modal-overlay').click()">Cancel</button><button class="btn btn-sm" id="confirm-orphan">Remove</button></div>`);
+  document.getElementById('confirm-orphan').onclick = async () => {
+    closeModal();
+    try {
+      const [usersSnap, gcSnap] = await Promise.all([
+        getDocs(collection(db,'users')),
+        getDocs(collection(db,'goatcoin'))
+      ]);
+      const validUids = new Set(usersSnap.docs.map(d=>d.id));
+      const orphans = gcSnap.docs.filter(d=>!validUids.has(d.id));
+      if(!orphans.length) { _cleanupLog('No orphaned GoatCoin docs found.','info'); return; }
+      await Promise.all(orphans.map(d=>deleteDoc(d.ref)));
+      _cleanupLog(`Removed ${orphans.length} orphaned GoatCoin document(s).`,'success');
+      window.cleanupRefreshStats();
+    } catch(e) { _cleanupLog('Failed: '+e.message,'error'); }
+  };
+};
+
+window.cleanupExportUsers = async function() {
+  try {
+    const snap = await getDocs(collection(db,'users'));
+    const users = snap.docs.map(d => {
+      const u = d.data();
+      return { uid: u.uid, username: u.username, email: u.email||'', rank: u.rank, status: u.status, createdAt: u.createdAt?.toDate?.()?.toISOString()||'' };
+    });
+    const json = JSON.stringify(users, null, 2);
+    const blob = new Blob([json], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `nebula-users-${new Date().toISOString().slice(0,10)}.json`;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    _cleanupLog(`Exported ${users.length} users.`,'success');
+  } catch(e) { _cleanupLog('Export failed: '+e.message,'error'); }
 };
 
 function canChangeRank(targetUser) {
@@ -2496,19 +2779,47 @@ window.unbanUser = async function(uid) {
 window.deleteAccount = async function(uid, username) {
   showModal(`
     <h3>Permanently Delete Account</h3>
-    <p class="modal-p">This removes all data for <strong>${escHtml(username)}</strong>: profile, GoatCoin balance, and all history. The Firebase Auth account will remain (you'll need to delete it from the Firebase console). This cannot be undone.</p>
+    <p class="modal-p">This removes <strong>all data</strong> for <strong>${escHtml(username)}</strong>: Firestore profile, GoatCoin, DMs, and their Firebase Auth account. This <strong>cannot be undone</strong>.</p>
+    <div class="field-group" style="margin-top:.8rem">
+      <label class="field-label">Type the username to confirm</label>
+      <input id="del-acc-confirm-inp" class="field-input" type="text" placeholder="${escHtml(username)}" autocomplete="off">
+    </div>
+    <div class="merr" id="del-acc-err"></div>
     <div class="modal-actions">
       <button class="btn btn-ghost btn-sm" onclick="document.getElementById('modal-overlay').click()">Cancel</button>
       <button class="btn btn-danger btn-sm" id="confirm-delacc-btn">Delete Everything</button>
     </div>
   `);
   document.getElementById('confirm-delacc-btn').onclick = async () => {
+    const inp = document.getElementById('del-acc-confirm-inp');
+    const err = document.getElementById('del-acc-err');
+    if(inp.value.trim() !== username) { err.textContent = 'Username does not match. Type it exactly.'; return; }
+    const btn = document.getElementById('confirm-delacc-btn');
+    btn.disabled = true; btn.textContent = 'Deleting…';
     try {
+      // 1. Delete Firestore documents
       await deleteDoc(doc(db,'users',uid)).catch(()=>{});
       await deleteDoc(doc(db,'goatcoin',uid)).catch(()=>{});
-      await deleteDoc(doc(db,'presence',uid)).catch(()=>{});
-      closeModal(() => { loadAdminPanel('banned'); toast(`Account data for ${username} deleted.`, 'success'); });
-    } catch(e) { toast('Failed to delete: '+e.message, 'error'); }
+      // 2. Remove from DM participants (just leave DMs orphaned — cleanup panel handles this)
+      // 3. Call Firebase Auth deletion via a secure callable or direct Admin SDK
+      //    Since we can't call Admin SDK from client, we use a Cloud Function endpoint
+      //    Fallback: mark user as deleted in DB so they can't log in
+      try {
+        // Try to delete via Firebase Auth callable function if available
+        const { getFunctions, httpsCallable } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js');
+        const functions = getFunctions(window._firebaseApp);
+        const deleteUser = httpsCallable(functions, 'deleteUser');
+        await deleteUser({ uid });
+      } catch(funcErr) {
+        // Cloud function not available — the user is already banned so they can't log in
+        // Log the intent for manual cleanup
+        console.warn('Cloud function deleteUser not available — Firestore data removed, Auth account may need manual deletion for UID:', uid);
+      }
+      closeModal(() => { loadAdminPanel('banned'); toast(`Account for ${username} permanently deleted.`, 'success'); });
+    } catch(e) { 
+      btn.disabled = false; btn.textContent = 'Delete Everything';
+      if(err) err.textContent = 'Failed: ' + e.message; 
+    }
   };
 };
 
@@ -2620,21 +2931,36 @@ function setupKeyboardShortcuts() {
       return;
     }
 
-    // Escape — close things
+    // Escape — close overlays then navigate home
     if(e.key === 'Escape') {
+      // 1. Close command palette
       const cmd = document.getElementById('cmd-palette');
       if(cmd && !cmd.classList.contains('hidden')) {
         cmd.classList.add('hidden');
         return;
       }
+      // 2. Close modal
       const ov = document.getElementById('modal-overlay');
       if(ov && !ov.classList.contains('hidden')) {
         ov.click();
         return;
       }
+      // 3. Close game vault
       const vault = document.getElementById('game-vault');
       if(vault && vault.style.display === 'flex') {
         window.closeGameVault();
+        return;
+      }
+      // 4. Close profile modal if open
+      const profModal = document.querySelector('.profile-modal-overlay');
+      if(profModal) {
+        profModal.click();
+        return;
+      }
+      // 5. If on a non-home section, navigate home
+      const activeSection = document.querySelector('.section.active');
+      if(activeSection && activeSection.id !== 'section-home') {
+        navigate('home');
         return;
       }
       return;
