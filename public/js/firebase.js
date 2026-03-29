@@ -1,6 +1,6 @@
 // ═══════════════════════════════
-//  firebase.js — init & auth
-//  FIX: Removed App Check (reCAPTCHA 500 errors blocking all auth)
+//  firebase.js — init, App Check & auth
+//  FIX: Re-enabled App Check with reCAPTCHA v3 (required by Firebase enforcement)
 //  FIX: Added missing databaseURL (RTDB was completely broken without it)
 // ═══════════════════════════════
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -14,6 +14,9 @@ import {
   getAuth, createUserWithEmailAndPassword,
   signInWithEmailAndPassword, signOut, onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {
+  initializeAppCheck, ReCaptchaV3Provider
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check.js";
 
 const firebaseConfig = {
   apiKey:            "AIzaSyCyIjduPo3L7z0XnoKEamjInTkQWQnGpqI",
@@ -26,11 +29,20 @@ const firebaseConfig = {
 };
 
 const app  = initializeApp(firebaseConfig);
+
+// ── App Check (reCAPTCHA v3) ──
+// Required: Firebase enforces App Check on Auth/Firestore/RTDB.
+// The reCAPTCHA v3 site key is registered for nebulahistorians.web.app
+const appCheck = initializeAppCheck(app, {
+  provider: new ReCaptchaV3Provider('6Ld-N48sAAAAAOn5Qm_EgZ8ZtB8SXff0hWZjB-kI'),
+  isTokenAutoRefreshEnabled: true
+});
+
 const db   = getFirestore(app);
 const auth = getAuth(app);
 
 export {
-  app, db, auth,
+  app, appCheck, db, auth,
   doc, getDoc, setDoc, updateDoc,
   collection, query, where, getDocs,
   onSnapshot, orderBy, limit, serverTimestamp,
