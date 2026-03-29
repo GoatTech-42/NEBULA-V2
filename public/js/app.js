@@ -582,7 +582,7 @@ async function pruneChannelIfNeeded(channelId) {
 // Ã¢â€â‚¬Ã¢â€â‚¬ Chat Ã¢â€â‚¬Ã¢â€â‚¬
 const HARDCODED_CHANNELS = [
   { id:'general', name:'general', icon:'#', announce:false, passwordProtected:false, minRank:'planetary' },
-  { id:'admin', name:'admin', icon:'#', announce:false, passwordProtected:false, minRank:'universal', adminOnly:true }
+  { id:'admin', name:'admin', icon:'⚙', announce:false, passwordProtected:false, minRank:'universal', adminOnly:true }
 ];
 
 function initChat() {
@@ -1127,67 +1127,194 @@ function renderReactions(container, reactions, msgId) {
 // Ã¢â€â‚¬Ã¢â€â‚¬ Members Ã¢â‚¬â€ simple list sorted by rank (no presence) Ã¢â€â‚¬Ã¢â€â‚¬
 
 async function loadMembers(ch) {
+  const sidebar = document.querySelector('.members-sidebar');
+  const headerEl = document.querySelector('.ms-header');
   const list = document.getElementById('members-list');
   if(!list) return;
   if(membersUnsub) { membersUnsub(); membersUnsub = null; }
-  list.innerHTML = '<div style="font-size:.72rem;color:var(--text-faint);padding:.5rem">Loadingâ€¦</div>';
+
+  // Update header to show channel info
+  if(headerEl) {
+    headerEl.innerHTML = `
+      <div class="ms-header-title">Members</div>
+      <div class="ms-channel-info">
+        <span class="ms-channel-hash">#</span>
+        <span class="ms-channel-label" id="ms-channel-label">${escHtml(ch.name)}</span>
+      </div>`;
+  }
+
+  list.innerHTML = '<div class="ms-loading"><div class="ms-loading-dot"></div><div class="ms-loading-dot"></div><div class="ms-loading-dot"></div></div>';
   try {
     const snap = await getDocs(query(collection(db,'users'), where('status','==','approved')));
     const members = snap.docs.map(d => d.data()).sort((a,b) => rankOf(b.rank) - rankOf(a.rank));
-    list.innerHTML = '';
+
+    // Group by rank tier
+    const tiers = [
+      { key: 'goat',      label: 'Goat',      uids: [] },
+      { key: 'universal', label: 'Universal',  uids: [] },
+      { key: 'galactic',  label: 'Galactic',   uids: [] },
+      { key: 'solar',     label: 'Solar',      uids: [] },
+      { key: 'planetary', label: 'Planetary',  uids: [] },
+      { key: 'earthbound',label: 'Earthbound', uids: [] },
+    ];
     members.forEach(u => {
-      const el = document.createElement('div');
-      el.className = 'ms-item';
-      el.style.cursor = 'pointer';
-      el.innerHTML = `<div class="ms-ava" style="background:${u.color||avatarColor(u.uid)}">${avatarHtml(u.icon,u.username,'60%')}</div><div class="ms-info"><div class="ms-name" style="color:${u.color||avatarColor(u.uid)}">${escHtml(u.username)}</div><div class="ms-rank" style="color:${RANK_COLORS[u.rank]||'var(--text-faint)'}">${(u.rank||'').toUpperCase()}</div></div>`;
-      el.addEventListener('click', () => window._openProfile(u.uid));
-      list.appendChild(el);
+      const t = tiers.find(t => t.key === u.rank);
+      if(t) t.uids.push(u);
     });
+
+    list.innerHTML = '';
+    let totalShown = 0;
+    tiers.forEach(tier => {
+      if(!tier.uids.length) return;
+      const hdr = document.createElement('div');
+      hdr.className = 'ms-tier-hdr';
+      hdr.innerHTML = `<span class="ms-tier-name" style="color:${RANK_COLORS[tier.key]||'var(--text-faint)'}">${tier.label}</span><span class="ms-tier-count">${tier.uids.length}</span>`;
+      list.appendChild(hdr);
+      tier.uids.forEach(u => {
+        const el = document.createElement('div');
+        el.className = 'ms-item';
+        el.innerHTML = `
+          <div class="ms-ava" style="background:${u.color||avatarColor(u.uid)}">${avatarHtml(u.icon,u.username,'60%')}</div>
+          <div class="ms-info">
+            <div class="ms-name" style="color:${u.color||avatarColor(u.uid)}">${escHtml(u.username)}</div>
+            <div class="ms-rank" style="color:${RANK_COLORS[u.rank]||'var(--text-faint)'}">${(u.rank||'').toUpperCase()}</div>
+          </div>`;
+        el.addEventListener('click', () => window._openProfile(u.uid));
+        list.appendChild(el);
+        totalShown++;
+      });
+    });
+
+    // Footer count
+    const footer = document.createElement('div');
+    footer.className = 'ms-footer';
+    footer.textContent = `${totalShown} member${totalShown !== 1 ? 's' : ''}`;
+    list.appendChild(footer);
   } catch(e) {
-    list.innerHTML = '<div style="font-size:.72rem;color:var(--danger);padding:.5rem">Failed to load members</div>';
+    list.innerHTML = '<div class="ms-error">Failed to load members</div>';
   }
 }
 
 async function loadAdminPanel(tab) {
   const c = document.getElementById('ap-'+tab);
   if(!c) return;
-  c.innerHTML = '<div class="adm-loading">LoadingÃ¢â‚¬Â¦</div>';
+  c.innerHTML = '<div class="adm-loading"><div class="adm-spinner"></div><span>Loading…</span></div>';
+
   if(tab === 'pending') {
-    getDocs(query(collection(db,'users'), where('status','==','pending'))).then(snap=>{
+    try {
+      const snap = await getDocs(query(collection(db,'users'), where('status','==','pending')));
+      if(snap.empty) {
+        c.innerHTML = '<div class="adm-empty"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:.3"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><p>No pending requests</p></div>';
+        return;
+      }
       let html = '<div class="adm-list">';
-      snap.forEach(s=>{
+      snap.forEach(s => {
         const d = s.data();
-        html += `<div class="adm-row" data-uid="${s.id}"><div class="adm-row-left"><div class="adm-ava">${avatarHtml(d.icon,d.username,'36%')}</div><div class="adm-meta"><div class="adm-name">${escHtml(d.username)}</div><div class="adm-email">${escHtml(d.email||'')}</div></div></div><div class="adm-row-actions"><button class="btn btn-sm" onclick="approveUser('${s.id}')">Approve</button><button class="btn btn-ghost btn-sm" onclick="denyUser('${s.id}')">Deny</button></div></div>`;
+        html += `
+          <div class="adm-row" data-uid="${s.id}">
+            <div class="adm-row-ava" style="background:${d.color||'#38bdf8'}">${avatarHtml(d.icon,d.username,'55%')}</div>
+            <div class="adm-row-info">
+              <div class="adm-row-name">${escHtml(d.username)}</div>
+              <div class="adm-row-email">${escHtml(d.email||'')}</div>
+              <div class="adm-row-meta">Pending approval</div>
+            </div>
+            <div class="adm-row-actions">
+              <button class="adm-btn adm-btn-approve" onclick="approveUser('${s.id}')">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                Approve
+              </button>
+              <button class="adm-btn adm-btn-deny" onclick="denyUser('${s.id}','${escHtml(d.username)}')">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                Deny
+              </button>
+            </div>
+          </div>`;
       });
       html += '</div>';
       c.innerHTML = html;
-    }).catch(()=>{c.innerHTML='<div class="adm-error">Failed to load</div>'});
+    } catch(e) { c.innerHTML = `<div class="adm-error">Failed to load: ${escHtml(e.message)}</div>`; }
+
   } else if(tab === 'members') {
-    getDocs(query(collection(db,'users'), where('status','==','approved'))).then(snap=>{
+    try {
+      const snap = await getDocs(query(collection(db,'users'), where('status','==','approved')));
+      const members = snap.docs.map(s => ({id:s.id,...s.data()})).sort((a,b) => {
+        const RANKS = {goat:5,universal:4,galactic:3,solar:2,planetary:1,earthbound:0};
+        return (RANKS[b.rank]||0) - (RANKS[a.rank]||0);
+      });
+      if(!members.length) {
+        c.innerHTML = '<div class="adm-empty"><p>No approved members yet</p></div>';
+        return;
+      }
       let html = '<div class="adm-list">';
-      snap.forEach(s=>{
-        const d = s.data();
-        html += `<div class="adm-row" data-uid="${s.id}"><div class="adm-row-left"><div class="adm-ava">${avatarHtml(d.icon,d.username,'36%')}</div><div class="adm-meta"><div class="adm-name">${escHtml(d.username)}</div><div class="adm-email">${escHtml(d.email||'')}</div></div></div><div class="adm-row-actions"><select onchange="changeRank('${s.id}',this.value)"><option value="member" ${d.rank==='member'?'selected':''}>Member</option><option value="mod" ${d.rank==='mod'?'selected':''}>Mod</option><option value="admin" ${d.rank==='admin'?'selected':''}>Admin</option><option value="goat" ${d.rank==='goat'?'selected':''}>Goat</option></select><button class="btn btn-ghost btn-sm" onclick="deleteAccount('${s.id}')">Delete</button></div></div>`;
+      members.forEach(d => {
+        const rankColor = {'goat':'#fde68a','universal':'#e2e8f0','galactic':'#a855f7','solar':'#f59e0b','planetary':'#38bdf8','earthbound':'#6ee7b7'}[d.rank]||'#38bdf8';
+        html += `
+          <div class="adm-row" data-uid="${d.id}">
+            <div class="adm-row-ava" style="background:${d.color||rankColor}">${avatarHtml(d.icon,d.username,'55%')}</div>
+            <div class="adm-row-info">
+              <div class="adm-row-name">${escHtml(d.username)}</div>
+              <div class="adm-row-email">${escHtml(d.email||'')}</div>
+              <div class="adm-row-meta"><span class="adm-rank-badge" style="color:${rankColor}">${(d.rank||'').toUpperCase()}</span></div>
+            </div>
+            <div class="adm-row-actions">
+              <button class="adm-btn adm-btn-rank" onclick="changeRank('${d.id}','${d.rank}','${escHtml(d.username)}')">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 014-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg>
+                Rank
+              </button>
+              <button class="adm-btn adm-btn-ban" onclick="banUser('${d.id}','${escHtml(d.username)}')">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+                Ban
+              </button>
+              <button class="adm-btn adm-btn-delete" onclick="deleteAccount('${d.id}','${escHtml(d.username)}')">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+              </button>
+            </div>
+          </div>`;
       });
       html += '</div>';
       c.innerHTML = html;
-    }).catch(()=>{c.innerHTML='<div class="adm-error">Failed to load</div>'});
+    } catch(e) { c.innerHTML = `<div class="adm-error">Failed to load: ${escHtml(e.message)}</div>`; }
+
   } else if(tab === 'banned') {
-    getDocs(query(collection(db,'users'), where('status','==','banned'))).then(snap=>{
+    try {
+      const snap = await getDocs(query(collection(db,'users'), where('status','==','banned')));
+      if(snap.empty) {
+        c.innerHTML = '<div class="adm-empty"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:.3"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg><p>No banned users</p></div>';
+        return;
+      }
       let html = '<div class="adm-list">';
-      snap.forEach(s=>{
+      snap.forEach(s => {
         const d = s.data();
-        html += `<div class="adm-row" data-uid="${s.id}"><div class="adm-row-left"><div class="adm-ava">${avatarHtml(d.icon,d.username,'36%')}</div><div class="adm-meta"><div class="adm-name">${escHtml(d.username)}</div><div class="adm-email">${escHtml(d.email||'')}</div></div></div><div class="adm-row-actions"><button class="btn btn-sm" onclick="unbanUser('${s.id}')">Unban</button><button class="btn btn-ghost btn-sm" onclick="deleteAccount('${s.id}')">Delete</button></div></div>`;
+        html += `
+          <div class="adm-row adm-row-banned" data-uid="${s.id}">
+            <div class="adm-row-ava" style="background:#ef4444;opacity:.7">${avatarHtml(d.icon,d.username,'55%')}</div>
+            <div class="adm-row-info">
+              <div class="adm-row-name">${escHtml(d.username)}</div>
+              <div class="adm-row-email">${escHtml(d.email||'')}</div>
+              <div class="adm-row-meta adm-row-banned-label">Banned</div>
+            </div>
+            <div class="adm-row-actions">
+              <button class="adm-btn adm-btn-approve" onclick="unbanUser('${s.id}')">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                Unban
+              </button>
+              <button class="adm-btn adm-btn-delete" onclick="deleteAccount('${s.id}','${escHtml(d.username)}')">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+                Delete
+              </button>
+            </div>
+          </div>`;
       });
       html += '</div>';
       c.innerHTML = html;
-    }).catch(()=>{c.innerHTML='<div class="adm-error">Failed to load</div>'});
+    } catch(e) { c.innerHTML = `<div class="adm-error">Failed to load: ${escHtml(e.message)}</div>`; }
+
   } else if(tab === 'cleanup') {
-    renderDBCleanupNew(c);
+    renderDBCleanup(c);
   }
 }
 
-// --- Create Channel Modal (moved HTML into showModal) ---
+// ── Create Channel Modal ──
 function showCreateChannelModal() {
   showModal(`
     <div>
@@ -1217,7 +1344,7 @@ function showCreateChannelModal() {
   `);
 }
 
-// Ã¢â€â‚¬Ã¢â€â‚¬ Wipe Thread (goat only) Ã¢â€â‚¬Ã¢â€â‚¬
+// ── Wipe Thread (goat only) ──
 window.wipeThread = function(channelId, channelName) {
   if(currentUserData?.rank !== 'goat') return;
   showModal(`
@@ -1233,7 +1360,6 @@ window.wipeThread = function(channelId, channelName) {
       const msgsRef = collection(db, 'channels/' + channelId + '/messages');
       const snap = await getDocs(msgsRef);
       if(snap.empty) { closeModal(); toast('No messages to wipe.', 'info'); return; }
-      // Firestore batches max 500 ops
       const batchSize = 499;
       let batch = writeBatch(db);
       let count = 0;
@@ -1281,6 +1407,439 @@ window.createChannel = async function() {
     closeModal(()=>{ loadChannelsList(); toast('Channel created.','success'); });
   } catch(e) { if(err) err.textContent=e.message; }
 };
+
+// ── DB Cleanup Panel (Goat-only) ──
+function renderDBCleanup(container) {
+  container.innerHTML = `
+    <div class="cleanup-wrap">
+      <div class="cleanup-ops">
+        <div class="cleanup-section-hdr">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+          Data Operations
+        </div>
+
+        <div class="cleanup-op-card" id="cop-orphan">
+          <div class="cleanup-op-hdr">
+            <div class="cleanup-op-icon cleanup-op-icon-warn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </div>
+            <div>
+              <div class="cleanup-op-title">Orphan Auth Accounts</div>
+              <div class="cleanup-op-sub">Find Firebase Auth accounts with no Firestore profile</div>
+            </div>
+            <button class="cleanup-op-btn" id="btn-scan-orphans">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              Scan
+            </button>
+          </div>
+          <div class="cleanup-op-note">⚠ Firebase Admin SDK not available client-side — this lists Firestore users not in any approved/pending/banned state.</div>
+        </div>
+
+        <div class="cleanup-op-card">
+          <div class="cleanup-op-hdr">
+            <div class="cleanup-op-icon cleanup-op-icon-warn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9" stroke="currentColor"/><path d="M9.2 14.6h4.5c1.2 0 2-.7 2-1.7 0-1-.7-1.5-1.9-1.7l-2.4-.3c-1-.2-1.4-.5-1.4-1.1 0-.7.6-1.2 1.7-1.2h3.9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M12 7.5v9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            </div>
+            <div>
+              <div class="cleanup-op-title">Wipe GoatCoin Balances</div>
+              <div class="cleanup-op-sub">Reset all users' coins & stats to zero</div>
+            </div>
+            <button class="cleanup-op-btn cleanup-op-btn-danger" onclick="window.cleanupWipeAllCoins()">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+              Wipe
+            </button>
+          </div>
+        </div>
+
+        <div class="cleanup-op-card">
+          <div class="cleanup-op-hdr">
+            <div class="cleanup-op-icon cleanup-op-icon-info">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            </div>
+            <div>
+              <div class="cleanup-op-title">Reset Weekly Stats</div>
+              <div class="cleanup-op-sub">Clear weekly coins/time/BJ wins — keeps balances</div>
+            </div>
+            <button class="cleanup-op-btn" onclick="window.cleanupResetWeeklyStats()">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+              Reset
+            </button>
+          </div>
+        </div>
+
+        <div class="cleanup-op-card">
+          <div class="cleanup-op-hdr">
+            <div class="cleanup-op-icon cleanup-op-icon-warn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            </div>
+            <div>
+              <div class="cleanup-op-title">Wipe All DMs</div>
+              <div class="cleanup-op-sub">Delete every DM thread and message permanently</div>
+            </div>
+            <button class="cleanup-op-btn cleanup-op-btn-danger" onclick="window.cleanupWipeDMs()">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+              Wipe
+            </button>
+          </div>
+        </div>
+
+        <div class="cleanup-op-card">
+          <div class="cleanup-op-hdr">
+            <div class="cleanup-op-icon cleanup-op-icon-warn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+            </div>
+            <div class="cleanup-op-right-fill">
+              <div class="cleanup-op-title">Wipe Channel Messages</div>
+              <div class="cleanup-op-sub">Delete all messages in a specific channel</div>
+              <select id="cleanup-ch-sel" class="cleanup-select">
+                <option value="all">All channels</option>
+              </select>
+            </div>
+            <button class="cleanup-op-btn cleanup-op-btn-danger" onclick="window.cleanupWipeChannel()">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+              Wipe
+            </button>
+          </div>
+        </div>
+
+        <div class="cleanup-op-card">
+          <div class="cleanup-op-hdr">
+            <div class="cleanup-op-icon cleanup-op-icon-info">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2"/><circle cx="8" cy="8" r="1.5" fill="currentColor"/><circle cx="16" cy="16" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg>
+            </div>
+            <div>
+              <div class="cleanup-op-title">Purge Stale BJ Games</div>
+              <div class="cleanup-op-sub">Remove completed or 24h+ old blackjack sessions</div>
+            </div>
+            <button class="cleanup-op-btn" onclick="window.cleanupPurgeBJGames()">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+              Purge
+            </button>
+          </div>
+        </div>
+
+        <div class="cleanup-op-card">
+          <div class="cleanup-op-hdr">
+            <div class="cleanup-op-icon cleanup-op-icon-info">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </div>
+            <div>
+              <div class="cleanup-op-title">Reset Visit Counter</div>
+              <div class="cleanup-op-sub">Set the global visit count back to 0</div>
+            </div>
+            <button class="cleanup-op-btn" onclick="window.cleanupResetVisits()">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+              Reset
+            </button>
+          </div>
+        </div>
+
+        <div class="cleanup-op-card">
+          <div class="cleanup-op-hdr">
+            <div class="cleanup-op-icon cleanup-op-icon-info">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+            </div>
+            <div class="cleanup-op-right-fill">
+              <div class="cleanup-op-title">Delete GoatCoin by UID</div>
+              <div class="cleanup-op-sub">Remove a specific user's GoatCoin document</div>
+              <input id="cleanup-gc-uid" class="cleanup-input" placeholder="User UID..." />
+            </div>
+            <button class="cleanup-op-btn cleanup-op-btn-danger" onclick="window.cleanupDeleteUserGC()">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+              Delete
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="cleanup-log-panel">
+        <div class="cleanup-log-hdr">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
+          Activity Log
+          <button class="cleanup-log-clear" onclick="document.getElementById('cleanup-log').innerHTML=''">Clear</button>
+        </div>
+        <div class="cleanup-log" id="cleanup-log">
+          <div class="cleanup-log-entry cleanup-log-info">Ready — choose an operation above</div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // Populate channels
+  getDocs(collection(db,'channels')).then(snap => {
+    const sel = document.getElementById('cleanup-ch-sel');
+    if(!sel) return;
+    snap.forEach(s => {
+      const opt = document.createElement('option');
+      opt.value = s.id;
+      opt.textContent = '#' + escHtml(s.data().name || s.id);
+      sel.appendChild(opt);
+    });
+  }).catch(()=>{});
+
+  // Scan orphan button
+  document.getElementById('btn-scan-orphans')?.addEventListener('click', async () => {
+    _cleanupLog('Scanning for unusual user states…', 'info');
+    try {
+      const snap = await getDocs(collection(db,'users'));
+      const weird = [];
+      snap.forEach(d => {
+        const st = d.data().status;
+        if(!['approved','pending','banned'].includes(st)) {
+          weird.push({id: d.id, username: d.data().username, status: st});
+        }
+      });
+      if(!weird.length) {
+        _cleanupLog('All Firestore users have valid statuses. No orphans found.', 'success');
+      } else {
+        _cleanupLog(`Found ${weird.length} user(s) with unexpected status:`, 'warn');
+        weird.forEach(u => _cleanupLog(`  • ${u.username||u.id} → status: "${u.status||'undefined'}"`, 'warn'));
+      }
+    } catch(e) { _cleanupLog('Scan failed: ' + e.message, 'error'); }
+  });
+}
+
+function _cleanupLog(msg, type='info') {
+  const wrap = document.getElementById('cleanup-log');
+  if(!wrap) return;
+  const el = document.createElement('div');
+  el.className = `cleanup-log-entry cleanup-log-${type}`;
+  const time = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+  el.innerHTML = `<span class="cleanup-log-time">${time}</span><span>${typeof msg === 'string' ? msg : JSON.stringify(msg)}</span>`;
+  wrap.appendChild(el);
+  wrap.scrollTop = wrap.scrollHeight;
+}
+
+window.cleanupWipeAllCoins = function() {
+  showModal(`
+    <h3>Wipe ALL GoatCoin Balances?</h3>
+    <p class="modal-p">This will set <strong>every user's</strong> coins, weekCoins, totalCoins, and all stats to 0. This is permanent.</p>
+    <div class="modal-actions">
+      <button class="btn btn-ghost btn-sm" onclick="document.getElementById('modal-overlay').click()">Cancel</button>
+      <button class="btn btn-danger btn-sm" id="confirm-wipe-coins">Yes, Wipe All Coins</button>
+    </div>`);
+  document.getElementById('confirm-wipe-coins').onclick = async () => {
+    closeModal();
+    try {
+      const snap = await getDocs(collection(db,'goatcoin'));
+      let count = 0;
+      const batch = writeBatch(db);
+      const reset = { coins:0, weekCoins:0, totalCoins:0, weekSiteMins:0, weekChatMins:0, weekGameMins:0, totalSiteMins:0, totalChatMins:0, totalGameMins:0, weekBJWins:0, totalBJWins:0 };
+      snap.docs.forEach(d => { batch.update(d.ref, reset); count++; });
+      await batch.commit();
+      _cleanupLog(`Wiped GoatCoin balances for ${count} users.`, 'success');
+    } catch(e) { _cleanupLog('Failed: '+e.message, 'error'); }
+  };
+};
+
+window.cleanupResetWeeklyStats = function() {
+  showModal(`
+    <h3>Reset Weekly Stats?</h3>
+    <p class="modal-p">Resets weekCoins, weekChatMins, weekGameMins, and weekBJWins for all users. Does not touch balances.</p>
+    <div class="modal-actions">
+      <button class="btn btn-ghost btn-sm" onclick="document.getElementById('modal-overlay').click()">Cancel</button>
+      <button class="btn btn-danger btn-sm" id="confirm-reset-weekly">Reset Weekly Stats</button>
+    </div>`);
+  document.getElementById('confirm-reset-weekly').onclick = async () => {
+    closeModal();
+    try {
+      const snap = await getDocs(collection(db,'goatcoin'));
+      let count = 0;
+      const batch = writeBatch(db);
+      const reset = { weekCoins:0, weekSiteMins:0, weekChatMins:0, weekGameMins:0, weekBJWins:0 };
+      snap.docs.forEach(d => { batch.update(d.ref, reset); count++; });
+      await batch.commit();
+      _cleanupLog(`Reset weekly stats for ${count} users.`, 'success');
+    } catch(e) { _cleanupLog('Failed: '+e.message, 'error'); }
+  };
+};
+
+window.cleanupDeleteUserGC = async function() {
+  const uid = document.getElementById('cleanup-gc-uid')?.value.trim();
+  if(!uid) { toast('Enter a UID','warning'); return; }
+  showModal(`<h3>Delete GoatCoin for UID?</h3><p class="modal-p">UID: <code>${escHtml(uid)}</code><br>This permanently removes their GoatCoin document.</p><div class="modal-actions"><button class="btn btn-ghost btn-sm" onclick="document.getElementById('modal-overlay').click()">Cancel</button><button class="btn btn-danger btn-sm" id="confirm-del-gc">Delete</button></div>`);
+  document.getElementById('confirm-del-gc').onclick = async () => {
+    closeModal();
+    try { await deleteDoc(doc(db,'goatcoin',uid)); _cleanupLog(`Deleted GoatCoin doc for ${uid}.`, 'success'); }
+    catch(e) { _cleanupLog('Failed: '+e.message, 'error'); }
+  };
+};
+
+window.cleanupWipeChannel = function() {
+  const chId = document.getElementById('cleanup-ch-sel')?.value;
+  if(!chId) { toast('Select a channel first','warning'); return; }
+  showModal(`<h3>Wipe #${chId}?</h3><p class="modal-p">Deletes all messages in <strong>#${escHtml(chId)}</strong>. Cannot be undone.</p><div class="modal-actions"><button class="btn btn-ghost btn-sm" onclick="document.getElementById('modal-overlay').click()">Cancel</button><button class="btn btn-danger btn-sm" id="confirm-wipe-ch">Wipe Channel</button></div>`);
+  document.getElementById('confirm-wipe-ch').onclick = async () => {
+    closeModal();
+    try {
+      const snap = await getDocs(collection(db, `channels/${chId}/messages`));
+      if(!snap.size) { _cleanupLog(`#${chId} is already empty.`,'info'); return; }
+      const batchSize = 499; let batch = writeBatch(db), count = 0;
+      for(const d of snap.docs) { batch.delete(d.ref); count++; if(count%batchSize===0){await batch.commit();batch=writeBatch(db);} }
+      if(count%batchSize!==0) await batch.commit();
+      _cleanupLog(`Wiped ${snap.size} messages from #${chId}.`,'success');
+    } catch(e) { _cleanupLog('Failed: '+e.message,'error'); }
+  };
+};
+
+window.cleanupWipeDMs = function() {
+  showModal(`<h3>Wipe ALL Direct Messages?</h3><p class="modal-p">This deletes every DM thread and all messages inside them, for every user. Permanent.</p><div class="modal-actions"><button class="btn btn-ghost btn-sm" onclick="document.getElementById('modal-overlay').click()">Cancel</button><button class="btn btn-danger btn-sm" id="confirm-wipe-dms">Wipe All DMs</button></div>`);
+  document.getElementById('confirm-wipe-dms').onclick = async () => {
+    closeModal();
+    try {
+      const dmsSnap = await getDocs(collection(db,'dms'));
+      let totalMsgs = 0;
+      for(const dmDoc of dmsSnap.docs) {
+        const msgsSnap = await getDocs(collection(db,`dms/${dmDoc.id}/messages`));
+        if(msgsSnap.size) { const batch=writeBatch(db); msgsSnap.docs.forEach(d=>batch.delete(d.ref)); await batch.commit(); totalMsgs+=msgsSnap.size; }
+        await deleteDoc(dmDoc.ref);
+      }
+      _cleanupLog(`Wiped ${dmsSnap.size} DM threads (${totalMsgs} messages).`,'success');
+    } catch(e) { _cleanupLog('Failed: '+e.message,'error'); }
+  };
+};
+
+window.cleanupPurgeBJGames = async function() {
+  try {
+    const cutoff = Date.now() - 24*60*60*1000;
+    const snap = await getDocs(collection(db,'bj_games'));
+    const toDel = snap.docs.filter(d => {
+      const data = d.data();
+      if(data.phase==='gameDone') return true;
+      const ts = data.createdAt?.toMillis ? data.createdAt.toMillis() : 0;
+      return ts && ts < cutoff;
+    });
+    if(!toDel.length) { _cleanupLog('No stale BJ games found.','info'); return; }
+    await Promise.all(toDel.map(d=>deleteDoc(d.ref)));
+    _cleanupLog(`Purged ${toDel.length} stale BJ game(s).`,'success');
+  } catch(e) { _cleanupLog('Failed: '+e.message,'error'); }
+};
+
+window.cleanupClearBJChallenges = async function() {
+  try {
+    const snap = await getDocs(collection(db,'bj_challenges'));
+    if(!snap.size) { _cleanupLog('No BJ challenges found.','info'); return; }
+    await Promise.all(snap.docs.map(d=>deleteDoc(d.ref)));
+    _cleanupLog(`Cleared ${snap.size} BJ challenge(s).`,'success');
+  } catch(e) { _cleanupLog('Failed: '+e.message,'error'); }
+};
+
+window.cleanupResetVisits = async function() {
+  try {
+    if(_rtdb) { await rtSet(rtRef(_rtdb,'meta/visits'), 0).catch(()=>{}); }
+    await setDoc(doc(db,'meta','visits'), { count: 0 }, { merge: true }).catch(()=>{});
+    _cleanupLog('Visit counter reset to 0.','success');
+    const el = document.getElementById('visits-count');
+    if(el) el.textContent = '0';
+  } catch(e) { _cleanupLog('Failed: '+e.message,'error'); }
+};
+
+// ── Admin Setup ──
+async function setupAdmin() {
+  const d = currentUserData;
+  const isGoat = d.rank === 'goat';
+
+  const adminSection = document.getElementById('section-admin');
+  if(!adminSection) return;
+
+  adminSection.innerHTML = `
+  <div class="admin-page">
+    <div class="admin-header">
+      <div class="admin-header-left">
+        <div class="admin-header-icon">
+          ${isGoat
+            ? '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 9V7a2 2 0 0 0-2-2h-1a2 2 0 0 0-2 2v1"/><path d="M4 9V7a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v1"/><path d="M8 9h8"/><ellipse cx="12" cy="13" rx="5" ry="4"/><path d="M9 17v2"/><path d="M15 17v2"/></svg>'
+            : '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>'}
+        </div>
+        <div>
+          <div class="admin-header-title">${isGoat ? 'Goat Console' : 'Mod Panel'}</div>
+          <div class="admin-header-sub">${isGoat ? 'Full system access — users, data, moderation' : 'Approve members and moderate the community'}</div>
+        </div>
+      </div>
+      <div class="admin-stats-row" id="admin-stats-row">
+        <div class="admin-stat-card" id="adm-stat-pending">
+          <div class="admin-stat-num" id="adm-cnt-pending">…</div>
+          <div class="admin-stat-label">Pending</div>
+        </div>
+        <div class="admin-stat-card" id="adm-stat-members">
+          <div class="admin-stat-num" id="adm-cnt-members">…</div>
+          <div class="admin-stat-label">Members</div>
+        </div>
+        <div class="admin-stat-card" id="adm-stat-banned">
+          <div class="admin-stat-num" id="adm-cnt-banned">…</div>
+          <div class="admin-stat-label">Banned</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="admin-nav">
+      <button class="adm-tab active" data-tab="pending">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Pending
+        <span class="adm-tab-badge hidden" id="adm-tab-badge-pending"></span>
+      </button>
+      <button class="adm-tab" data-tab="members">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+        Members
+      </button>
+      <button class="adm-tab" data-tab="banned">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+        Banned
+      </button>
+      ${isGoat ? `<button class="adm-tab" data-tab="cleanup">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/><path d="M8 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+        DB Cleanup
+      </button>` : ''}
+    </div>
+
+    <div class="admin-body">
+      <div class="adm-panel active" id="ap-pending"></div>
+      <div class="adm-panel" id="ap-members"></div>
+      <div class="adm-panel" id="ap-banned"></div>
+      ${isGoat ? '<div class="adm-panel" id="ap-cleanup"></div>' : ''}
+    </div>
+  </div>`;
+
+  document.querySelectorAll('.adm-tab').forEach(t => {
+    t.addEventListener('click', () => {
+      document.querySelectorAll('.adm-tab').forEach(x => x.classList.remove('active'));
+      document.querySelectorAll('.adm-panel').forEach(x => x.classList.remove('active'));
+      t.classList.add('active');
+      document.getElementById('ap-'+t.dataset.tab)?.classList.add('active');
+      loadAdminPanel(t.dataset.tab);
+    });
+  });
+
+  loadAdminCounts();
+  loadAdminPanel('pending');
+}
+
+async function loadAdminCounts() {
+  try {
+    const snap = await getDocs(collection(db,'users'));
+    let p=0,m=0,b=0;
+    snap.forEach(d => {
+      const st = d.data().status;
+      if(st === 'pending') p++;
+      else if(st === 'banned') b++;
+      else if(st === 'approved') m++;
+    });
+    const pEl = document.getElementById('adm-cnt-pending');
+    const mEl = document.getElementById('adm-cnt-members');
+    const bEl = document.getElementById('adm-cnt-banned');
+    if(pEl) pEl.textContent = p;
+    if(mEl) mEl.textContent = m;
+    if(bEl) bEl.textContent = b;
+    document.getElementById('adm-stat-pending')?.classList.toggle('admin-stat-alert', p>0);
+    document.getElementById('adm-stat-banned')?.classList.toggle('admin-stat-alert', b>0);
+    const badgeEl = document.getElementById('adm-tab-badge-pending');
+    if(badgeEl) {
+      badgeEl.textContent = p;
+      badgeEl.classList.toggle('hidden', p === 0);
+    }
+  } catch(e) {}
+}
+
 
 // Ã¢â€â‚¬Ã¢â€â‚¬ DMs Ã¢â€â‚¬Ã¢â€â‚¬
 function initDMs() {
@@ -1496,6 +2055,7 @@ async function sendDM() {
 
 // Ã¢â€â‚¬Ã¢â€â‚¬ Profile Ã¢â€â‚¬Ã¢â€â‚¬
 const AVATAR_COLORS = ['#ef4444','#f97316','#eab308','#22c55e','#14b8a6','#3b82f6','#8b5cf6','#ec4899','#06b6d4','#84cc16','#f43f5e','#a855f7','#10b981','#0ea5e9','#f59e0b','#64748b'];
+
 
 function setupProfile() {
   renderOwnProfile(currentUser, currentUserData, getGoatCoinData());
@@ -2102,342 +2662,6 @@ async function buildChannelNotifList() {
   });
 }
 
-// Ã¢â€â‚¬Ã¢â€â‚¬ Admin Panel Ã¢â€â‚¬Ã¢â€â‚¬
-async function setupAdmin() {
-  const d = currentUserData;
-  const isGoat = d.rank === 'goat';
-
-  // Rebuild the entire admin section HTML
-  const adminSection = document.getElementById('section-admin');
-  if(!adminSection) return;
-
-  adminSection.innerHTML = `
-  <div class="admin-fullpage">
-    <div class="admin-topbar">
-      <div class="admin-topbar-left">
-        <span class="admin-topbar-icon">${isGoat ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>' : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>'}</span>
-        <div>
-          <div class="admin-topbar-title">${isGoat ? 'Goat Console' : 'Mod Panel'}</div>
-          <div class="admin-topbar-sub">${isGoat ? 'Full system access Ã¢â‚¬â€ user management, data cleanup, moderation' : 'Approve members and manage the community'}</div>
-        </div>
-      </div>
-      <div class="admin-stats-row" id="admin-stats-row">
-        <div class="admin-stat-pill" id="adm-stat-pending"><span id="adm-cnt-pending">Ã¢â‚¬Â¦</span> Pending</div>
-        <div class="admin-stat-pill" id="adm-stat-members"><span id="adm-cnt-members">Ã¢â‚¬Â¦</span> Members</div>
-        <div class="admin-stat-pill" id="adm-stat-banned"><span id="adm-cnt-banned">Ã¢â‚¬Â¦</span> Banned</div>
-      </div>
-    </div>
-    <div class="admin-tabs" id="admin-tabs">
-      <button class="adm-tab active" data-tab="pending"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Pending</button>
-      <button class="adm-tab" data-tab="members"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg> Members</button>
-      <button class="adm-tab" data-tab="banned"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg> Banned</button>
-      ${isGoat ? `<button class="adm-tab" data-tab="cleanup"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg> DB Cleanup</button>` : ''}
-    </div>
-    <div class="admin-panel-area">
-      <div class="adm-panel active" id="ap-pending"><div class="adm-loading">LoadingÃ¢â‚¬Â¦</div></div>
-      <div class="adm-panel" id="ap-members"><div class="adm-loading">LoadingÃ¢â‚¬Â¦</div></div>
-      <div class="adm-panel" id="ap-banned"><div class="adm-loading">LoadingÃ¢â‚¬Â¦</div></div>
-      ${isGoat ? '<div class="adm-panel" id="ap-cleanup"><div class="adm-loading">LoadingÃ¢â‚¬Â¦</div></div>' : ''}
-    </div>
-  </div>`;
-
-  document.querySelectorAll('.adm-tab').forEach(t => {
-    t.addEventListener('click', () => {
-      document.querySelectorAll('.adm-tab').forEach(x=>x.classList.remove('active'));
-      document.querySelectorAll('.adm-panel').forEach(x=>x.classList.remove('active'));
-      t.classList.add('active');
-      document.getElementById('ap-'+t.dataset.tab)?.classList.add('active');
-      loadAdminPanel(t.dataset.tab);
-    });
-  });
-
-  // Load counts + first tab
-  loadAdminCounts();
-  loadAdminPanel('pending');
-}
-
-async function loadAdminCounts() {
-  getDocs(collection(db,'users')).then(snap=>{
-    let p=0,m=0,b=0;
-    snap.forEach(d=>{
-      const data=d.data();
-      if(data.status === 'pending') p++;
-      else if(data.status === 'banned') b++;
-      else if(data.status === 'approved') m++;
-    });
-    const pEl = document.getElementById('adm-cnt-pending');
-    const mEl = document.getElementById('adm-cnt-members');
-    const bEl = document.getElementById('adm-cnt-banned');
-    if(pEl) pEl.textContent = p;
-    if(mEl) mEl.textContent = m;
-    if(bEl) bEl.textContent = b;
-    document.getElementById('adm-stat-pending')?.classList.toggle('has-count', p>0);
-    document.getElementById('adm-stat-banned')?.classList.toggle('has-count', b>0);
-  }).catch(()=>{});
-}
-// ...existing code...
-
-// Ã¢â€â‚¬Ã¢â€â‚¬ DB Cleanup Panel (Goat-only) Ã¢â€â‚¬Ã¢â€â‚¬
-function renderDBCleanupNew(container) {
-  container.innerHTML = `
-    <div class="cleanup-panel-new">
-      <div class="cleanup-left-new">
-        <h4>Danger Zone</h4>
-        <p class="muted">These operations are irreversible. Please pick carefully.</p>
-        <div class="field">
-          <label>Channel</label>
-          <select id="cleanup-channel-select"></select>
-        </div>
-        <div class="field">
-          <label>Action</label>
-          <select id="cleanup-action-select"><option value="wipe-coins">Wipe all GoatCoin balances</option><option value="reset-weekly">Reset weekly stats</option><option value="wipe-dms">Wipe all DMs</option><option value="wipe-messages">Wipe all channel messages</option><option value="purge-games">Purge stale games</option><option value="reset-visits">Reset visit counters</option></select>
-        </div>
-        <div class="field">
-          <label>Filter</label>
-          <input id="cleanup-filter" class="field-input" placeholder="Optional filter (username or uid)">
-        </div>
-        <div style="margin-top:.8rem">
-          <button class="btn btn-danger" id="cleanup-exec">Run Action</button>
-        </div>
-      </div>
-      <div class="cleanup-right-new">
-        <h4>Log</h4>
-        <div class="cleanup-log-new" id="cleanup-log"></div>
-      </div>
-    </div>
-  `;
-  // populate channels
-  getDocs(collection(db,'channels')).then(snap=>{
-    const sel = document.getElementById('cleanup-channel-select');
-    sel.innerHTML = '<option value="all">All channels</option>';
-    snap.forEach(s=>{
-      sel.innerHTML += `<option value="${s.id}">${escHtml(s.data().title||s.id)}</option>`;
-    });
-  }).catch(()=>{});
-  document.getElementById('cleanup-exec')?.addEventListener('click', ()=>{
-    const action = document.getElementById('cleanup-action-select').value;
-    const channel = document.getElementById('cleanup-channel-select').value;
-    const filter = document.getElementById('cleanup-filter').value.trim();
-    _cleanupLog(`Starting ${action} on ${channel} ${filter?(' filter:'+filter):''}`);
-    runCleanupAction(action, channel, filter).then(()=>_cleanupLog('Completed','success')).catch(e=>_cleanupLog(e.message,'error'));
-  });
-}
-
-function _cleanupLog(msg, type='info') {
-  const wrap = document.getElementById('cleanup-log');
-  if(!wrap) return;
-  const el = document.createElement('div');
-  el.className = 'cleanup-log-entry-new cleanup-log-'+type+'-new';
-  el.textContent = typeof msg === 'string' ? msg : JSON.stringify(msg);
-  wrap.appendChild(el);
-  wrap.scrollTop = wrap.scrollHeight;
-}
-
-window.cleanupWipeAllCoins = function() {
-  showModal(`
-    <h3>Wipe ALL GoatCoin Balances?</h3>
-    <p class="modal-p">This will set <strong>every user's</strong> coins, weekCoins, totalCoins, and all stats to 0. This is permanent.</p>
-    <div class="modal-actions">
-      <button class="btn btn-ghost btn-sm" onclick="document.getElementById('modal-overlay').click()">Cancel</button>
-      <button class="btn btn-danger btn-sm" id="confirm-wipe-coins">Yes, Wipe All Coins</button>
-    </div>`);
-  document.getElementById('confirm-wipe-coins').onclick = async () => {
-    closeModal();
-    try {
-      const snap = await getDocs(collection(db,'goatcoin'));
-      let count = 0;
-      const batch = writeBatch(db);
-      const reset = { coins:0, weekCoins:0, totalCoins:0, weekSiteMins:0, weekChatMins:0, weekGameMins:0, totalSiteMins:0, totalChatMins:0, totalGameMins:0, weekBJWins:0, totalBJWins:0 };
-      snap.docs.forEach(d => { batch.update(d.ref, reset); count++; });
-      await batch.commit();
-      _cleanupLog(`Wiped GoatCoin balances for ${count} users.`, 'success');
-    } catch(e) { _cleanupLog('Failed: '+e.message, 'error'); }
-  };
-};
-
-window.cleanupResetWeeklyStats = function() {
-  showModal(`
-    <h3>Reset Weekly Stats?</h3>
-    <p class="modal-p">Resets weekCoins, weekChatMins, weekGameMins, and weekBJWins for all users. Does not touch balances.</p>
-    <div class="modal-actions">
-      <button class="btn btn-ghost btn-sm" onclick="document.getElementById('modal-overlay').click()">Cancel</button>
-      <button class="btn btn-danger btn-sm" id="confirm-reset-weekly">Reset Weekly Stats</button>
-    </div>`);
-  document.getElementById('confirm-reset-weekly').onclick = async () => {
-    closeModal();
-    try {
-      const snap = await getDocs(collection(db,'goatcoin'));
-      let count = 0;
-      const batch = writeBatch(db);
-      const reset = { weekCoins:0, weekSiteMins:0, weekChatMins:0, weekGameMins:0, weekBJWins:0 };
-      snap.docs.forEach(d => { batch.update(d.ref, reset); count++; });
-      await batch.commit();
-      _cleanupLog(`Reset weekly stats for ${count} users.`, 'success');
-    } catch(e) { _cleanupLog('Failed: '+e.message, 'error'); }
-  };
-};
-
-window.cleanupDeleteUserGC = async function() {
-  const uid = document.getElementById('cleanup-gc-uid')?.value.trim();
-  if(!uid) { toast('Enter a UID','warning'); return; }
-  showModal(`<h3>Delete GoatCoin for UID?</h3><p class="modal-p">UID: <code>${escHtml(uid)}</code><br>This permanently removes their GoatCoin document.</p><div class="modal-actions"><button class="btn btn-ghost btn-sm" onclick="document.getElementById('modal-overlay').click()">Cancel</button><button class="btn btn-danger btn-sm" id="confirm-del-gc">Delete</button></div>`);
-  document.getElementById('confirm-del-gc').onclick = async () => {
-    closeModal();
-    try { await deleteDoc(doc(db,'goatcoin',uid)); _cleanupLog(`Deleted GoatCoin doc for ${uid}.`, 'success'); }
-    catch(e) { _cleanupLog('Failed: '+e.message, 'error'); }
-  };
-};
-
-window.cleanupWipeChannel = function() {
-  const chId = document.getElementById('cleanup-ch-sel')?.value;
-  if(!chId) { toast('Select a channel first','warning'); return; }
-  showModal(`<h3>Wipe #${chId}?</h3><p class="modal-p">Deletes all messages in <strong>#${escHtml(chId)}</strong>. Cannot be undone.</p><div class="modal-actions"><button class="btn btn-ghost btn-sm" onclick="document.getElementById('modal-overlay').click()">Cancel</button><button class="btn btn-danger btn-sm" id="confirm-wipe-ch">Wipe Channel</button></div>`);
-  document.getElementById('confirm-wipe-ch').onclick = async () => {
-    closeModal();
-    try {
-      const snap = await getDocs(collection(db, `channels/${chId}/messages`));
-      if(!snap.size) { _cleanupLog(`#${chId} is already empty.`,'info'); return; }
-      const batchSize = 499; let batch = writeBatch(db), count = 0;
-      for(const d of snap.docs) { batch.delete(d.ref); count++; if(count%batchSize===0){await batch.commit();batch=writeBatch(db);} }
-      if(count%batchSize!==0) await batch.commit();
-      _cleanupLog(`Wiped ${snap.size} messages from #${chId}.`,'success');
-    } catch(e) { _cleanupLog('Failed: '+e.message,'error'); }
-  };
-};
-
-window.cleanupWipeDMs = function() {
-  showModal(`<h3>Wipe ALL Direct Messages?</h3><p class="modal-p">This deletes every DM thread and all messages inside them, for every user. Permanent.</p><div class="modal-actions"><button class="btn btn-ghost btn-sm" onclick="document.getElementById('modal-overlay').click()">Cancel</button><button class="btn btn-danger btn-sm" id="confirm-wipe-dms">Wipe All DMs</button></div>`);
-  document.getElementById('confirm-wipe-dms').onclick = async () => {
-    closeModal();
-    try {
-      const dmsSnap = await getDocs(collection(db,'dms'));
-      let totalMsgs = 0;
-      for(const dmDoc of dmsSnap.docs) {
-        const msgsSnap = await getDocs(collection(db,`dms/${dmDoc.id}/messages`));
-        if(msgsSnap.size) { const batch=writeBatch(db); msgsSnap.docs.forEach(d=>batch.delete(d.ref)); await batch.commit(); totalMsgs+=msgsSnap.size; }
-        await deleteDoc(dmDoc.ref);
-      }
-      _cleanupLog(`Wiped ${dmsSnap.size} DM threads (${totalMsgs} messages).`,'success');
-    } catch(e) { _cleanupLog('Failed: '+e.message,'error'); }
-  };
-};
-
-window.cleanupClearOfflinePresence = async function() {
-  try {
-    const snap = await getDocs(collection(db,'presence'));
-    const offline = snap.docs.filter(d=>!d.data().online);
-    if(!offline.length) { _cleanupLog('No offline presence docs found.','info'); return; }
-    const batch = writeBatch(db);
-    offline.forEach(d=>batch.delete(d.ref));
-    await batch.commit();
-    _cleanupLog(`Cleared ${offline.length} offline presence docs.`,'success');
-  } catch(e) { _cleanupLog('Failed: '+e.message,'error'); }
-};
-
-window.cleanupPurgeBJGames = async function() {
-  try {
-    const cutoff = Date.now() - 24*60*60*1000;
-    const snap = await getDocs(collection(db,'bj_games'));
-    const toDel = snap.docs.filter(d => {
-      const data = d.data();
-      if(data.phase==='gameDone') return true;
-      const ts = data.createdAt?.toMillis ? data.createdAt.toMillis() : 0;
-      return ts && ts < cutoff;
-    });
-    if(!toDel.length) { _cleanupLog('No stale BJ games found.','info'); return; }
-    await Promise.all(toDel.map(d=>deleteDoc(d.ref)));
-    _cleanupLog(`Purged ${toDel.length} stale BJ game(s).`,'success');
-  } catch(e) { _cleanupLog('Failed: '+e.message,'error'); }
-};
-
-window.cleanupClearBJChallenges = async function() {
-  try {
-    const snap = await getDocs(collection(db,'bj_challenges'));
-    if(!snap.size) { _cleanupLog('No BJ challenges found.','info'); return; }
-    await Promise.all(snap.docs.map(d=>deleteDoc(d.ref)));
-    _cleanupLog(`Cleared ${snap.size} BJ challenge(s).`,'success');
-  } catch(e) { _cleanupLog('Failed: '+e.message,'error'); }
-};
-
-// Ã¢"â‚¬Ã¢"â‚¬ Cleanup Action Dispatcher Ã¢"â‚¬Ã¢"â‚¬
-async function runCleanupAction(action, channel, filter) {
-  switch(action) {
-    case 'wipe-coins':   await _runWipeCoins(filter); break;
-    case 'reset-weekly': await _runResetWeekly(filter); break;
-    case 'wipe-dms':     await _runWipeDMs(filter); break;
-    case 'wipe-messages': await _runWipeMessages(channel, filter); break;
-    case 'purge-games':  await window.cleanupPurgeBJGames(); break;
-    case 'reset-visits': await window.cleanupResetVisits(); break;
-    default: _cleanupLog('Unknown action: ' + action, 'error');
-  }
-}
-
-async function _runWipeCoins(filter) {
-  const snap = await getDocs(collection(db,'goatcoin'));
-  const reset = { coins:0, weekCoins:0, totalCoins:0, weekSiteMins:0, weekChatMins:0, weekGameMins:0, totalSiteMins:0, totalChatMins:0, totalGameMins:0, weekBJWins:0, totalBJWins:0 };
-  let count = 0;
-  const batch = writeBatch(db);
-  snap.docs.forEach(d => {
-    if(filter && d.id !== filter) return;
-    batch.update(d.ref, reset); count++;
-  });
-  await batch.commit();
-  _cleanupLog(`Wiped GoatCoin for ${count} users.`, 'success');
-}
-
-async function _runResetWeekly(filter) {
-  const snap = await getDocs(collection(db,'goatcoin'));
-  const reset = { weekCoins:0, weekSiteMins:0, weekChatMins:0, weekGameMins:0, weekBJWins:0 };
-  let count = 0;
-  const batch = writeBatch(db);
-  snap.docs.forEach(d => {
-    if(filter && d.id !== filter) return;
-    batch.update(d.ref, reset); count++;
-  });
-  await batch.commit();
-  _cleanupLog(`Reset weekly stats for ${count} users.`, 'success');
-}
-
-async function _runWipeDMs(filter) {
-  const dmsSnap = await getDocs(collection(db,'dms'));
-  let totalMsgs = 0;
-  for(const dmDoc of dmsSnap.docs) {
-    const msgsSnap = await getDocs(collection(db,`dms/${dmDoc.id}/messages`));
-    if(msgsSnap.size) { const batch=writeBatch(db); msgsSnap.docs.forEach(d=>batch.delete(d.ref)); await batch.commit(); totalMsgs+=msgsSnap.size; }
-    await deleteDoc(dmDoc.ref);
-  }
-  _cleanupLog(`Wiped ${dmsSnap.size} DM threads (${totalMsgs} messages).`,'success');
-}
-
-async function _runWipeMessages(channel, filter) {
-  const channels = channel === 'all'
-    ? [...new Set(['general','admin',...(await getDocs(collection(db,'channels'))).docs.map(d=>d.id)])]
-    : [channel];
-  let total = 0;
-  for(const chId of channels) {
-    const snap = await getDocs(collection(db, `channels/${chId}/messages`));
-    if(!snap.size) continue;
-    const batchSize = 499; let batch = writeBatch(db), count = 0;
-    for(const d of snap.docs) { batch.delete(d.ref); count++; if(count%batchSize===0){await batch.commit();batch=writeBatch(db);} }
-    if(count%batchSize!==0) await batch.commit();
-    total += snap.size;
-    _cleanupLog(`Wiped ${snap.size} messages from #${chId}`);
-  }
-  _cleanupLog(`Total: ${total} messages wiped.`, 'success');
-}
-
-window.cleanupResetVisits = async function() {
-  try {
-    // Reset RTDB
-    if(_rtdb) { await rtSet(rtRef(_rtdb,'meta/visits'), 0).catch(()=>{}); }
-    // Reset Firestore
-    await setDoc(doc(db,'meta','visits'), { count: 0 }, { merge: true }).catch(()=>{});
-    _cleanupLog('Visit counter reset to 0.','success');
-    // Update display
-    const el = document.getElementById('visits-count');
-    if(el) el.textContent = '0';
-  } catch(e) { _cleanupLog('Failed: '+e.message,'error'); }
-};
 
 function canChangeRank(targetUser) {
   const me = currentUserData;
