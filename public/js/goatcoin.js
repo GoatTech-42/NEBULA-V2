@@ -1,9 +1,9 @@
-// ═══════════════════════════════════════════════════
-//  goatcoin.js — GoatCoin currency, 1v1 blackjack,
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+//  goatcoin.js â€” GoatCoin currency, 1v1 blackjack,
 //  leaderboard, weekly badge awards
 //  NOTE: Blackjack is STRICTLY 2-player (you vs one opponent).
 //        Games stored in RTDB for speed/cost.
-// ═══════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 import {
   db, auth,
   doc, getDoc, setDoc, updateDoc, collection, query, where,
@@ -12,11 +12,11 @@ import {
 import { getDatabase, ref as rtRef, set as rtSet, get as rtGet, onValue, push as rtPush, remove as rtRemove, update as rtUpdate, onDisconnect } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 import { toast, avatarColor, avatarInitial, escHtml, avatarHtml } from './app.js';
 
-// ── Constants ──
+// â”€â”€ Constants â”€â”€
 const COIN_PER_MINUTE = 1;
 const COIN_TICK_MS    = 60_000;
 
-// ── Module state ──
+// â”€â”€ Module state â”€â”€
 let _gcUser    = null;
 let _gcData    = null;
 let _gcUnsub   = null;
@@ -43,9 +43,9 @@ const GOATCOIN_ICON_SVG = '<svg class="gc-title-icon" viewBox="0 0 24 24" fill="
 const BJ_DECK_ICON_SVG = '<svg class="bj-lobby-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="12" height="15" rx="2"/><path d="M8 9h4"/><path d="M10 7v4"/><path d="M9 15l2-2 2 2"/><path d="M9 13h4"/><path d="M10 16h2"/><rect x="9" y="3" width="11" height="15" rx="2" opacity=".6"/></svg>';
 const BJ_COIN_ICON_SVG = '<svg class="bj-inline-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="currentColor" opacity=".14"/><circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1.8"/><path d="M10 14h3.2c1 0 1.7-.5 1.7-1.3 0-.8-.6-1.2-1.6-1.3l-1.7-.2c-.9-.1-1.3-.4-1.3-.9 0-.6.5-1 1.4-1h3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M12 8.2v7.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>';
 
-// ──────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 //  WEEK KEY
-// ──────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function _weekKey() {
   const now = new Date();
   const sunday = new Date(now);
@@ -57,9 +57,9 @@ function _weekKey() {
   return `${y}-W-${m}${d}`;
 }
 
-// ──────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 //  INIT
-// ──────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export function initGoatCoin(user, userData, rtdb) {
   _gcUser = user;
   _rtdb = rtdb || null;
@@ -105,9 +105,9 @@ export function setActivity(mode) {
   _activity = mode;
 }
 
-// ──────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 //  COINS
-// ──────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function _subscribeCoins() {
   if(_gcUnsub) _gcUnsub();
   const ref = doc(db, 'goatcoin', _gcUser.uid);
@@ -235,9 +235,9 @@ function _refreshTabIfOpen() {
   }
 }
 
-// ──────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 //  TAB RENDER
-// ──────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export function renderGoatCoinTab() { _renderTab(); }
 
 function _renderTab() {
@@ -256,51 +256,62 @@ function _renderTab() {
   sunday.setHours(0,0,0,0);
   const saturday = new Date(sunday);
   saturday.setDate(sunday.getDate() + 6);
-  const weekLabel = `${sunday.toLocaleDateString('en-US',{month:'short',day:'numeric'})} – ${saturday.toLocaleDateString('en-US',{month:'short',day:'numeric'})}`;
+  const weekLabel = `${sunday.toLocaleDateString('en-US',{month:'short',day:'numeric'})} â€“ ${saturday.toLocaleDateString('en-US',{month:'short',day:'numeric'})}`;
 
   container.innerHTML = `
     <div class="pad gc-page">
-      <div class="gc-header-row">
-        <div>
-          <div class="pg-title gc-title-wrap">${GOATCOIN_ICON_SVG}<span>GoatCoin</span></div>
-          <div class="pg-sub">Earn coins for being here. Bet in blackjack. Climb the weekly board.</div>
+      <!-- Hero Banner -->
+      <div class="gc-hero-banner">
+        <div class="gc-hero-bg">
+          <div class="gc-hero-glow"></div>
         </div>
-        <div style="display:flex;flex-direction:column;gap:.5rem;align-items:flex-end">
-          <div class="gc-balance-badge">
-            <div class="gc-balance-num gc-balance" id="gc-bal-display">${coins.toLocaleString()}</div>
-            <div class="gc-balance-tag">GC Balance</div>
+        <div class="gc-hero-content">
+          <div class="gc-hero-left">
+            <div class="gc-hero-icon">${GOATCOIN_ICON_SVG}</div>
+            <div>
+              <div class="gc-hero-title">GoatCoin</div>
+              <div class="gc-hero-sub">Earn coins for being here. Bet in blackjack. Climb the board.</div>
+            </div>
           </div>
-          <div class="gc-total-badge">
-            <span class="gc-total-label">All-Time Earned:</span>
-            <span class="gc-total-val">${totalCoins.toLocaleString()} GC</span>
+          <div class="gc-hero-right">
+            <div class="gc-hero-balance">
+              <div class="gc-hero-bal-amount gc-balance" id="gc-bal-display">${coins.toLocaleString()}</div>
+              <div class="gc-hero-bal-label">GC</div>
+            </div>
+            <div class="gc-hero-alltime">All-Time: ${totalCoins.toLocaleString()} GC</div>
           </div>
         </div>
       </div>
 
-      <div class="settings-section-label"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> Week of ${weekLabel}</div>
-      <div class="gc-stats-row">
-        <div class="notif-section-card gc-stat-card">
-          <div class="gc-stat-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></div>
-          <div class="gc-stat-val">${wCoins.toLocaleString()}</div>
-          <div class="gc-stat-label">Earned This Week</div>
+      <!-- Week Stats -->
+      <div class="gc-week-header">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <span>Week of ${weekLabel}</span>
+      </div>
+      <div class="gc-stats-grid">
+        <div class="gc-stat-tile gc-stat-earned">
+          <div class="gc-stat-tile-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></div>
+          <div class="gc-stat-tile-num">${wCoins.toLocaleString()}</div>
+          <div class="gc-stat-tile-label">Earned</div>
         </div>
-        <div class="notif-section-card gc-stat-card">
-          <div class="gc-stat-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div>
-          <div class="gc-stat-val">${wChat}m</div>
-          <div class="gc-stat-label">Chat Time</div>
+        <div class="gc-stat-tile gc-stat-chat">
+          <div class="gc-stat-tile-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div>
+          <div class="gc-stat-tile-num">${wChat}m</div>
+          <div class="gc-stat-tile-label">Chat</div>
         </div>
-        <div class="notif-section-card gc-stat-card">
-          <div class="gc-stat-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M7 10v4"/><line x1="5" y1="12" x2="9" y2="12"/><circle cx="15" cy="11" r="1" fill="currentColor"/><circle cx="17" cy="13" r="1" fill="currentColor"/></svg></div>
-          <div class="gc-stat-val">${wGame}m</div>
-          <div class="gc-stat-label">Game Time</div>
+        <div class="gc-stat-tile gc-stat-games">
+          <div class="gc-stat-tile-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M7 10v4"/><line x1="5" y1="12" x2="9" y2="12"/><circle cx="15" cy="11" r="1" fill="currentColor"/><circle cx="17" cy="13" r="1" fill="currentColor"/></svg></div>
+          <div class="gc-stat-tile-num">${wGame}m</div>
+          <div class="gc-stat-tile-label">Games</div>
         </div>
-        <div class="notif-section-card gc-stat-card">
-          <div class="gc-stat-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2"/><circle cx="8" cy="8" r="1.5" fill="currentColor"/><circle cx="16" cy="16" r="1.5" fill="currentColor"/><circle cx="8" cy="16" r="1.5" fill="currentColor"/><circle cx="16" cy="8" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg></div>
-          <div class="gc-stat-val">${wBJ}</div>
-          <div class="gc-stat-label">BJ Wins</div>
+        <div class="gc-stat-tile gc-stat-bj">
+          <div class="gc-stat-tile-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2"/><circle cx="8" cy="8" r="1.5" fill="currentColor"/><circle cx="16" cy="16" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg></div>
+          <div class="gc-stat-tile-num">${wBJ}</div>
+          <div class="gc-stat-tile-label">BJ Wins</div>
         </div>
       </div>
 
+      <!-- Main Layout -->
       <div class="gc-main-layout">
         <div class="gc-bj-col" id="gc-bj-col">${_renderBJLobby()}</div>
         <div class="gc-lb-col">
@@ -308,7 +319,7 @@ function _renderTab() {
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
             Leaderboard
           </div>
-          <div id="gc-leaderboard-content"><div class="gc-lb-loading">Loading…</div></div>
+          <div id="gc-leaderboard-content"><div class="gc-lb-loading">Loadingâ€¦</div></div>
         </div>
       </div>
     </div>`;
@@ -321,9 +332,9 @@ function _renderTab() {
   _fetchIncomingNow();
 }
 
-// ──────────────────────────────────────────────────
-//  LOBBY UI — 1v1 only
-// ──────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+//  LOBBY UI â€” 1v1 only
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function _renderBJLobby() {
   return `<div class="bj-lobby">
     <div class="bj-lobby-card">
@@ -331,7 +342,7 @@ function _renderBJLobby() {
         ${BJ_DECK_ICON_SVG}
         <div>
           <div class="bj-lobby-title">1v1 Blackjack</div>
-          <div class="bj-lobby-sub">Challenge one opponent. Closest to 21 wins each round — no dealer advantage. Most round wins takes the pot.</div>
+          <div class="bj-lobby-sub">Challenge one opponent. Closest to 21 wins each round â€” no dealer advantage. Most round wins takes the pot.</div>
         </div>
       </div>
 
@@ -505,7 +516,7 @@ async function _sendChallenge() {
   const maxLoss = stake * Math.ceil(bestOf/2);
 
   if(maxLoss > myCoins) {
-    if(err) err.textContent=`You don't have enough GC — need ${maxLoss.toLocaleString()} to cover worst-case losses (you have ${myCoins.toLocaleString()})`;
+    if(err) err.textContent=`You don't have enough GC â€” need ${maxLoss.toLocaleString()} to cover worst-case losses (you have ${myCoins.toLocaleString()})`;
     return;
   }
   const oppGC = await getDoc(doc(db,'goatcoin',_selectedOpp.uid));
@@ -565,8 +576,8 @@ function _showWaitingState(opp, stake, bestOf) {
       <div class="bj-waiting-opps">
         <div class="bj-waiting-opp" style="background:${opp.color||avatarColor(opp.uid)}">${avatarHtml(opp.icon||'',opp.username,'55%')}</div>
       </div>
-      <div class="bj-waiting-text">Waiting for <strong>${escHtml(opp.username)}</strong> to accept…</div>
-      <div class="bj-waiting-meta">${stake} GC per round · Best of ${bestOf}</div>
+      <div class="bj-waiting-text">Waiting for <strong>${escHtml(opp.username)}</strong> to acceptâ€¦</div>
+      <div class="bj-waiting-meta">${stake} GC per round Â· Best of ${bestOf}</div>
       <button class="btn btn-ghost btn-sm" id="bj-cancel-challenge">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         Cancel
@@ -664,7 +675,7 @@ function _renderPendingChallenges(challenges) {
         <div class="bj-sr-ava bj-mystery-ava">?</div>
         <div class="bj-chal-info">
           <span class="bj-chal-from bj-mystery-name">Someone challenges you</span>
-          <span class="bj-chal-meta">${c.stake} GC/round · Best of ${c.bestOf} · <span style="color:var(--warn);font-weight:700">Identity hidden until accepted</span></span>
+          <span class="bj-chal-meta">${c.stake} GC/round Â· Best of ${c.bestOf} Â· <span style="color:var(--warn);font-weight:700">Identity hidden until accepted</span></span>
         </div>
         <button class="ta-btn ta-green bj-accept-btn" data-cid="${c.id}">Accept</button>
         <button class="ta-btn ta-red bj-decline-btn" data-cid="${c.id}">Decline</button>
@@ -680,7 +691,7 @@ async function _acceptChallenge(cid) {
   const maxLoss = (c.stake||0) * Math.ceil((c.bestOf||1)/2);
   const myCoins = _gcData ? Math.floor(_gcData.coins||0) : 0;
   if(!_gcData || myCoins < maxLoss) {
-    toast(`Not enough GC — need ${maxLoss.toLocaleString()} to cover worst-case losses`, 'error');
+    toast(`Not enough GC â€” need ${maxLoss.toLocaleString()} to cover worst-case losses`, 'error');
     return;
   }
   const senderGC = await getDoc(doc(db,'goatcoin',c.fromUid));
@@ -728,9 +739,9 @@ async function _declineChallenge(cid) {
   await deleteDoc(doc(db,'bj_challenges',cid)).catch(()=>{});
 }
 
-// ──────────────────────────────────────────────────
-//  GAME LOGIC — RTDB-backed
-// ──────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+//  GAME LOGIC â€” RTDB-backed
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async function _getGame(gameId, useRTDB) {
   if(useRTDB && _rtdb) {
@@ -940,9 +951,9 @@ export async function bjNextRound() {
   });
 }
 
-// ──────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 //  BJ TABLE UI
-// ──────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function _getBJContainer() {
   let ov = document.getElementById('bj-fullscreen-overlay');
   if(!ov) {
@@ -1012,7 +1023,7 @@ function _renderBJTable() {
             <span>${escHtml(myName)} (You)</span>
             <span class="bj-mp-score">${scores[_myRole]||0}</span>
           </div>
-          <div class="bj-mp-vs">vs · Round ${g.currentRound||1} of ${g.bestOf||3} · ${g.stake}GC/rd</div>
+          <div class="bj-mp-vs">vs Â· Round ${g.currentRound||1} of ${g.bestOf||3} Â· ${g.stake}GC/rd</div>
           <div class="bj-mp-player">
             <div class="bj-mp-ava" style="background:${oppColor}">${avatarHtml(oppIcon,oppName,'60%')}</div>
             <span>${escHtml(oppName)}</span>
@@ -1024,7 +1035,7 @@ function _renderBJTable() {
         <div class="bj-sides-row bj-sides-row-full">
           <div class="bj-side bj-my-side ${myTurn?'bj-active-side':''}">
             <div class="bj-side-label">
-              You <span class="bj-total ${myTotal>21?'bust':''}">${myH.length?myTotal:'—'}</span>
+              You <span class="bj-total ${myTotal>21?'bust':''}">${myH.length?myTotal:'â€”'}</span>
               ${myTurn?'<span class="bj-your-turn-badge">your move</span>':''}
             </div>
             <div class="bj-hand">${myH.map(c=>_renderCard(c)).join('')}</div>
@@ -1032,8 +1043,8 @@ function _renderBJTable() {
           <div class="bj-side bj-opp-side">
             <div class="bj-side-label">
               ${escHtml(oppName)}
-              ${done?`<span class="bj-total ${oppTotal>21?'bust':''}">${oppH.length?oppTotal:'—'}</span>`:'<span class="bj-total">?</span>'}
-              ${phase===`${oppRole}turn`?'<span class="bj-their-turn-badge">thinking…</span>':''}
+              ${done?`<span class="bj-total ${oppTotal>21?'bust':''}">${oppH.length?oppTotal:'â€”'}</span>`:'<span class="bj-total">?</span>'}
+              ${phase===`${oppRole}turn`?'<span class="bj-their-turn-badge">thinkingâ€¦</span>':''}
             </div>
             <div class="bj-hand">${done?oppH.map(c=>_renderCard(c)).join(''):oppH.map(()=>_renderCard(null,true)).join('')}</div>
           </div>
@@ -1046,13 +1057,13 @@ function _renderBJTable() {
             <button class="btn bj-btn" id="bj-mp-stand">Stand</button>
             ${myH.length===2&&Math.floor(_gcData?.coins||0)>=(g.stake||0)*2?'<button class="btn bj-btn bj-double" id="bj-mp-double">Double Down</button>':''}
           `:''}
-          ${phase==='roundDone'?(_myRole==='p1'?'<button class="btn bj-btn" id="bj-mp-next">Next Round</button>':`<div class="bj-wait-msg">${escHtml(g.p1name)} is dealing next round…</div>`):''}
+          ${phase==='roundDone'?(_myRole==='p1'?'<button class="btn bj-btn" id="bj-mp-next">Next Round</button>':`<div class="bj-wait-msg">${escHtml(g.p1name)} is dealing next roundâ€¦</div>`):''}
           ${phase==='gameDone'&&g.winner?'<button class="btn btn-ghost bj-btn" id="bj-mp-leave">Back to Lobby</button>':''}
-          ${phase==='gameDone'&&!g.winner?(_myRole==='p1'?'<button class="btn bj-btn" id="bj-mp-next">Tiebreaker Round</button>':`<div class="bj-wait-msg">${escHtml(g.p1name)} is starting the tiebreaker…</div>`):''}
-          ${phase==='p1turn'&&_myRole==='p2'?`<div class="bj-wait-msg">${escHtml(g.p1name)} is taking their turn…</div>`:''}
-          ${phase==='p2turn'&&_myRole==='p1'?`<div class="bj-wait-msg">${escHtml(g.p2name)} is taking their turn…</div>`:''}
-          ${phase==='dealer'?'<div class="bj-wait-msg">Resolving round…</div>':''}
-          ${phase==='dealing'?'<div class="bj-wait-msg">Dealing cards…</div>':''}
+          ${phase==='gameDone'&&!g.winner?(_myRole==='p1'?'<button class="btn bj-btn" id="bj-mp-next">Tiebreaker Round</button>':`<div class="bj-wait-msg">${escHtml(g.p1name)} is starting the tiebreakerâ€¦</div>`):''}
+          ${phase==='p1turn'&&_myRole==='p2'?`<div class="bj-wait-msg">${escHtml(g.p1name)} is taking their turnâ€¦</div>`:''}
+          ${phase==='p2turn'&&_myRole==='p1'?`<div class="bj-wait-msg">${escHtml(g.p2name)} is taking their turnâ€¦</div>`:''}
+          ${phase==='dealer'?'<div class="bj-wait-msg">Resolving roundâ€¦</div>':''}
+          ${phase==='dealing'?'<div class="bj-wait-msg">Dealing cardsâ€¦</div>':''}
         </div>
       </div>
     </div>
@@ -1067,10 +1078,10 @@ function _renderBJTable() {
   document.getElementById('bj-fs-close')?.addEventListener('click', _leaveGame);
 }
 
-// ──────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 //  CARD UTILS
-// ──────────────────────────────────────────────────
-const SUITS=['♠','♥','♦','♣'], VALUES=['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+const SUITS=['â™ ','â™¥','â™¦','â™£'], VALUES=['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
 function _newDeck() {
   const deck=[];
   for(const s of SUITS) for(const v of VALUES) deck.push({s,v});
@@ -1097,17 +1108,17 @@ function _handTotal(hand) {
 }
 function _renderCard(card,hidden=false) {
   if(hidden||!card) return '<div class="bj-card bj-hidden"><span>?</span></div>';
-  const red=card.s==='♥'||card.s==='♦';
+  const red=card.s==='â™¥'||card.s==='â™¦';
   return `<div class="bj-card${red?' red':''}"><span class="bj-cv">${card.v}</span><span class="bj-cs">${card.s}</span></div>`;
 }
 
-// ──────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 //  LEADERBOARD
-// ──────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function _renderLeaderboard() {
   const el=document.getElementById('gc-leaderboard-content');
   if(!el) return;
-  el.innerHTML='<div style="color:var(--text-faint);font-size:.78rem;padding:.5rem 0">Loading…</div>';
+  el.innerHTML='<div style="color:var(--text-faint);font-size:.78rem;padding:.5rem 0">Loadingâ€¦</div>';
   try {
     const [gcSnap,usersSnap]=await Promise.all([
       getDocs(collection(db,'goatcoin')),
@@ -1150,7 +1161,7 @@ async function _renderLeaderboard() {
           ${sorted.slice(0,20).map((r,i)=>{
             const isMe = r.uid===_gcUser?.uid;
             const medal = medals[i] || `<span class="lb-rank-num">#${i+1}</span>`;
-            const val = tabDef?.fmt(r[activeTab]||0) || '—';
+            const val = tabDef?.fmt(r[activeTab]||0) || 'â€”';
             return `<div class="lb-row${isMe?' lb-me':''}">
               <span class="lb-rank">${medal}</span>
               <div class="lb-ava" style="background:${r.color}">${avatarHtml(r.icon,r.username,'60%')}</div>
@@ -1178,9 +1189,9 @@ function _fmtMins(mins) {
   return m ? `${h}h ${m}m` : `${h}h`;
 }
 
-// ──────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 //  EXPORTS
-// ──────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export function getGoatCoins()    { return _gcData?Math.floor(_gcData.coins||0):0; }
 export function getGoatCoinData() { return _gcData; }
 

@@ -12,7 +12,7 @@ import { renderBadgeRow, openProfileModal, renderOwnProfile, checkAutoAwards, BA
 import { renderShopTab, initShop } from './shop.js';
 import { CMD_ICONS } from './icons.js';
 
-// â”€â”€ State â”€â”€
+// Ã¢â€â‚¬Ã¢â€â‚¬ State Ã¢â€â‚¬Ã¢â€â‚¬
 let currentUser = null;
 let currentUserData = null;
 let currentChannel = null;
@@ -31,11 +31,11 @@ const _unreadChannels = {};
 const _unreadDMs = {};
 let _unreadEnabled = true;
 
-// Channel message limit â€” prune when exceeded
+// Channel message limit Ã¢â‚¬â€ prune when exceeded
 const CHANNEL_MSG_LIMIT = 100;
 const CHANNEL_MSG_PRUNE_TO = 80;
 
-// â”€â”€ Rank utils â”€â”€
+// Ã¢â€â‚¬Ã¢â€â‚¬ Rank utils Ã¢â€â‚¬Ã¢â€â‚¬
 const RANKS = { earthbound:0, planetary:1, solar:2, galactic:3, universal:4, goat:5 };
 const rankOf = r => RANKS[r] ?? -1;
 const canModerate = r => rankOf(r) >= rankOf('universal');
@@ -49,7 +49,7 @@ const AV_COLORS = ['#ef4444','#f97316','#eab308','#22c55e','#14b8a6','#3b82f6','
 function avatarColor(uid) { let h=0; for(let c of uid) h=(h<<5)-h+c.charCodeAt(0); return AV_COLORS[Math.abs(h)%AV_COLORS.length]; }
 function avatarInitial(u) { return (u||'?')[0].toUpperCase(); }
 
-// â”€â”€ Toast â”€â”€
+// Ã¢â€â‚¬Ã¢â€â‚¬ Toast Ã¢â€â‚¬Ã¢â€â‚¬
 function toast(msg, type='info', dur=3000) {
   const stack = document.getElementById('notif-stack');
   const el = document.createElement('div');
@@ -61,7 +61,7 @@ function toast(msg, type='info', dur=3000) {
   setTimeout(()=>{ el.style.animation='fadeOut .3s ease forwards'; setTimeout(()=>el.remove(),300); }, dur);
 }
 
-// â”€â”€ Modal â”€â”€
+// Ã¢â€â‚¬Ã¢â€â‚¬ Modal Ã¢â€â‚¬Ã¢â€â‚¬
 function showModal(html, onClose) {
   const ov = document.getElementById('modal-overlay');
   const wrap = document.getElementById('modal-wrap');
@@ -87,7 +87,7 @@ function closeModal(cb) {
   },200);
 }
 
-// â”€â”€ Theme â”€â”€
+// Ã¢â€â‚¬Ã¢â€â‚¬ Theme Ã¢â€â‚¬Ã¢â€â‚¬
 const THEME_FILES = { 'og':'og.css','dark':'dark.css','light':'light.css','synthwave':'synthwave.css','aurora':'aurora.css','crimson':'crimson.css','midnight':'midnight.css','slate':'slate.css','forest':'forest.css','ocean':'ocean.css','rose':'rose.css','solar':'solar.css','void':'void.css','neon':'neon.css','blush':'blush.css','ice':'ice.css' };
 let _themeTransitioning = false;
 
@@ -126,7 +126,21 @@ function applyTheme(name, animate = true) {
   }, { once: true });
 }
 
-// â”€â”€ Notification Permission â”€â”€
+// â”€â”€ Layout â”€â”€
+const LAYOUTS = ['default','sidebar-right','topbar','bottombar'];
+
+function loadLayout() {
+  return localStorage.getItem('neb_layout') || 'default';
+}
+
+function applyLayout(layout) {
+  if(!LAYOUTS.includes(layout)) layout = 'default';
+  localStorage.setItem('neb_layout', layout);
+  document.body.classList.remove(...LAYOUTS.map(l => 'layout-' + l));
+  document.body.classList.add('layout-' + layout);
+}
+
+// Ã¢â€â‚¬Ã¢â€â‚¬ Notification Permission Ã¢â€â‚¬Ã¢â€â‚¬
 function requestNotifPermission() {
   if(!('Notification' in window)) return;
   if(Notification.permission === 'default') {
@@ -138,7 +152,7 @@ function requestNotifPermission() {
   }
 }
 
-// â”€â”€ Auth Screen â”€â”€
+// Ã¢â€â‚¬Ã¢â€â‚¬ Auth Screen Ã¢â€â‚¬Ã¢â€â‚¬
 function showAuth() {
   document.getElementById('auth-screen').classList.remove('hidden');
   document.getElementById('pending-screen').classList.add('hidden');
@@ -152,9 +166,9 @@ function hideSkeleton() {
 }
 
 function setupAuth() {
-  document.getElementById('auth-pass-eye')?.addEventListener('click', () => {
+  document.getElementById('auth-pass-toggle')?.addEventListener('click', () => {
     const inp = document.getElementById('auth-pass');
-    const icon = document.getElementById('eye-icon');
+    const icon = document.querySelector('#auth-pass-toggle svg');
     if(!inp) return;
     const show = inp.type === 'password';
     inp.type = show ? 'text' : 'password';
@@ -239,7 +253,7 @@ function setupAuth() {
   });
 }
 
-// â”€â”€ Main App Init â”€â”€
+// Ã¢â€â‚¬Ã¢â€â‚¬ Main App Init Ã¢â€â‚¬Ã¢â€â‚¬
 async function initApp(user) {
   if(_pendingSignup) return;
   const snap = await getDoc(doc(db,'users',user.uid));
@@ -315,7 +329,7 @@ async function initApp(user) {
   hideSkeleton();
 }
 
-// â”€â”€ Sidebar â”€â”€
+// Ã¢â€â‚¬Ã¢â€â‚¬ Sidebar Ã¢â€â‚¬Ã¢â€â‚¬
 function buildSidebar() {
   const d = currentUserData;
   const ava = document.getElementById('sp-ava');
@@ -346,7 +360,7 @@ function buildSidebar() {
   });
 }
 
-// â”€â”€ Nav â”€â”€
+// Ã¢â€â‚¬Ã¢â€â‚¬ Nav Ã¢â€â‚¬Ã¢â€â‚¬
 function setupNav() {
   document.querySelectorAll('[data-section]').forEach(item => {
     item.addEventListener('click', () => navigate(item.dataset.section));
@@ -366,7 +380,7 @@ function navigate(section) {
   document.getElementById('mobile-drawer')?.remove();
 }
 
-// â”€â”€ Home / Visits â”€â”€
+// Ã¢â€â‚¬Ã¢â€â‚¬ Home / Visits Ã¢â€â‚¬Ã¢â€â‚¬
 const TOOLTIPS_RAW = [
   "nebula never dies", "disable your adblocker for goatcoin", "lock in gng", "stfu fleece", "dm me for tooltip suggestions", "now with more customization", "plz dont hack", "find the tabernacle", "is ts peak", "goattech is better", "proxies dont take the internet", "no goofy ahh minecraft kids", "definitely not vibe coded", "join hackclub", "67 67 676767 hahahhahahah", "great uncle tup tup never dies", "lightspeed", "why are you reading this", "in the big 26", "touch grass gng", "lets go gambling", "all on red", "ask not what nebula can do for you", "imagine not having the goat rank", "goatcoin > bitcoin", "ctrl+k to search anything", "new features every week", "the stars are watching",
 ];
@@ -410,11 +424,11 @@ function initHome() {
     _tooltipInterval = setInterval(cycle, 4200);
     document.addEventListener('visibilitychange', () => {
       if(document.hidden) {
-        // Tab lost focus â€” immediately remove ALL tooltip elements to prevent overlap on return
+        // Tab lost focus Ã¢â‚¬â€ immediately remove ALL tooltip elements to prevent overlap on return
         wrap.querySelectorAll('.tt-el').forEach(el => el.remove());
         if(_tooltipInterval) { clearInterval(_tooltipInterval); _tooltipInterval = null; }
       } else {
-        // Tab regained focus â€” clean start with a single fresh tooltip
+        // Tab regained focus Ã¢â‚¬â€ clean start with a single fresh tooltip
         wrap.querySelectorAll('.tt-el').forEach(el => el.remove());
         cycle();
         if(!_tooltipInterval) _tooltipInterval = setInterval(cycle, 4200);
@@ -512,7 +526,7 @@ async function setupBattery() {
   }
 }
 
-// â”€â”€ Presence â€” REMOVED to save Firebase quota â”€â”€
+// Ã¢â€â‚¬Ã¢â€â‚¬ Presence Ã¢â‚¬â€ REMOVED to save Firebase quota Ã¢â€â‚¬Ã¢â€â‚¬
 // Typing indicators are kept per-channel via RTDB.
 function setupPresence() {
   // No-op: presence system removed to conserve RTDB/Firestore quota
@@ -521,7 +535,7 @@ function setupPresence() {
 function trackVisits() {
   const el = document.getElementById('visits-count');
   if(!el) return;
-  // Use RTDB for visit counter â€” much cheaper than Firestore
+  // Use RTDB for visit counter Ã¢â‚¬â€ much cheaper than Firestore
   if(_rtdb) {
     const visitsRef = rtRef(_rtdb, 'meta/visits');
     rtGet(visitsRef).then(snap => {
@@ -549,7 +563,7 @@ function trackVisits() {
   }
 }
 
-// â”€â”€ Channel message pruning â”€â”€
+// Ã¢â€â‚¬Ã¢â€â‚¬ Channel message pruning Ã¢â€â‚¬Ã¢â€â‚¬
 async function pruneChannelIfNeeded(channelId) {
   try {
     const msgsRef = collection(db, `channels/${channelId}/messages`);
@@ -565,7 +579,7 @@ async function pruneChannelIfNeeded(channelId) {
   }
 }
 
-// â”€â”€ Chat â”€â”€
+// Ã¢â€â‚¬Ã¢â€â‚¬ Chat Ã¢â€â‚¬Ã¢â€â‚¬
 const HARDCODED_CHANNELS = [
   { id:'general', name:'general', icon:'#', announce:false, passwordProtected:false, minRank:'planetary' },
   { id:'admin', name:'admin', icon:'#', announce:false, passwordProtected:false, minRank:'universal', adminOnly:true }
@@ -629,7 +643,7 @@ async function openChannel(ch) {
   const annBadge = document.getElementById('chat-announce-badge');
   annBadge.classList.toggle('hidden', !ch.announce);
 
-  // Wipe thread button â€” goat only
+  // Wipe thread button Ã¢â‚¬â€ goat only
   const ctbRight = document.querySelector('#chat-window .ctb-right');
   if(ctbRight) {
     const existingWipe = ctbRight.querySelector('.wipe-thread-btn');
@@ -659,7 +673,7 @@ async function openChannel(ch) {
   document.getElementById('chat-send-btn').disabled = isAnnounce;
   document.getElementById('chat-input').placeholder = isAnnounce ? 'Announcements only' : `Message #${ch.name}`;
 
-  // Prune in background â€” won't block UI
+  // Prune in background Ã¢â‚¬â€ won't block UI
   setTimeout(() => pruneChannelIfNeeded(ch.id), 2000);
 }
 
@@ -668,7 +682,7 @@ function subscribeChannel(channelId) {
   let initialized = false;
   lastMsgSender = null; lastMsgTime = null;
 
-  // Use typing from RTDB if available, else Firestore â€” unsub previous listener first
+  // Use typing from RTDB if available, else Firestore Ã¢â‚¬â€ unsub previous listener first
   if(_typingUnsub) { _typingUnsub(); _typingUnsub = null; }
   if(_rtdb) {
     const typingRef = rtRef(_rtdb, `typing/${channelId}`);
@@ -934,7 +948,7 @@ function scrollToBottom(force=false) {
   if(force || nearBottom) wrap.scrollTop = wrap.scrollHeight;
 }
 
-// â”€â”€ Chat Input â”€â”€
+// Ã¢â€â‚¬Ã¢â€â‚¬ Chat Input Ã¢â€â‚¬Ã¢â€â‚¬
 function setupChatInput() {
   const input = document.getElementById('chat-input');
   const sendBtn = document.getElementById('chat-send-btn');
@@ -959,7 +973,7 @@ async function sendTyping() {
   clearTimeout(typingDebounce);
   typingDebounce = setTimeout(async ()=>{
     if(_rtdb && currentChannel) {
-      // Use RTDB for typing â€” much cheaper
+      // Use RTDB for typing Ã¢â‚¬â€ much cheaper
       const typRef = rtRef(_rtdb, `typing/${currentChannel.id}/${currentUser.uid}`);
       rtSet(typRef, { username: currentUserData.username, ts: Date.now() }).catch(()=>{});
       // Auto-clear after 4s
@@ -976,7 +990,7 @@ async function sendMessage() {
   const btn = document.getElementById('chat-send-btn');
   const text = input.value.trim();
   if(!text || !currentChannel) return;
-  if(text.length > 500) { toast('That message is too long â€” 500 chars max.', 'warning'); return; }
+  if(text.length > 500) { toast('That message is too long Ã¢â‚¬â€ 500 chars max.', 'warning'); return; }
   if(btn.disabled) return;
 
   input.value = '';
@@ -996,7 +1010,7 @@ async function sendMessage() {
   finally { btn.disabled = false; }
 }
 
-// â”€â”€ Edit/Delete â”€â”€
+// Ã¢â€â‚¬Ã¢â€â‚¬ Edit/Delete Ã¢â€â‚¬Ã¢â€â‚¬
 window.editMsg = function(id, encodedText) {
   const text = decodeURIComponent(encodedText);
   const el = document.getElementById('msg-'+id);
@@ -1038,27 +1052,27 @@ window.deleteMsg = function(id) {
   };
 };
 
-// â”€â”€ Reactions â”€â”€
+// Ã¢â€â‚¬Ã¢â€â‚¬ Reactions Ã¢â€â‚¬Ã¢â€â‚¬
 
 // Emoji Reaction System
 const REACTION_DEFS = {
-  thumbsup:    { label: 'ðŸ‘ Like',         emoji: 'ðŸ‘' },
-  thumbsdown:  { label: 'ðŸ‘Ž Dislike',      emoji: 'ðŸ‘Ž' },
-  fire:        { label: 'ðŸ”¥ Fire',         emoji: 'ðŸ”¥' },
-  wilted:      { label: 'ðŸ¥€ Wilted',       emoji: 'ðŸ¥€' },
-  heartbreak:  { label: 'ðŸ’” Heartbreak',   emoji: 'ðŸ’”' },
-  skull:       { label: 'ðŸ’€ Skull',        emoji: 'ðŸ’€' },
-  laugh:       { label: 'ðŸ˜‚ LOL',          emoji: 'ðŸ˜‚' },
-  mindblown:   { label: 'ðŸ¤¯ Mind Blown',   emoji: 'ðŸ¤¯' },
-  wave:        { label: 'ðŸ‘‹ Wave',         emoji: 'ðŸ‘‹' },
-  star:        { label: 'â­ Star',         emoji: 'â­' },
-  party:       { label: 'ðŸŽ‰ Party',        emoji: 'ðŸŽ‰' },
-  goat:        { label: 'ðŸ GOAT',         emoji: 'ðŸ' },
+  thumbsup:    { label: 'Ã°Å¸â€˜Â Like',         emoji: 'Ã°Å¸â€˜Â' },
+  thumbsdown:  { label: 'Ã°Å¸â€˜Å½ Dislike',      emoji: 'Ã°Å¸â€˜Å½' },
+  fire:        { label: 'Ã°Å¸â€Â¥ Fire',         emoji: 'Ã°Å¸â€Â¥' },
+  wilted:      { label: 'Ã°Å¸Â¥â‚¬ Wilted',       emoji: 'Ã°Å¸Â¥â‚¬' },
+  heartbreak:  { label: 'Ã°Å¸â€™â€ Heartbreak',   emoji: 'Ã°Å¸â€™â€' },
+  skull:       { label: 'Ã°Å¸â€™â‚¬ Skull',        emoji: 'Ã°Å¸â€™â‚¬' },
+  laugh:       { label: 'Ã°Å¸Ëœâ€š LOL',          emoji: 'Ã°Å¸Ëœâ€š' },
+  mindblown:   { label: 'Ã°Å¸Â¤Â¯ Mind Blown',   emoji: 'Ã°Å¸Â¤Â¯' },
+  wave:        { label: 'Ã°Å¸â€˜â€¹ Wave',         emoji: 'Ã°Å¸â€˜â€¹' },
+  star:        { label: 'Ã¢Â­Â Star',         emoji: 'Ã¢Â­Â' },
+  party:       { label: 'Ã°Å¸Å½â€° Party',        emoji: 'Ã°Å¸Å½â€°' },
+  goat:        { label: 'Ã°Å¸ÂÂ GOAT',         emoji: 'Ã°Å¸ÂÂ' },
 };
 
 const REACTION_KEYS = Object.keys(REACTION_DEFS);
 
-// window.addReaction â€” emoji picker
+// window.addReaction Ã¢â‚¬â€ emoji picker
 window.addReaction = function(msgId) {
   // Remove any existing picker
   document.querySelectorAll('.epicker').forEach(p=>p.remove());
@@ -1092,7 +1106,7 @@ window.addReaction = function(msgId) {
   }, 10);
 };
 
-// renderReactions â€” emoji chips
+// renderReactions Ã¢â‚¬â€ emoji chips
 function renderReactions(container, reactions, msgId) {
   if(!container) return;
   container.innerHTML = '';
@@ -1110,13 +1124,36 @@ function renderReactions(container, reactions, msgId) {
   });
 }
 
-// â”€â”€ Members â€” simple list sorted by rank (no presence) â”€â”€
+// Ã¢â€â‚¬Ã¢â€â‚¬ Members Ã¢â‚¬â€ simple list sorted by rank (no presence) Ã¢â€â‚¬Ã¢â€â‚¬
+
+async function loadMembers(ch) {
+  const list = document.getElementById('members-list');
+  if(!list) return;
+  if(membersUnsub) { membersUnsub(); membersUnsub = null; }
+  list.innerHTML = '<div style="font-size:.72rem;color:var(--text-faint);padding:.5rem">Loadingâ€¦</div>';
+  try {
+    const snap = await getDocs(query(collection(db,'users'), where('status','==','approved')));
+    const members = snap.docs.map(d => d.data()).sort((a,b) => rankOf(b.rank) - rankOf(a.rank));
+    list.innerHTML = '';
+    members.forEach(u => {
+      const el = document.createElement('div');
+      el.className = 'ms-item';
+      el.style.cursor = 'pointer';
+      el.innerHTML = `<div class="ms-ava" style="background:${u.color||avatarColor(u.uid)}">${avatarHtml(u.icon,u.username,'60%')}</div><div class="ms-info"><div class="ms-name" style="color:${u.color||avatarColor(u.uid)}">${escHtml(u.username)}</div><div class="ms-rank" style="color:${RANK_COLORS[u.rank]||'var(--text-faint)'}">${(u.rank||'').toUpperCase()}</div></div>`;
+      el.addEventListener('click', () => window._openProfile(u.uid));
+      list.appendChild(el);
+    });
+  } catch(e) {
+    list.innerHTML = '<div style="font-size:.72rem;color:var(--danger);padding:.5rem">Failed to load members</div>';
+  }
+}
+
 async function loadAdminPanel(tab) {
-  const c = document.getElementById('adm-content');
+  const c = document.getElementById('ap-'+tab);
   if(!c) return;
-  c.innerHTML = '<div class="adm-loading">Loadingâ€¦</div>';
+  c.innerHTML = '<div class="adm-loading">LoadingÃ¢â‚¬Â¦</div>';
   if(tab === 'pending') {
-    getDocs(query(collection(db,'users'), where('approved','==', false))).then(snap=>{
+    getDocs(query(collection(db,'users'), where('status','==','pending'))).then(snap=>{
       let html = '<div class="adm-list">';
       snap.forEach(s=>{
         const d = s.data();
@@ -1126,7 +1163,7 @@ async function loadAdminPanel(tab) {
       c.innerHTML = html;
     }).catch(()=>{c.innerHTML='<div class="adm-error">Failed to load</div>'});
   } else if(tab === 'members') {
-    getDocs(query(collection(db,'users'), where('approved','==', true))).then(snap=>{
+    getDocs(query(collection(db,'users'), where('status','==','approved'))).then(snap=>{
       let html = '<div class="adm-list">';
       snap.forEach(s=>{
         const d = s.data();
@@ -1136,7 +1173,7 @@ async function loadAdminPanel(tab) {
       c.innerHTML = html;
     }).catch(()=>{c.innerHTML='<div class="adm-error">Failed to load</div>'});
   } else if(tab === 'banned') {
-    getDocs(query(collection(db,'users'), where('banned','==', true))).then(snap=>{
+    getDocs(query(collection(db,'users'), where('status','==','banned'))).then(snap=>{
       let html = '<div class="adm-list">';
       snap.forEach(s=>{
         const d = s.data();
@@ -1180,7 +1217,7 @@ function showCreateChannelModal() {
   `);
 }
 
-// â”€â”€ Wipe Thread (goat only) â”€â”€
+// Ã¢â€â‚¬Ã¢â€â‚¬ Wipe Thread (goat only) Ã¢â€â‚¬Ã¢â€â‚¬
 window.wipeThread = function(channelId, channelName) {
   if(currentUserData?.rank !== 'goat') return;
   showModal(`
@@ -1245,7 +1282,7 @@ window.createChannel = async function() {
   } catch(e) { if(err) err.textContent=e.message; }
 };
 
-// â”€â”€ DMs â”€â”€
+// Ã¢â€â‚¬Ã¢â€â‚¬ DMs Ã¢â€â‚¬Ã¢â€â‚¬
 function initDMs() {
   const searchInp = document.getElementById('dm-search-input');
   const searchWrap = document.getElementById('dm-search-wrap');
@@ -1430,7 +1467,7 @@ function setupDMInput() {
   if(!input||!sendBtn) return;
   input.addEventListener('keydown', e => { if(e.key==='Enter'&&!e.shiftKey) { e.preventDefault(); sendDM(); } });
   sendBtn.addEventListener('click', sendDM);
-  // DM typing indicator (RTDB) â€” per DM thread
+  // DM typing indicator (RTDB) Ã¢â‚¬â€ per DM thread
   let dmTypingDebounce = null;
   input.addEventListener('input', () => {
     if(!currentDM || !_rtdb) return;
@@ -1457,7 +1494,7 @@ async function sendDM() {
   await updateDoc(doc(db,'dms',currentDM.id),{lastTs:serverTimestamp()});
 }
 
-// â”€â”€ Profile â”€â”€
+// Ã¢â€â‚¬Ã¢â€â‚¬ Profile Ã¢â€â‚¬Ã¢â€â‚¬
 const AVATAR_COLORS = ['#ef4444','#f97316','#eab308','#22c55e','#14b8a6','#3b82f6','#8b5cf6','#ec4899','#06b6d4','#84cc16','#f43f5e','#a855f7','#10b981','#0ea5e9','#f59e0b','#64748b'];
 
 function setupProfile() {
@@ -1504,7 +1541,7 @@ function avatarHtml(iconKey, username, size='100%') {
   return `<span style="font-weight:900">${avatarInitial(username)}</span>`;
 }
 
-// â”€â”€ Propagate profile changes (username/color/icon/badges) to all existing messages â”€â”€
+// Ã¢â€â‚¬Ã¢â€â‚¬ Propagate profile changes (username/color/icon/badges) to all existing messages Ã¢â€â‚¬Ã¢â€â‚¬
 window.propagateProfileToMessages = propagateProfileToMessages;
 async function propagateProfileToMessages(uid, updates) {
   // Update channel messages
@@ -1641,7 +1678,7 @@ function renderProfileEdit() {
     </div>
   `;
 
-  // â”€â”€ Color swatches â”€â”€
+  // Ã¢â€â‚¬Ã¢â€â‚¬ Color swatches Ã¢â€â‚¬Ã¢â€â‚¬
   const AVATAR_COLORS = ['#ef4444','#f97316','#eab308','#22c55e','#14b8a6','#3b82f6','#8b5cf6','#ec4899','#06b6d4','#84cc16','#f43f5e','#a855f7','#10b981','#0ea5e9','#f59e0b','#64748b'];
   const swatchWrap = document.getElementById('color-swatches');
   AVATAR_COLORS.forEach(color => {
@@ -1669,7 +1706,7 @@ function renderProfileEdit() {
     swatchWrap.appendChild(sw);
   });
 
-  // â”€â”€ Icon grid â”€â”€
+  // Ã¢â€â‚¬Ã¢â€â‚¬ Icon grid Ã¢â€â‚¬Ã¢â€â‚¬
   const iconGrid = document.getElementById('ava-icon-grid');
   if(iconGrid) {
     const letterOpt = document.createElement('div');
@@ -1734,7 +1771,7 @@ function renderProfileEdit() {
     if(live) live.innerHTML = previewHtml;
   }
 
-  // â”€â”€ Username save â”€â”€
+  // Ã¢â€â‚¬Ã¢â€â‚¬ Username save Ã¢â€â‚¬Ã¢â€â‚¬
   document.getElementById('prof-username-btn')?.addEventListener('click', async () => {
     const inp = document.getElementById('prof-username-inp');
     const err = document.getElementById('prof-username-err');
@@ -1758,7 +1795,7 @@ function renderProfileEdit() {
     } catch(e) { err.textContent = e.message; }
   });
 
-  // â”€â”€ Email update â”€â”€
+  // Ã¢â€â‚¬Ã¢â€â‚¬ Email update Ã¢â€â‚¬Ã¢â€â‚¬
   document.getElementById('prof-email-btn')?.addEventListener('click', async () => {
     const err = document.getElementById('prof-email-err');
     const newEmail = document.getElementById('prof-email-inp').value.trim();
@@ -1767,7 +1804,7 @@ function renderProfileEdit() {
     showModal(`
       <h3>Confirm Identity</h3>
       <p class="modal-p">Enter your current password to update your email address.</p>
-      <div class="field-group"><label class="field-label">Current Password</label><input id="m-reauth-pass" class="field-input" type="password" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" autocomplete="current-password"></div>
+      <div class="field-group"><label class="field-label">Current Password</label><input id="m-reauth-pass" class="field-input" type="password" placeholder="Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢" autocomplete="current-password"></div>
       <div class="merr" id="m-reauth-err"></div>
       <div class="modal-actions">
         <button class="btn btn-ghost btn-sm" onclick="document.getElementById('modal-overlay').click()">Cancel</button>
@@ -1792,7 +1829,7 @@ function renderProfileEdit() {
     };
   });
 
-  // â”€â”€ Password change â”€â”€
+  // Ã¢â€â‚¬Ã¢â€â‚¬ Password change Ã¢â€â‚¬Ã¢â€â‚¬
   document.getElementById('prof-pass-btn')?.addEventListener('click', async () => {
     const err = document.getElementById('prof-pass-err');
     const cur = document.getElementById('prof-pass-cur').value;
@@ -1817,7 +1854,7 @@ function renderProfileEdit() {
   });
 }
 
-// â”€â”€ Settings â”€â”€
+// Ã¢â€â‚¬Ã¢â€â‚¬ Settings Ã¢â€â‚¬Ã¢â€â‚¬
 function setupSettings() {
   document.querySelectorAll('.stab').forEach(t => {
     t.addEventListener('click', () => {
@@ -2065,7 +2102,7 @@ async function buildChannelNotifList() {
   });
 }
 
-// â”€â”€ Admin Panel â”€â”€
+// Ã¢â€â‚¬Ã¢â€â‚¬ Admin Panel Ã¢â€â‚¬Ã¢â€â‚¬
 async function setupAdmin() {
   const d = currentUserData;
   const isGoat = d.rank === 'goat';
@@ -2081,13 +2118,13 @@ async function setupAdmin() {
         <span class="admin-topbar-icon">${isGoat ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>' : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>'}</span>
         <div>
           <div class="admin-topbar-title">${isGoat ? 'Goat Console' : 'Mod Panel'}</div>
-          <div class="admin-topbar-sub">${isGoat ? 'Full system access â€” user management, data cleanup, moderation' : 'Approve members and manage the community'}</div>
+          <div class="admin-topbar-sub">${isGoat ? 'Full system access Ã¢â‚¬â€ user management, data cleanup, moderation' : 'Approve members and manage the community'}</div>
         </div>
       </div>
       <div class="admin-stats-row" id="admin-stats-row">
-        <div class="admin-stat-pill" id="adm-stat-pending"><span id="adm-cnt-pending">â€¦</span> Pending</div>
-        <div class="admin-stat-pill" id="adm-stat-members"><span id="adm-cnt-members">â€¦</span> Members</div>
-        <div class="admin-stat-pill" id="adm-stat-banned"><span id="adm-cnt-banned">â€¦</span> Banned</div>
+        <div class="admin-stat-pill" id="adm-stat-pending"><span id="adm-cnt-pending">Ã¢â‚¬Â¦</span> Pending</div>
+        <div class="admin-stat-pill" id="adm-stat-members"><span id="adm-cnt-members">Ã¢â‚¬Â¦</span> Members</div>
+        <div class="admin-stat-pill" id="adm-stat-banned"><span id="adm-cnt-banned">Ã¢â‚¬Â¦</span> Banned</div>
       </div>
     </div>
     <div class="admin-tabs" id="admin-tabs">
@@ -2097,10 +2134,10 @@ async function setupAdmin() {
       ${isGoat ? `<button class="adm-tab" data-tab="cleanup"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg> DB Cleanup</button>` : ''}
     </div>
     <div class="admin-panel-area">
-      <div class="adm-panel active" id="ap-pending"><div class="adm-loading">Loadingâ€¦</div></div>
-      <div class="adm-panel" id="ap-members"><div class="adm-loading">Loadingâ€¦</div></div>
-      <div class="adm-panel" id="ap-banned"><div class="adm-loading">Loadingâ€¦</div></div>
-      ${isGoat ? '<div class="adm-panel" id="ap-cleanup"><div class="adm-loading">Loadingâ€¦</div></div>' : ''}
+      <div class="adm-panel active" id="ap-pending"><div class="adm-loading">LoadingÃ¢â‚¬Â¦</div></div>
+      <div class="adm-panel" id="ap-members"><div class="adm-loading">LoadingÃ¢â‚¬Â¦</div></div>
+      <div class="adm-panel" id="ap-banned"><div class="adm-loading">LoadingÃ¢â‚¬Â¦</div></div>
+      ${isGoat ? '<div class="adm-panel" id="ap-cleanup"><div class="adm-loading">LoadingÃ¢â‚¬Â¦</div></div>' : ''}
     </div>
   </div>`;
 
@@ -2120,29 +2157,27 @@ async function setupAdmin() {
 }
 
 async function loadAdminCounts() {
-  const pBadge = document.getElementById('pill-pending-badge');
-  const mBadge = document.getElementById('pill-members-badge');
-  const bBadge = document.getElementById('pill-banned-badge');
-  if(!pBadge || !mBadge || !bBadge) return;
   getDocs(collection(db,'users')).then(snap=>{
     let p=0,m=0,b=0;
-    snap.forEach(doc=>{
-      const d=doc.data();
-      if(d.approved === false) p++;
-      if(d.banned) b++;
-      if(d.approved === true) m++;
+    snap.forEach(d=>{
+      const data=d.data();
+      if(data.status === 'pending') p++;
+      else if(data.status === 'banned') b++;
+      else if(data.status === 'approved') m++;
     });
-    pBadge.textContent = p;
-    mBadge.textContent = m;
-    bBadge.textContent = b;
-    // visual
-    document.getElementById('pill-pending').classList.toggle('has-count', p>0);
-    document.getElementById('pill-banned').classList.toggle('has-count', b>0);
+    const pEl = document.getElementById('adm-cnt-pending');
+    const mEl = document.getElementById('adm-cnt-members');
+    const bEl = document.getElementById('adm-cnt-banned');
+    if(pEl) pEl.textContent = p;
+    if(mEl) mEl.textContent = m;
+    if(bEl) bEl.textContent = b;
+    document.getElementById('adm-stat-pending')?.classList.toggle('has-count', p>0);
+    document.getElementById('adm-stat-banned')?.classList.toggle('has-count', b>0);
   }).catch(()=>{});
 }
 // ...existing code...
 
-// â”€â”€ DB Cleanup Panel (Goat-only) â”€â”€
+// Ã¢â€â‚¬Ã¢â€â‚¬ DB Cleanup Panel (Goat-only) Ã¢â€â‚¬Ã¢â€â‚¬
 function renderDBCleanupNew(container) {
   container.innerHTML = `
     <div class="cleanup-panel-new">
@@ -2324,6 +2359,73 @@ window.cleanupClearBJChallenges = async function() {
   } catch(e) { _cleanupLog('Failed: '+e.message,'error'); }
 };
 
+// Ã¢"â‚¬Ã¢"â‚¬ Cleanup Action Dispatcher Ã¢"â‚¬Ã¢"â‚¬
+async function runCleanupAction(action, channel, filter) {
+  switch(action) {
+    case 'wipe-coins':   await _runWipeCoins(filter); break;
+    case 'reset-weekly': await _runResetWeekly(filter); break;
+    case 'wipe-dms':     await _runWipeDMs(filter); break;
+    case 'wipe-messages': await _runWipeMessages(channel, filter); break;
+    case 'purge-games':  await window.cleanupPurgeBJGames(); break;
+    case 'reset-visits': await window.cleanupResetVisits(); break;
+    default: _cleanupLog('Unknown action: ' + action, 'error');
+  }
+}
+
+async function _runWipeCoins(filter) {
+  const snap = await getDocs(collection(db,'goatcoin'));
+  const reset = { coins:0, weekCoins:0, totalCoins:0, weekSiteMins:0, weekChatMins:0, weekGameMins:0, totalSiteMins:0, totalChatMins:0, totalGameMins:0, weekBJWins:0, totalBJWins:0 };
+  let count = 0;
+  const batch = writeBatch(db);
+  snap.docs.forEach(d => {
+    if(filter && d.id !== filter) return;
+    batch.update(d.ref, reset); count++;
+  });
+  await batch.commit();
+  _cleanupLog(`Wiped GoatCoin for ${count} users.`, 'success');
+}
+
+async function _runResetWeekly(filter) {
+  const snap = await getDocs(collection(db,'goatcoin'));
+  const reset = { weekCoins:0, weekSiteMins:0, weekChatMins:0, weekGameMins:0, weekBJWins:0 };
+  let count = 0;
+  const batch = writeBatch(db);
+  snap.docs.forEach(d => {
+    if(filter && d.id !== filter) return;
+    batch.update(d.ref, reset); count++;
+  });
+  await batch.commit();
+  _cleanupLog(`Reset weekly stats for ${count} users.`, 'success');
+}
+
+async function _runWipeDMs(filter) {
+  const dmsSnap = await getDocs(collection(db,'dms'));
+  let totalMsgs = 0;
+  for(const dmDoc of dmsSnap.docs) {
+    const msgsSnap = await getDocs(collection(db,`dms/${dmDoc.id}/messages`));
+    if(msgsSnap.size) { const batch=writeBatch(db); msgsSnap.docs.forEach(d=>batch.delete(d.ref)); await batch.commit(); totalMsgs+=msgsSnap.size; }
+    await deleteDoc(dmDoc.ref);
+  }
+  _cleanupLog(`Wiped ${dmsSnap.size} DM threads (${totalMsgs} messages).`,'success');
+}
+
+async function _runWipeMessages(channel, filter) {
+  const channels = channel === 'all'
+    ? [...new Set(['general','admin',...(await getDocs(collection(db,'channels'))).docs.map(d=>d.id)])]
+    : [channel];
+  let total = 0;
+  for(const chId of channels) {
+    const snap = await getDocs(collection(db, `channels/${chId}/messages`));
+    if(!snap.size) continue;
+    const batchSize = 499; let batch = writeBatch(db), count = 0;
+    for(const d of snap.docs) { batch.delete(d.ref); count++; if(count%batchSize===0){await batch.commit();batch=writeBatch(db);} }
+    if(count%batchSize!==0) await batch.commit();
+    total += snap.size;
+    _cleanupLog(`Wiped ${snap.size} messages from #${chId}`);
+  }
+  _cleanupLog(`Total: ${total} messages wiped.`, 'success');
+}
+
 window.cleanupResetVisits = async function() {
   try {
     // Reset RTDB
@@ -2416,7 +2518,7 @@ window.applyRank = async function(uid, rank) {
   closeModal(()=>{ loadAdminPanel('members'); toast('Rank updated','success'); });
 };
 
-// â”€â”€ Game Vault â”€â”€
+// Ã¢â€â‚¬Ã¢â€â‚¬ Game Vault Ã¢â€â‚¬Ã¢â€â‚¬
 function cleanHTML(html) {
   html = html.replace(/#sidebarad1\s*,\s*\n?#sidebarad2[\s\S]*?\.sidebar-frame\s*\{[\s\S]*?\}/g, '');
   html = html.replace(/<div\s+id=["']sidebarad[12]["'][^>]*>[\s\S]*?<\/div>\s*(<\/div>)?/g, '');
@@ -2460,7 +2562,7 @@ window.fullscreenGame = function() {
   else if(frame.webkitRequestFullscreen) frame.webkitRequestFullscreen();
 };
 
-// â”€â”€ Profile click handler â”€â”€
+// Ã¢â€â‚¬Ã¢â€â‚¬ Profile click handler Ã¢â€â‚¬Ã¢â€â‚¬
 window._openProfile = function(uid) {
   openProfileModal(uid, currentUserData);
 };
@@ -2477,7 +2579,7 @@ window._openDMWithUid = async function(uid) {
   setTimeout(()=>openDM(other), 100);
 };
 
-// â”€â”€ Boot â”€â”€
+// Ã¢â€â‚¬Ã¢â€â‚¬ Boot Ã¢â€â‚¬Ã¢â€â‚¬
 function boot() {
   applyTheme(loadTheme(), false);
   setupAuth();
@@ -2493,21 +2595,21 @@ function boot() {
 
 document.addEventListener('DOMContentLoaded', boot);
 
-// â”€â”€ Keyboard Shortcuts â”€â”€
+// Ã¢â€â‚¬Ã¢â€â‚¬ Keyboard Shortcuts Ã¢â€â‚¬Ã¢â€â‚¬
 function setupKeyboardShortcuts() {
   document.addEventListener('keydown', e => {
     // Don't trigger shortcuts when typing in inputs
     const tag = document.activeElement?.tagName;
     const isInput = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || document.activeElement?.isContentEditable;
 
-    // Ctrl+K / Cmd+K â€” command palette (always works)
+    // Ctrl+K / Cmd+K Ã¢â‚¬â€ command palette (always works)
     if((e.ctrlKey || e.metaKey) && e.key === 'k') {
       e.preventDefault();
       toggleCommandPalette();
       return;
     }
 
-    // Escape â€” close things
+    // Escape Ã¢â‚¬â€ close things
     if(e.key === 'Escape') {
       const cmd = document.getElementById('cmd-palette');
       if(cmd && !cmd.classList.contains('hidden')) {
@@ -2529,7 +2631,7 @@ function setupKeyboardShortcuts() {
 
     if(isInput) return;
 
-    // Number keys â€” navigate sections (1-8 for regular, 1-9 if admin)
+    // Number keys Ã¢â‚¬â€ navigate sections (1-8 for regular, 1-9 if admin)
     const navSections = _getNavSections();
     if(e.key >= '1' && e.key <= '9') {
       const idx = parseInt(e.key) - 1;
@@ -2550,7 +2652,7 @@ function _getNavSections() {
   return base;
 }
 
-// â”€â”€ Command Palette â”€â”€
+// Ã¢â€â‚¬Ã¢â€â‚¬ Command Palette Ã¢â€â‚¬Ã¢â€â‚¬
 function setupCommandPalette() {
   const palette = document.getElementById('cmd-palette');
   const overlay = document.getElementById('cmd-overlay');
@@ -2640,7 +2742,7 @@ function toggleCommandPalette() {
   }
 }
 
-// â”€â”€ DM char counter â”€â”€
+// Ã¢â€â‚¬Ã¢â€â‚¬ DM char counter Ã¢â€â‚¬Ã¢â€â‚¬
 (function() {
   const dmInput = document.getElementById('dm-input');
   const dmCtr = document.getElementById('dm-char-ctr');
@@ -2653,5 +2755,5 @@ function toggleCommandPalette() {
   }
 })();
 
-// â”€â”€ Exports for other modules â”€â”€
+// Ã¢â€â‚¬Ã¢â€â‚¬ Exports for other modules Ã¢â€â‚¬Ã¢â€â‚¬
 export { toast, avatarColor, avatarInitial, escHtml, avatarHtml, canModerate, RANK_COLORS, RANKS, rankOf, SVG_ICONS, renderRankBadge };

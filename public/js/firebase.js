@@ -1,8 +1,8 @@
-// ═══════════════════════════════
-//  firebase.js — init, App Check & auth
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+//  firebase.js â€” init, App Check & auth
 //  FIX: Re-enabled App Check with reCAPTCHA v3 (required by Firebase enforcement)
 //  FIX: Added missing databaseURL (RTDB was completely broken without it)
-// ═══════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
   getFirestore, doc, getDoc, setDoc, updateDoc,
@@ -30,7 +30,7 @@ const firebaseConfig = {
 
 const app  = initializeApp(firebaseConfig);
 
-// ── App Check (reCAPTCHA v3) ──
+// â”€â”€ App Check (reCAPTCHA v3) â”€â”€
 // Required: Firebase enforces App Check on Auth/Firestore/RTDB.
 // The reCAPTCHA v3 site key is registered for nebulahistorians.web.app
 const appCheck = initializeAppCheck(app, {

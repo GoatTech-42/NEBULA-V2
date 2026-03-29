@@ -1,7 +1,7 @@
-// ═══════════════════════════════════════════════════
-//  profile.js — Profiles, badges, adblocker notice
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+//  profile.js â€” Profiles, badges, adblocker notice
 //  REDESIGNED: New profile page layout
-// ═══════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 import {
   db, auth,
   doc, getDoc, updateDoc, collection, getDocs, serverTimestamp
@@ -9,7 +9,7 @@ import {
 import { toast, avatarColor, avatarInitial, escHtml, canModerate, RANK_COLORS, avatarHtml, renderRankBadge } from './app.js';
 import { getGoatCoinData } from './goatcoin.js';
 
-// ── Badge definitions ──
+// â”€â”€ Badge definitions â”€â”€
 export const BADGE_DEFS = {
   champion:    { label:'Champion',   desc:'Most GoatCoins earned this week',   color:'#fbbf24' },
   sweat:       { label:'Sweat',      desc:'Most games played this week',        color:'#f97316' },
@@ -65,7 +65,7 @@ export function renderBadgeRow(badges, compact=false) {
   }).join('');
 }
 
-// ── Adblocker detection ──
+// â”€â”€ Adblocker detection â”€â”€
 export function checkAdblocker() {
   const bait = document.createElement('div');
   bait.className = 'ad pub_300x250 pub_300x250m pub_728x90 text-ad textAd text_ad text_ads';
@@ -99,7 +99,7 @@ function _showAdblockerBanner() {
   });
 }
 
-// ── Open profile modal for any uid ──
+// â”€â”€ Open profile modal for any uid â”€â”€
 export async function openProfileModal(uid, currentUserData) {
   const modal = document.getElementById('modal-box-main');
   const ov = document.getElementById('modal-overlay');
@@ -107,7 +107,7 @@ export async function openProfileModal(uid, currentUserData) {
   ov.classList.remove('hidden');
   document.getElementById('modal-wrap')?.classList.remove('hidden');
   modal.classList.remove('hidden');
-  modal.innerHTML = `<div style="padding:2rem;color:var(--text-muted);font-size:.82rem">Loading profile…</div>`;
+  modal.innerHTML = `<div style="padding:2rem;color:var(--text-muted);font-size:.82rem">Loading profileâ€¦</div>`;
   ov.onclick = e => { if(e.target===ov) _closeProfileModal(); };
 
   try {
@@ -126,7 +126,7 @@ export async function openProfileModal(uid, currentUserData) {
     const isOwn = auth.currentUser?.uid === uid;
     const canAdmin = currentUserData && currentUserData.rank === 'goat';
     const color = u.color || avatarColor(uid);
-    const joinedDate = u.createdAt?.toDate ? u.createdAt.toDate().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '—';
+    const joinedDate = u.createdAt?.toDate ? u.createdAt.toDate().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : 'â€”';
     const rawBadges = u.badges || [];
     const seen = new Set();
     const badges = rawBadges.filter(b => { if(seen.has(b)) return false; seen.add(b); return true; });
@@ -164,7 +164,7 @@ export async function openProfileModal(uid, currentUserData) {
 
           ${canAdmin ? `
           <div class="prof-modal-admin" id="pm-admin-section">
-            <div class="prof-section-label" style="margin-top:1rem">Admin — Manage Badges</div>
+            <div class="prof-section-label" style="margin-top:1rem">Admin â€” Manage Badges</div>
             <div class="prof-admin-preset-badges">
               ${Object.entries(BADGE_DEFS).map(([key, def]) => {
                 const has = badges.includes(key);
@@ -180,7 +180,7 @@ export async function openProfileModal(uid, currentUserData) {
               </div>
               <div id="pm-custom-badges" class="prof-admin-preset-badges" style="margin-top:.5rem">
                 ${badges.filter(b=>!BADGE_DEFS[b]).map(b=>`
-                  <button class="badge-admin-btn bab-active bab-custom" data-badge="${b}" data-uid="${uid}" style="--bc:var(--accent)">${escHtml(b)} <span class="bab-remove">×</span></button>
+                  <button class="badge-admin-btn bab-active bab-custom" data-badge="${b}" data-uid="${uid}" style="--bc:var(--accent)">${escHtml(b)} <span class="bab-remove">Ã—</span></button>
                 `).join('')}
               </div>
             </div>
@@ -275,7 +275,7 @@ function _closeProfileModal() {
   }, 200);
 }
 
-// ── REDESIGNED Own Profile Page ──
+// â”€â”€ REDESIGNED Own Profile Page â”€â”€
 const AVATAR_COLORS = ['#ef4444','#f97316','#eab308','#22c55e','#14b8a6','#3b82f6','#8b5cf6','#ec4899','#06b6d4','#84cc16','#f43f5e','#a855f7','#10b981','#0ea5e9','#f59e0b','#64748b'];
 
 export function renderOwnProfile(user, userData, gcData) {
@@ -297,7 +297,7 @@ export function renderOwnProfile(user, userData, gcData) {
 
   container.innerHTML = `
   <div class="prof-redesign-wrap">
-    <!-- ── Hero banner ── -->
+    <!-- â”€â”€ Hero banner â”€â”€ -->
     <div class="prof-banner-card">
       <div class="prof-banner-bg" style="background:linear-gradient(135deg,${color}60,${color}22,var(--bg))">
         <div class="prof-banner-stars"></div>
@@ -340,14 +340,14 @@ export function renderOwnProfile(user, userData, gcData) {
       </div>
     </div>
 
-    <!-- ── Edit Panels ── -->
+    <!-- â”€â”€ Edit Panels â”€â”€ -->
     <div class="prof-panels-grid" id="prof-edit-section">
       <!-- populated by renderProfileEdit() -->
     </div>
   </div>`;
 }
 
-// ── Auto-award badges ──
+// â”€â”€ Auto-award badges â”€â”€
 export async function checkAutoAwards(uid, userData) {
   const rawBadges = userData.badges || [];
   const DEPRECATED = new Set(['customized', 'stylist']);
