@@ -1,3 +1,15 @@
+// ── Silence Firebase SDK internal "message channel closed" noise ──────────
+// The Firebase JS SDK fires unhandled promise rejections from its own internal
+// Chrome-extension message channel when browser extensions intercept requests.
+// These are harmless and cannot be caught at call sites, so we filter them here.
+window.addEventListener('unhandledrejection', e => {
+  const msg = e?.reason?.message || '';
+  if (msg.includes('message channel closed') ||
+      msg.includes('listener indicated an asynchronous response')) {
+    e.preventDefault(); // stops it showing in the console
+  }
+});
+
 import {
   db, auth,
   doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs,

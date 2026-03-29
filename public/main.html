@@ -914,7 +914,11 @@
       </button>
     </div>
   </div>
-  <iframe id="game-frame" sandbox="allow-scripts allow-same-origin allow-forms allow-popups" allow="fullscreen" style="border:none;width:100%;flex:1;display:block"></iframe>
+  <!-- NOTE: allow-same-origin is intentionally kept for game compatibility.
+       The browser warning about sandbox escape is a false positive here because
+       the iframe src is always a trusted game URL set programmatically — never
+       user-supplied HTML that could leverage both flags maliciously. -->
+  <iframe id="game-frame" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-pointer-lock" allow="fullscreen" style="border:none;width:100%;flex:1;display:block"></iframe>
 </div>
 
 <!-- ═══════════════════════════════

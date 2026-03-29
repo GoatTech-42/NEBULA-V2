@@ -1,6 +1,6 @@
 // ═══════════════════════════════
 //  firebase.js — init & auth
-//  FIX: Removed App Check (reCAPTCHA 500 errors blocking all auth)
+//  FIX: Added App Check with reCAPTCHA Enterprise (required by Firebase Console config)
 //  FIX: Added missing databaseURL (RTDB was completely broken without it)
 // ═══════════════════════════════
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -14,6 +14,10 @@ import {
   getAuth, createUserWithEmailAndPassword,
   signInWithEmailAndPassword, signOut, onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {
+  initializeAppCheck,
+  ReCaptchaEnterpriseProvider
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check.js";
 
 const firebaseConfig = {
   apiKey:            "AIzaSyCyIjduPo3L7z0XnoKEamjInTkQWQnGpqI",
@@ -26,6 +30,26 @@ const firebaseConfig = {
 };
 
 const app  = initializeApp(firebaseConfig);
+
+// ── App Check ──────────────────────────────────────────────────────────────
+// App Check is enforced in the Firebase Console for this project.
+// Replace the site key below with your reCAPTCHA Enterprise site key from:
+//   Firebase Console → App Check → Apps → your web app → reCAPTCHA Enterprise
+// If you want to test locally without a real token, set this before the page loads:
+//   self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
+// (or a specific debug token string from the Firebase Console)
+try {
+  initializeAppCheck(app, {
+    provider: new ReCaptchaEnterpriseProvider(
+      // ← PASTE YOUR reCAPTCHA ENTERPRISE SITE KEY HERE
+      "YOUR_RECAPTCHA_ENTERPRISE_SITE_KEY"
+    ),
+    isTokenAutoRefreshEnabled: true,
+  });
+} catch (e) {
+  console.warn("[App Check] Failed to initialise:", e.message);
+}
+
 const db   = getFirestore(app);
 const auth = getAuth(app);
 
