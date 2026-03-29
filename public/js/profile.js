@@ -1,5 +1,6 @@
 // ═══════════════════════════════════════════════════
 //  profile.js — Profiles, badges, adblocker notice
+//  REDESIGNED: New profile page layout
 // ═══════════════════════════════════════════════════
 import {
   db, auth,
@@ -10,15 +11,12 @@ import { getGoatCoinData } from './goatcoin.js';
 
 // ── Badge definitions ──
 export const BADGE_DEFS = {
-  // ── Weekly award badges ──
   champion:    { label:'Champion',   desc:'Most GoatCoins earned this week',   color:'#fbbf24' },
   sweat:       { label:'Sweat',      desc:'Most games played this week',        color:'#f97316' },
   social:      { label:'Social',     desc:'Most time in chat this week',        color:'#38bdf8' },
   lucky:       { label:'Lucky',      desc:'Most blackjack wins this week',      color:'#4ade80' },
-  // ── Auto-awarded badges ──
   veteran:     { label:'Veteran',    desc:'Member for 30+ days',                color:'#fde68a' },
   og:          { label:'OG',         desc:'One of the first members',           color:'#67e8f9' },
-  // ── Shop-purchased badges ──
   pioneer:     { label:'Pioneer',    desc:'Purchased from the GC Shop',         color:'#a78bfa' },
   whale:       { label:'Whale',      desc:'Big spender in the GC Shop',         color:'#38bdf8' },
   chatterbox:  { label:'Chatterbox', desc:'A dedicated conversationalist',      color:'#34d399' },
@@ -52,15 +50,11 @@ const fmtTime = mins => {
   return m ? `${h}h ${m}m` : `${h}h`;
 };
 
-// ── Render badge row — returns HTML string ──
-// IMPORTANT: deduplicate badges before rendering to prevent visual duplication
 export function renderBadgeRow(badges, compact=false) {
   if(!badges?.length) return '';
-  // Deduplicate while preserving order
   const seen = new Set();
   const unique = badges.filter(b => { if(seen.has(b)) return false; seen.add(b); return true; });
   if(!unique.length) return '';
-
   return unique.map(b => {
     const def = BADGE_DEFS[b] || { label: b, color:'var(--accent)' };
     const iconEl = `<span class="badge-icon" aria-hidden="true">${badgeIconSvg(b)}</span>`;
@@ -71,7 +65,7 @@ export function renderBadgeRow(badges, compact=false) {
   }).join('');
 }
 
-// ── Adblocker detection + notice ──
+// ── Adblocker detection ──
 export function checkAdblocker() {
   const bait = document.createElement('div');
   bait.className = 'ad pub_300x250 pub_300x250m pub_728x90 text-ad textAd text_ad text_ads';
@@ -113,7 +107,7 @@ export async function openProfileModal(uid, currentUserData) {
   ov.classList.remove('hidden');
   document.getElementById('modal-wrap')?.classList.remove('hidden');
   modal.classList.remove('hidden');
-  modal.innerHTML = `<div class="prof-modal-loading">Loading profile…</div>`;
+  modal.innerHTML = `<div style="padding:2rem;color:var(--text-muted);font-size:.82rem">Loading profile…</div>`;
   ov.onclick = e => { if(e.target===ov) _closeProfileModal(); };
 
   try {
@@ -133,7 +127,6 @@ export async function openProfileModal(uid, currentUserData) {
     const canAdmin = currentUserData && currentUserData.rank === 'goat';
     const color = u.color || avatarColor(uid);
     const joinedDate = u.createdAt?.toDate ? u.createdAt.toDate().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '—';
-    // Deduplicate badges before rendering
     const rawBadges = u.badges || [];
     const seen = new Set();
     const badges = rawBadges.filter(b => { if(seen.has(b)) return false; seen.add(b); return true; });
@@ -162,11 +155,11 @@ export async function openProfileModal(uid, currentUserData) {
           <div class="prof-section-label" style="margin-top:1rem">Stats</div>
           <div class="prof-modal-stats">
             <div class="prof-stat-tile"><div class="pst-val">${Math.floor(gc.coins||0).toLocaleString()}</div><div class="pst-key">Coins</div></div>
-            <div class="prof-stat-tile"><div class="pst-val">${Math.floor(gc.weekCoins||0).toLocaleString()}</div><div class="pst-key">Coins (week)</div></div>
-            <div class="prof-stat-tile"><div class="pst-val">${fmtTime(gc.totalChatMins||0)}</div><div class="pst-key">Chat (total)</div></div>
-            <div class="prof-stat-tile"><div class="pst-val">${fmtTime(gc.weekChatMins||0)}</div><div class="pst-key">Chat (week)</div></div>
-            <div class="prof-stat-tile"><div class="pst-val">${fmtTime(gc.totalGameMins||0)}</div><div class="pst-key">Games (total)</div></div>
-            <div class="prof-stat-tile"><div class="pst-val">${fmtTime(gc.weekGameMins||0)}</div><div class="pst-key">Games (week)</div></div>
+            <div class="prof-stat-tile"><div class="pst-val">${Math.floor(gc.weekCoins||0).toLocaleString()}</div><div class="pst-key">This Week</div></div>
+            <div class="prof-stat-tile"><div class="pst-val">${fmtTime(gc.weekChatMins||0)}</div><div class="pst-key">Chat (wk)</div></div>
+            <div class="prof-stat-tile"><div class="pst-val">${fmtTime(gc.weekGameMins||0)}</div><div class="pst-key">Games (wk)</div></div>
+            <div class="prof-stat-tile"><div class="pst-val">${Math.floor(gc.totalBJWins||0)}</div><div class="pst-key">BJ Wins</div></div>
+            <div class="prof-stat-tile"><div class="pst-val">${Math.floor(gc.totalCoins||0).toLocaleString()}</div><div class="pst-key">All-Time GC</div></div>
           </div>
 
           ${canAdmin ? `
@@ -200,7 +193,6 @@ export async function openProfileModal(uid, currentUserData) {
         </div>
       </div>`;
 
-    // Wire admin badge toggles
     if(canAdmin) {
       modal.querySelectorAll('.badge-admin-btn:not(.bab-custom)').forEach(btn => {
         btn.addEventListener('click', async () => {
@@ -208,23 +200,16 @@ export async function openProfileModal(uid, currentUserData) {
           const uref = doc(db,'users',uid);
           const snap = await getDoc(uref);
           if(!snap.exists()) return;
-          const existing = snap.data().badges || [];
-          // Always deduplicate when writing
-          const deduped = [...new Set(existing)];
-          if(deduped.includes(key)) {
-            const updated = deduped.filter(b=>b!==key);
-            await updateDoc(uref, { badges: updated });
+          const existing = [...new Set(snap.data().badges||[])];
+          if(existing.includes(key)) {
+            await updateDoc(uref, { badges: existing.filter(b=>b!==key) });
             btn.classList.remove('bab-active');
             toast(`Removed "${key}"`, 'info');
           } else {
-            const updated = [...deduped, key];
-            await updateDoc(uref, { badges: updated });
+            await updateDoc(uref, { badges: [...existing, key] });
             btn.classList.add('bab-active');
             toast(`Awarded "${key}"`, 'success');
-            // Also propagate badges to messages
-            if(window.propagateProfileToMessages) {
-              window.propagateProfileToMessages(uid, { badges: updated }).catch(()=>{});
-            }
+            if(window.propagateProfileToMessages) window.propagateProfileToMessages(uid, { badges: [...existing, key] }).catch(()=>{});
           }
           const snap2 = await getDoc(uref);
           const freshBadges = [...new Set(snap2.data().badges||[])];
@@ -240,8 +225,7 @@ export async function openProfileModal(uid, currentUserData) {
           const uref = doc(db,'users',uid);
           const snap = await getDoc(uref);
           if(!snap.exists()) return;
-          const updated = [...new Set(snap.data().badges)].filter(b=>b!==key);
-          await updateDoc(uref, { badges: updated });
+          await updateDoc(uref, { badges: [...new Set(snap.data().badges)].filter(b=>b!==key) });
           btn.remove();
           toast(`Removed "${key}"`, 'info');
         });
@@ -255,36 +239,15 @@ export async function openProfileModal(uid, currentUserData) {
         const uref = doc(db,'users',uid);
         const snap = await getDoc(uref);
         if(!snap.exists()) return;
-        // Deduplicate before adding
-        const existing = [...new Set(snap.data().badges || [])];
+        const existing = [...new Set(snap.data().badges||[])];
         if(existing.includes(label)) { toast('Badge already exists', 'warning'); return; }
         const updated = [...existing, label];
-        const color = colorInp?.value || '#38bdf8';
-        await updateDoc(uref, {
-          badges: updated,
-          [`customBadges.${label}`]: { label, color }
-        });
+        await updateDoc(uref, { badges: updated, [`customBadges.${label}`]: { label, color: colorInp?.value||'#38bdf8' } });
         toast(`Added "${label}"`, 'success');
         if(labelInp) labelInp.value = '';
-        const customEl = modal.querySelector('#pm-custom-badges');
-        if(customEl) {
-          const btn2 = document.createElement('button');
-          btn2.className = 'badge-admin-btn bab-active bab-custom';
-          btn2.dataset.badge = label;
-          btn2.dataset.uid = uid;
-          btn2.style.setProperty('--bc', color);
-          btn2.innerHTML = `${escHtml(label)} <span class="bab-remove">×</span>`;
-          btn2.querySelector('.bab-remove')?.addEventListener('click', async e => {
-            e.stopPropagation();
-            const s = await getDoc(doc(db,'users',uid));
-            if(s.exists()) await updateDoc(doc(db,'users',uid), { badges: [...new Set(s.data().badges)].filter(b=>b!==label) });
-            btn2.remove();
-          });
-          customEl.appendChild(btn2);
-        }
-        const s2 = await getDoc(uref);
+        const snap2 = await getDoc(uref);
         const pm = modal.querySelector('#pm-badge-display');
-        if(pm) pm.innerHTML = renderBadgeRow([...new Set(s2.data().badges||[])]) || '<span class="prof-no-badges">No badges yet</span>';
+        if(pm) pm.innerHTML = renderBadgeRow([...new Set(snap2.data().badges||[])]) || '<span class="prof-no-badges">No badges yet</span>';
       });
     }
 
@@ -312,52 +275,86 @@ function _closeProfileModal() {
   }, 200);
 }
 
-// ── Own profile page ──
+// ── REDESIGNED Own Profile Page ──
+const AVATAR_COLORS = ['#ef4444','#f97316','#eab308','#22c55e','#14b8a6','#3b82f6','#8b5cf6','#ec4899','#06b6d4','#84cc16','#f43f5e','#a855f7','#10b981','#0ea5e9','#f59e0b','#64748b'];
+
 export function renderOwnProfile(user, userData, gcData) {
   const container = document.getElementById('section-profile');
   if(!container) return;
   const d = userData;
   const gc = gcData || {};
   const color = d.color || avatarColor(user.uid);
-  const joinedDate = d.createdAt?.toDate ? d.createdAt.toDate().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}) : '';
-  // Deduplicate badges before rendering — this is the root fix for the badge duplication bug
+  const joinedDate = d.createdAt?.toDate
+    ? d.createdAt.toDate().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})
+    : '';
   const rawBadges = d.badges || [];
   const seen = new Set();
   const badges = rawBadges.filter(b => { if(seen.has(b)) return false; seen.add(b); return true; });
+  const coins = Math.floor(gc.coins||0);
+  const wCoins = Math.floor(gc.weekCoins||0);
+  const totalCoins = Math.floor(gc.totalCoins||0);
+  const bjWins = Math.floor(gc.totalBJWins||0);
 
   container.innerHTML = `
-  <div class="prof-page">
-    <div class="prof-hero-card">
-      <div class="prof-hero-banner" style="background:linear-gradient(135deg,${color}55,${color}11)"></div>
-      <div class="prof-hero-body">
-        <div class="prof-hero-ava" id="prof-ava" style="background:${color}">${avatarHtml(d.icon, d.username, '52%')}</div>
-        <div class="prof-hero-info">
-          <div class="prof-hero-name" id="prof-name">${escHtml(d.username)}</div>
-          <div class="prof-hero-sub">
+  <div class="prof-redesign-wrap">
+    <!-- ── Hero banner ── -->
+    <div class="prof-banner-card">
+      <div class="prof-banner-bg" style="background:linear-gradient(135deg,${color}60,${color}22,var(--bg))">
+        <div class="prof-banner-stars"></div>
+        <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 20% 50%,${color}40,transparent 55%)"></div>
+      </div>
+      <div class="prof-banner-body">
+        <div class="prof-banner-ava" id="prof-ava" style="background:${color}">
+          ${avatarHtml(d.icon, d.username, '52%')}
+          <div class="prof-banner-ava-hint">Change</div>
+        </div>
+        <div class="prof-banner-info">
+          <div class="prof-banner-name" id="prof-name">${escHtml(d.username)}</div>
+          <div class="prof-banner-meta">
             <span id="prof-rank">${renderRankBadge(d.rank)}</span>
-            ${joinedDate ? `<span class="prof-hero-joined">Member since ${joinedDate}</span>` : ''}
+            ${joinedDate ? `<span class="prof-banner-joined">Member since ${joinedDate}</span>` : ''}
           </div>
-          <div class="prof-hero-badges" id="prof-badges">
-            ${renderBadgeRow(badges) || '<span class="prof-no-badges">No badges yet</span>'}
+          <div class="prof-banner-badges" id="prof-badges">
+            ${renderBadgeRow(badges, true) || '<span style="font-size:.68rem;color:var(--text-faint);font-style:italic">No badges yet</span>'}
           </div>
         </div>
       </div>
+      <!-- Stats strip -->
+      <div class="prof-stats-strip">
+        <div class="prof-stat-cell">
+          <div class="prof-stat-cell-val">${coins.toLocaleString()}</div>
+          <div class="prof-stat-cell-key">Balance</div>
+        </div>
+        <div class="prof-stat-cell">
+          <div class="prof-stat-cell-val">${wCoins.toLocaleString()}</div>
+          <div class="prof-stat-cell-key">This Week</div>
+        </div>
+        <div class="prof-stat-cell">
+          <div class="prof-stat-cell-val">${totalCoins.toLocaleString()}</div>
+          <div class="prof-stat-cell-key">All-Time GC</div>
+        </div>
+        <div class="prof-stat-cell">
+          <div class="prof-stat-cell-val">${bjWins}</div>
+          <div class="prof-stat-cell-key">BJ Wins</div>
+        </div>
+      </div>
     </div>
-    <div class="prof-panels" id="prof-edit-section"></div>
+
+    <!-- ── Edit Panels ── -->
+    <div class="prof-panels-grid" id="prof-edit-section">
+      <!-- populated by renderProfileEdit() -->
+    </div>
   </div>`;
 }
 
-// ── Auto-award non-weekly badges ──
+// ── Auto-award badges ──
 export async function checkAutoAwards(uid, userData) {
   const rawBadges = userData.badges || [];
-  // Always deduplicate first when checking/writing
-  // Also remove deprecated badges (customized/stylist)
   const DEPRECATED = new Set(['customized', 'stylist']);
   const existing = [...new Set(rawBadges)].filter(b => !DEPRECATED.has(b));
   const newBadges = [...existing];
-  let changed = existing.length !== rawBadges.length; // changed if we removed deprecated
+  let changed = existing.length !== rawBadges.length;
 
-  // Auto-award veteran badge for accounts 30+ days old
   if(!existing.includes('veteran') && userData.createdAt?.toDate) {
     const accountAgeMs = Date.now() - userData.createdAt.toDate().getTime();
     if(accountAgeMs > 30*24*60*60*1000) {
@@ -365,7 +362,6 @@ export async function checkAutoAwards(uid, userData) {
     }
   }
 
-  // If we found duplicates or changes, write back
   if(changed) {
     const dedupedNew = [...new Set(newBadges)];
     await updateDoc(doc(db,'users',uid), { badges: dedupedNew }).catch(()=>{});

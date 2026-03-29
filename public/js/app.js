@@ -39,21 +39,21 @@ const CHANNEL_MSG_LIMIT = 100;
 const CHANNEL_MSG_PRUNE_TO = 80;
 
 // ── Rank utils ──
-export const RANKS = { earthbound:0, planetary:1, solar:2, galactic:3, universal:4, goat:5 };
-export const rankOf = r => RANKS[r] ?? -1;
-export const canModerate = r => rankOf(r) >= rankOf('universal');
-export const canChat = r => rankOf(r) >= rankOf('planetary');
-export const RANK_COLORS = {
+const RANKS = { earthbound:0, planetary:1, solar:2, galactic:3, universal:4, goat:5 };
+const rankOf = r => RANKS[r] ?? -1;
+const canModerate = r => rankOf(r) >= rankOf('universal');
+const canChat = r => rankOf(r) >= rankOf('planetary');
+const RANK_COLORS = {
   earthbound:'#6ee7b7', planetary:'#38bdf8', solar:'#f59e0b',
   galactic:'#a855f7', universal:'#e2e8f0', goat:'#fde68a'
 };
 
 const AV_COLORS = ['#ef4444','#f97316','#eab308','#22c55e','#14b8a6','#3b82f6','#8b5cf6','#ec4899','#06b6d4','#84cc16'];
-export function avatarColor(uid) { let h=0; for(let c of uid) h=(h<<5)-h+c.charCodeAt(0); return AV_COLORS[Math.abs(h)%AV_COLORS.length]; }
-export function avatarInitial(u) { return (u||'?')[0].toUpperCase(); }
+function avatarColor(uid) { let h=0; for(let c of uid) h=(h<<5)-h+c.charCodeAt(0); return AV_COLORS[Math.abs(h)%AV_COLORS.length]; }
+function avatarInitial(u) { return (u||'?')[0].toUpperCase(); }
 
 // ── Toast ──
-export function toast(msg, type='info', dur=3000) {
+function toast(msg, type='info', dur=3000) {
   const stack = document.getElementById('notif-stack');
   const el = document.createElement('div');
   el.className = `notif ${type}`;
@@ -102,7 +102,7 @@ function applyTheme(name, animate = true) {
     let link = document.getElementById('theme-stylesheet');
     if (!link) { link = document.createElement('link'); link.rel='stylesheet'; link.id='theme-stylesheet'; document.head.appendChild(link); }
     link.href = `css/themes/${file}?v=${Date.now()}`;
-    return;
+    document.getElementById('pill-pending').addEventListener('click', async () => loadAdminPanel('pending'));
   }
   _themeTransitioning = true;
   const overlay = document.createElement('div');
@@ -123,34 +123,34 @@ function applyTheme(name, animate = true) {
     setTimeout(revealAndClean, 300);
   }, { once: true });
 }
-function loadTheme() {
-  const c = document.cookie.split(';').find(x=>x.trim().startsWith('nebula_theme='));
-  const t = c ? c.split('=')[1].trim() : 'og';
-  return THEME_FILES[t] ? t : 'og';
-}
+function setupAdmin() {
+  const wrap = document.getElementById('admin-section');
+  if(!wrap) return;
+    wrap.innerHTML = `
+    <div class="admin-redesign-wrap">
+      <div class="admin-redesign-top">
+        <div class="admin-redesign-title">Administration</div>
+        <div class="admin-redesign-actions">
+          <button class="btn btn-sm" id="adm-refresh">Refresh</button>
+        </div>
+      </div>
+      <div class="admin-pills" id="admin-pills">
+        <div class="admin-pill" id="pill-pending">Pending <span class="pill-badge" id="pill-pending-badge">0</span></div>
+        <div class="admin-pill" id="pill-members">Members <span class="pill-badge" id="pill-members-badge">0</span></div>
+        <div class="admin-pill" id="pill-banned">Banned <span class="pill-badge" id="pill-banned-badge">0</span></div>
+        <div class="admin-pill" id="pill-cleanup">Cleanup</div>
+      </div>
+      <div id="adm-content" class="admin-content"></div>
+    </div>
+  `;
 
-// ── Layout ──
-const LAYOUTS = ['default', 'sidebar-right', 'topbar', 'bottombar'];
-function loadLayout() { return localStorage.getItem('neb_layout') || 'default'; }
-function applyLayout(name) {
-  LAYOUTS.forEach(l => document.body.classList.remove('layout-'+l));
-  if(name !== 'default') document.body.classList.add('layout-'+name);
-  localStorage.setItem('neb_layout', name);
-  const isSidebar = name === 'default' || name === 'sidebar-right';
-  if(!isSidebar) {
-    document.body.classList.add('hide-nav-labels');
-    document.body.classList.remove('compact-sidebar');
-  } else {
-    const labelsStored = localStorage.getItem('neb_notif_nav-labels');
-    const labelsOn = labelsStored === null || labelsStored === 'true';
-    document.body.classList.toggle('hide-nav-labels', !labelsOn);
-    const labelsToggle = document.querySelector('.notif-toggle[data-key="nav-labels"]');
-    if(labelsToggle) labelsToggle.checked = labelsOn;
-    const compactStored = localStorage.getItem('neb_notif_compact-sidebar');
-    document.body.classList.toggle('compact-sidebar', compactStored === 'true');
-    const savedW = localStorage.getItem('neb_sidebar_w') || '224';
-    document.documentElement.style.setProperty('--sidebar-w', savedW + 'px');
-  }
+  document.getElementById('pill-pending').addEventListener('click', ()=>loadAdminPanel('pending'));
+  document.getElementById('pill-members').addEventListener('click', ()=>loadAdminPanel('members'));
+  document.getElementById('pill-banned').addEventListener('click', ()=>loadAdminPanel('banned'));
+  document.getElementById('pill-cleanup').addEventListener('click', ()=>loadAdminPanel('cleanup'));
+  document.getElementById('adm-refresh').addEventListener('click', ()=>loadAdminCounts());
+  loadAdminCounts();
+  loadAdminPanel('pending');
 }
 
 // ── Notification Permission ──
@@ -163,7 +163,6 @@ function requestNotifPermission() {
       });
     }, 3000);
   }
-}
 
 // ── Auth Screen ──
 function showAuth() {
@@ -707,8 +706,8 @@ function subscribeChannel(channelId) {
       }).map(([_, v]) => v.username);
       const bar = document.getElementById('typing-bar');
       if(typists.length && bar) {
-        bar.innerHTML = `<div class="typing-dots"><span></span><span></span><span></span></div><span>${typists.join(', ')} ${typists.length===1?'is':'are'} typing...</span>`;
-      } else if(bar) bar.innerHTML='';
+        bar.innerHTML = '<div class="typing-dots"><span></span><span></span><span></span></div><span>' + typists.join(', ') + ' ' + (typists.length===1?'is':'are') + ' typing...</span>';
+      } else if(bar) bar.innerHTML = '';
     });
     _typingUnsub = () => rtTypingOff();
   }
@@ -757,8 +756,8 @@ function subscribeChannel(channelId) {
       }).map(([_,v]) => v.username);
       const bar = document.getElementById('typing-bar');
       if(typists.length && bar) {
-        bar.innerHTML = `<div class="typing-dots"><span></span><span></span><span></span></div><span>${typists.join(', ')} ${typists.length===1?'is':'are'} typing...</span>`;
-      } else if(bar) bar.innerHTML='';
+        bar.innerHTML = '<div class="typing-dots"><span></span><span></span><span></span></div><span>' + typists.join(', ') + ' ' + (typists.length===1?'is':'are') + ' typing...</span>';
+      } else if(bar) bar.innerHTML = '';
     });
   }
 }
@@ -777,7 +776,7 @@ const RANK_LABELS = {
 function rankIconSvg(rank) {
   const icons = {
     earthbound: '<svg class="rbadge-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 0 20"/><path d="M12 2a15.3 15.3 0 0 0 0 20"/></svg>',
-    planetary: '<svg class="rbadge-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M2 12c2.5-2 6.3-3 10-3s7.5 1 10 3c-2.5 2-6.3 3-10 3s-7.5-1-10-3z"/></svg>',
+    planetary: '<svg class="rbadge-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M2 12c2-4 5-6 9-6s7 2 9 6c-2 4-5 6-9 6s-7-2-9-6z"/></svg>',
     solar: '<svg class="rbadge-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v3"/><path d="M12 19v3"/><path d="M2 12h3"/><path d="M19 12h3"/><path d="m4.9 4.9 2.1 2.1"/><path d="m17 17 2.1 2.1"/><path d="m19.1 4.9-2.1 2.1"/><path d="m7 17-2.1 2.1"/></svg>',
     galactic: '<svg class="rbadge-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"/><path d="M3 12c2-4 5-6 9-6s7 2 9 6c-2 4-5 6-9 6s-7-2-9-6z"/><path d="M12 3v3"/><path d="M12 18v3"/></svg>',
     universal: '<svg class="rbadge-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 5 5.6.8-4 3.9.9 5.5-4.9-2.6-4.9 2.6.9-5.5-4-3.9 5.6-.8L12 2z"/></svg>',
@@ -786,9 +785,9 @@ function rankIconSvg(rank) {
   return icons[rank] || icons.planetary;
 }
 
-export function renderRankBadge(rank) {
+function renderRankBadge(rank) {
   const safeRank = rank || 'planetary';
-  return `<span class="rbadge ${safeRank}">${rankIconSvg(safeRank)}${RANK_LABELS[safeRank] || String(safeRank).toUpperCase()}</span>`;
+    return `<span class="rbadge ${safeRank}">${rankIconSvg(safeRank)}${RANK_LABELS[safeRank] || String(safeRank).toUpperCase()}</span>`; // Updated to remove export
 }
 
 function appendMsg(id, data, container) {
@@ -911,7 +910,7 @@ function formatMsg(text) {
     .replace(/\n/g,'<br>');
 }
 
-export function escHtml(s) {
+function escHtml(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
@@ -1138,65 +1137,71 @@ function renderReactions(container, reactions, msgId) {
 }
 
 // ── Members — simple list sorted by rank (no presence) ──
-function loadMembers(ch) {
-  const list = document.getElementById('members-list');
-  if(!list) return;
-  if(membersUnsub) membersUnsub();
-
-  function _memberItemHtml(u) {
-    const avaHtml = avatarHtml(u.icon, u.username, '60%');
-    const color = u.color || avatarColor(u.uid);
-    return `<div class="ms-item" onclick="window._openProfile('${u.uid}')" style="cursor:pointer">
-      <div class="ms-ava" style="background:${color}">${avaHtml}</div>
-      <span class="ms-name">${escHtml(u.username)}</span>
-      <span class="rbadge ${u.rank}" style="flex-shrink:0;font-size:.45rem">${u.rank.toUpperCase()}</span>
-    </div>`;
-  }
-
-  const userUnsub = onSnapshot(
-    query(collection(db,'users'), where('status','==','approved')),
-    snap => {
-      let users = snap.docs.map(d=>d.data());
-      users = users.filter(u => {
-        if(ch.adminOnly) return canModerate(u.rank);
-        return canChat(u.rank);
+async function loadAdminPanel(tab) {
+  const c = document.getElementById('adm-content');
+  if(!c) return;
+  c.innerHTML = '<div class="adm-loading">Loading…</div>';
+  if(tab === 'pending') {
+    getDocs(query(collection(db,'users'), where('approved','==', false))).then(snap=>{
+      let html = '<div class="adm-list">';
+      snap.forEach(s=>{
+        const d = s.data();
+        html += `<div class="adm-row" data-uid="${s.id}"><div class="adm-row-left"><div class="adm-ava">${avatarHtml(d.icon,d.username,'36%')}</div><div class="adm-meta"><div class="adm-name">${escHtml(d.username)}</div><div class="adm-email">${escHtml(d.email||'')}</div></div></div><div class="adm-row-actions"><button class="btn btn-sm" onclick="approveUser('${s.id}')">Approve</button><button class="btn btn-ghost btn-sm" onclick="denyUser('${s.id}')">Deny</button></div></div>`;
       });
-      users.sort((a,b)=>rankOf(b.rank)-rankOf(a.rank));
-      let html = `<div class="ms-section-label">Members — ${users.length}</div>`;
-      users.forEach(u => { html += _memberItemHtml(u); });
-      list.innerHTML = html || '<div class="ms-section-label">No members</div>';
-    }
-  );
-
-  membersUnsub = () => { userUnsub(); };
+      html += '</div>';
+      c.innerHTML = html;
+    }).catch(()=>{c.innerHTML='<div class="adm-error">Failed to load</div>'});
+  } else if(tab === 'members') {
+    getDocs(query(collection(db,'users'), where('approved','==', true))).then(snap=>{
+      let html = '<div class="adm-list">';
+      snap.forEach(s=>{
+        const d = s.data();
+        html += `<div class="adm-row" data-uid="${s.id}"><div class="adm-row-left"><div class="adm-ava">${avatarHtml(d.icon,d.username,'36%')}</div><div class="adm-meta"><div class="adm-name">${escHtml(d.username)}</div><div class="adm-email">${escHtml(d.email||'')}</div></div></div><div class="adm-row-actions"><select onchange="changeRank('${s.id}',this.value)"><option value="member" ${d.rank==='member'?'selected':''}>Member</option><option value="mod" ${d.rank==='mod'?'selected':''}>Mod</option><option value="admin" ${d.rank==='admin'?'selected':''}>Admin</option><option value="goat" ${d.rank==='goat'?'selected':''}>Goat</option></select><button class="btn btn-ghost btn-sm" onclick="deleteAccount('${s.id}')">Delete</button></div></div>`;
+      });
+      html += '</div>';
+      c.innerHTML = html;
+    }).catch(()=>{c.innerHTML='<div class="adm-error">Failed to load</div>'});
+  } else if(tab === 'banned') {
+    getDocs(query(collection(db,'users'), where('banned','==', true))).then(snap=>{
+      let html = '<div class="adm-list">';
+      snap.forEach(s=>{
+        const d = s.data();
+        html += `<div class="adm-row" data-uid="${s.id}"><div class="adm-row-left"><div class="adm-ava">${avatarHtml(d.icon,d.username,'36%')}</div><div class="adm-meta"><div class="adm-name">${escHtml(d.username)}</div><div class="adm-email">${escHtml(d.email||'')}</div></div></div><div class="adm-row-actions"><button class="btn btn-sm" onclick="unbanUser('${s.id}')">Unban</button><button class="btn btn-ghost btn-sm" onclick="deleteAccount('${s.id}')">Delete</button></div></div>`;
+      });
+      html += '</div>';
+      c.innerHTML = html;
+    }).catch(()=>{c.innerHTML='<div class="adm-error">Failed to load</div>'});
+  } else if(tab === 'cleanup') {
+    renderDBCleanupNew(c);
+  }
 }
 
-// ── Create Channel Modal ──
+// --- Create Channel Modal (moved HTML into showModal) ---
 function showCreateChannelModal() {
   showModal(`
-    <h3>New Channel</h3>
-    <p class="modal-p">Create a new custom channel.</p>
-    <div class="field-group"><label class="field-label">Channel Name</label><input id="m-chname" class="field-input" placeholder="my-channel" maxlength="32"></div>
-    <div class="field-group"><label class="field-label">Minimum Rank</label>
-      <select id="m-chrank" class="field-input">
-        <option value="planetary">Planetary</option>
-        <option value="solar">Solar</option>
-        <option value="galactic">Galactic</option>
-        <option value="universal">Universal+</option>
-      </select>
-    </div>
-    <div class="field-group" style="display:flex;align-items:center;gap:.5rem">
-      <input type="checkbox" id="m-chann"> <label for="m-chann" style="font-size:.78rem">Announce only (Universal+ posts, others view)</label>
-    </div>
-    <div class="field-group" style="display:flex;align-items:center;gap:.5rem">
-      <input type="checkbox" id="m-chpwd" onchange="document.getElementById('m-pwdfield').classList.toggle('hidden',!this.checked)">
-      <label for="m-chpwd" style="font-size:.78rem">Password protected</label>
-    </div>
-    <div id="m-pwdfield" class="field-group hidden"><label class="field-label">Password</label><input id="m-chpwdval" class="field-input" type="text" placeholder="Channel password"></div>
-    <div class="merr" id="m-cherr"></div>
-    <div class="modal-actions">
-      <button class="btn btn-ghost btn-sm" onclick="document.getElementById('modal-overlay').click()">Cancel</button>
-      <button class="btn btn-sm" onclick="window.createChannel()">Create Channel</button>
+    <div>
+      <div class="field-group"><label class="field-label">Channel Name</label><input id="m-chname" class="field-input" placeholder="my-channel" maxlength="32" /></div>
+      <div class="field-group"><label class="field-label">Minimum Rank</label>
+        <select id="m-chrank" class="field-input">
+          <option value="planetary">Planetary</option>
+          <option value="solar">Solar</option>
+          <option value="galactic">Galactic</option>
+          <option value="universal">Universal+</option>
+        </select>
+      </div>
+      <div class="field-group" style="display:flex;align-items:center;gap:.5rem">
+        <input type="checkbox" id="m-chann" /> <label for="m-chann" style="font-size:.78rem">Announce only (Universal+ posts, others view)</label>
+      </div>
+      <div class="field-group" style="display:flex;align-items:center;gap:.5rem">
+        <input type="checkbox" id="m-chpwd" onchange="document.getElementById('m-pwdfield').classList.toggle('hidden',!this.checked)" />
+        <label for="m-chpwd" style="font-size:.78rem">Password protected</label>
+      </div>
+      <div id="m-pwdfield" class="field-group hidden"><label class="field-label">Password</label><input id="m-chpwdval" class="field-input" type="text" placeholder="Channel password" /></div>
+      <div class="merr" id="m-cherr"></div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('modal-overlay').click()">Cancel</button>
+        <button class="btn btn-sm" onclick="window.createChannel()">Create Channel</button>
+      </div>
     </div>
   `);
 }
@@ -1486,7 +1491,7 @@ function setupProfile() {
   renderProfileEdit();
 }
 
-export const SVG_ICONS = {
+const SVG_ICONS = {
     star:    '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',
     bolt:    '<path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>',
     flame:   '<path d="M8.5 14.5A2.5 2.5 0 0011 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 01-7 7 7 7 0 01-7-7c0-1.53.4-2.973 1.1-4.2.31-.477.63-.913.9-1.3"/>',
@@ -1517,7 +1522,7 @@ export const SVG_ICONS = {
     key:     '<path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 11-7.778 7.778 5.5 5.5 0 017.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>',
 };
 
-export function avatarHtml(iconKey, username, size='100%') {
+function avatarHtml(iconKey, username, size='100%') {
   if(!iconKey) return `<span style="font-weight:900">${avatarInitial(username)}</span>`;
   const paths = SVG_ICONS[iconKey];
   if(paths) return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${paths}</svg>`;
@@ -1578,59 +1583,92 @@ function renderProfileEdit() {
   const cooldownDays = lastChange ? Math.ceil((7*24*60*60*1000 - (Date.now()-lastChange.getTime())) / (24*60*60*1000)) : 0;
 
   section.innerHTML = `
-    <div class="prof-panel" id="prof-color-section">
-      <div class="prof-panel-hdr">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 011.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>
-        Avatar
+    <!-- Avatar Card -->
+    <div class="prof-edit-card">
+      <div class="prof-edit-card-hdr">
+        <div class="prof-edit-card-hdr-icon">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 011.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>
+        </div>
+        <div class="prof-edit-card-title">Avatar & Color</div>
       </div>
-      <div class="prof-panel-sub">Choose an icon or use your initial. Then pick a color.</div>
-      <div class="ava-icon-grid" id="ava-icon-grid"></div>
-      <div class="prof-panel-sub" style="margin-top:.9rem">Color</div>
-      <div class="color-swatches" id="color-swatches"></div>
+      <div class="prof-edit-card-body">
+        <div class="prof-ava-section">
+          <div class="prof-ava-preview-wrap">
+            <div class="prof-ava-preview" id="prof-ava-live" style="background:${d.color||avatarColor(d.uid)}">${avatarHtml(d.icon,d.username,'55%')}</div>
+            <div class="prof-ava-preview-label">Preview</div>
+          </div>
+          <div class="prof-ava-picker-cols">
+            <div>
+              <div class="prof-subsection-label">Icon</div>
+              <div class="ava-icon-grid" id="ava-icon-grid"></div>
+            </div>
+            <div>
+              <div class="prof-subsection-label" style="margin-top:.6rem">Color</div>
+              <div class="color-swatch-grid" id="color-swatches"></div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <div class="prof-panel">
-      <div class="prof-panel-hdr">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-        Username
-        ${!canChangeUsername ? '<span class="prof-panel-badge">Available in '+cooldownDays+' day'+(cooldownDays!==1?'s':'')+'</span>' : ''}
+    <!-- Username Card -->
+    <div class="prof-edit-card">
+      <div class="prof-edit-card-hdr">
+        <div class="prof-edit-card-hdr-icon">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        </div>
+        <div class="prof-edit-card-title">Username</div>
+        ${!canChangeUsername ? `<div class="prof-edit-card-badge">Changes in ${cooldownDays}d</div>` : ''}
       </div>
-      <div class="prof-row">
-        <input id="prof-username-inp" class="field-input" type="text" value="${escHtml(d.username)}" maxlength="20" placeholder="Username" ${canChangeUsername?'':'disabled'}>
-        <button class="btn btn-sm" id="prof-username-btn" ${canChangeUsername?'':'disabled'}>Save</button>
+      <div class="prof-edit-card-body">
+        <div class="prof-row">
+          <input id="prof-username-inp" class="field-input" type="text" value="${escHtml(d.username)}" maxlength="20" placeholder="Username" ${canChangeUsername?'':'disabled'}>
+          <button class="btn btn-sm" id="prof-username-btn" ${canChangeUsername?'':'disabled'}>Save</button>
+        </div>
+        ${!canChangeUsername ? '<div class="prof-cooldown">Usernames can be changed once every 7 days.</div>' : ''}
+        <div class="merr" id="prof-username-err"></div>
       </div>
-      ${!canChangeUsername ? '<div class="prof-cooldown">Username can be changed once every 7 days.</div>' : ''}
-      <div class="merr" id="prof-username-err"></div>
     </div>
 
-    <div class="prof-panel">
-      <div class="prof-panel-hdr">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-        Email Address
+    <!-- Email Card -->
+    <div class="prof-edit-card">
+      <div class="prof-edit-card-hdr">
+        <div class="prof-edit-card-hdr-icon">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        </div>
+        <div class="prof-edit-card-title">Email Address</div>
       </div>
-      <div class="prof-row">
-        <input id="prof-email-inp" class="field-input" type="email" value="${escHtml(d.email||auth.currentUser?.email||'')}" placeholder="your@email.com">
-        <button class="btn btn-sm" id="prof-email-btn">Update</button>
+      <div class="prof-edit-card-body">
+        <div class="prof-row">
+          <input id="prof-email-inp" class="field-input" type="email" value="${escHtml(d.email||auth.currentUser?.email||'')}" placeholder="your@email.com">
+          <button class="btn btn-sm" id="prof-email-btn">Update</button>
+        </div>
+        <div class="merr" id="prof-email-err"></div>
       </div>
-      <div class="merr" id="prof-email-err"></div>
     </div>
 
-    <div class="prof-panel">
-      <div class="prof-panel-hdr">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
-        Change Password
+    <!-- Password Card -->
+    <div class="prof-edit-card">
+      <div class="prof-edit-card-hdr">
+        <div class="prof-edit-card-hdr-icon">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+        </div>
+        <div class="prof-edit-card-title">Change Password</div>
       </div>
-      <div class="prof-fields">
-        <input id="prof-pass-cur"  class="field-input" type="password" placeholder="Current password">
-        <input id="prof-pass-new"  class="field-input" type="password" placeholder="New password (min 6 chars)">
-        <input id="prof-pass-conf" class="field-input" type="password" placeholder="Confirm new password">
+      <div class="prof-edit-card-body">
+        <div class="prof-fields">
+          <input id="prof-pass-cur"  class="field-input" type="password" placeholder="Current password">
+          <input id="prof-pass-new"  class="field-input" type="password" placeholder="New password (min 6 chars)">
+          <input id="prof-pass-conf" class="field-input" type="password" placeholder="Confirm new password">
+        </div>
+        <button class="btn btn-sm" id="prof-pass-btn" style="margin-top:.5rem">Change Password</button>
+        <div class="merr" id="prof-pass-err"></div>
       </div>
-      <button class="btn btn-sm" id="prof-pass-btn">Change Password</button>
-      <div class="merr" id="prof-pass-err"></div>
     </div>
   `;
 
-  // Color swatches
+  // ── Color swatches ──
+  const AVATAR_COLORS = ['#ef4444','#f97316','#eab308','#22c55e','#14b8a6','#3b82f6','#8b5cf6','#ec4899','#06b6d4','#84cc16','#f43f5e','#a855f7','#10b981','#0ea5e9','#f59e0b','#64748b'];
   const swatchWrap = document.getElementById('color-swatches');
   AVATAR_COLORS.forEach(color => {
     const sw = document.createElement('div');
@@ -1641,20 +1679,23 @@ function renderProfileEdit() {
       sw.classList.add('selected');
       await updateDoc(doc(db,'users',currentUser.uid), {color});
       currentUserData.color = color;
-      const spAva = document.getElementById('sp-ava');
-      if(spAva) spAva.style.background = color;
-      const profAva = document.getElementById('prof-ava');
-      if(profAva) profAva.style.background = color;
+      // Update all avatar displays
+      ['sp-ava','prof-ava','prof-ava-live'].forEach(id => {
+        const el = document.getElementById(id);
+        if(el) el.style.background = color;
+      });
       document.querySelectorAll(`.msg[data-uid="${currentUser.uid}"] .msg-ava`).forEach(el => el.style.background = color);
       document.querySelectorAll(`.msg[data-uid="${currentUser.uid}"] .msg-name`).forEach(el => el.style.color = color);
-      // Propagate to old messages in background
+      // Update banner background
+      const bannerBg = document.querySelector('.prof-banner-bg');
+      if(bannerBg) bannerBg.style.background = `linear-gradient(135deg,${color}60,${color}22,var(--bg))`;
       propagateProfileToMessages(currentUser.uid, { color }).catch(()=>{});
       toast('Avatar color updated.','success');
     });
     swatchWrap.appendChild(sw);
   });
 
-  // Icon grid
+  // ── Icon grid ──
   const iconGrid = document.getElementById('ava-icon-grid');
   if(iconGrid) {
     const letterOpt = document.createElement('div');
@@ -1710,13 +1751,16 @@ function renderProfileEdit() {
 
   function _updateAvaDisplay(iconKey) {
     const html = avatarHtml(iconKey, d.username, '60%');
-    const sp = document.getElementById('sp-ava');
-    if(sp) sp.innerHTML = html;
-    const profAva = document.getElementById('prof-ava');
-    if(profAva) profAva.innerHTML = avatarHtml(iconKey, d.username, '55%');
+    const previewHtml = avatarHtml(iconKey, d.username, '55%');
+    ['sp-ava','prof-ava'].forEach(id => {
+      const el = document.getElementById(id);
+      if(el) el.innerHTML = html;
+    });
+    const live = document.getElementById('prof-ava-live');
+    if(live) live.innerHTML = previewHtml;
   }
 
-  // Username save
+  // ── Username save ──
   document.getElementById('prof-username-btn')?.addEventListener('click', async () => {
     const inp = document.getElementById('prof-username-inp');
     const err = document.getElementById('prof-username-err');
@@ -1734,14 +1778,13 @@ function renderProfileEdit() {
       _userCache[currentUser.uid] = currentUserData;
       document.getElementById('sp-name').textContent = newName;
       const pn=document.getElementById('prof-name'); if(pn) pn.textContent=newName;
-      toast('Username updated. Propagating to messages...','success');
-      // Propagate username change to all old messages
+      toast('Username updated.','success');
       propagateProfileToMessages(currentUser.uid, { username: newName }).catch(()=>{});
       renderProfileEdit();
     } catch(e) { err.textContent = e.message; }
   });
 
-  // Email update
+  // ── Email update ──
   document.getElementById('prof-email-btn')?.addEventListener('click', async () => {
     const err = document.getElementById('prof-email-err');
     const newEmail = document.getElementById('prof-email-inp').value.trim();
@@ -1755,8 +1798,7 @@ function renderProfileEdit() {
       <div class="modal-actions">
         <button class="btn btn-ghost btn-sm" onclick="document.getElementById('modal-overlay').click()">Cancel</button>
         <button class="btn btn-sm" id="m-reauth-btn">Confirm & Update</button>
-      </div>
-    `);
+      </div>`);
     setTimeout(()=>document.getElementById('m-reauth-pass')?.focus(),80);
     document.getElementById('m-reauth-btn').onclick = async () => {
       const pass = document.getElementById('m-reauth-pass').value;
@@ -1776,7 +1818,7 @@ function renderProfileEdit() {
     };
   });
 
-  // Password change
+  // ── Password change ──
   document.getElementById('prof-pass-btn')?.addEventListener('click', async () => {
     const err = document.getElementById('prof-pass-err');
     const cur = document.getElementById('prof-pass-cur').value;
@@ -2062,7 +2104,7 @@ async function setupAdmin() {
   <div class="admin-fullpage">
     <div class="admin-topbar">
       <div class="admin-topbar-left">
-        <span class="admin-topbar-icon">${isGoat ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>' : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>'}</span>
+        <span class="admin-topbar-icon">${isGoat ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>' : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>'}</span>
         <div>
           <div class="admin-topbar-title">${isGoat ? 'Goat Console' : 'Mod Panel'}</div>
           <div class="admin-topbar-sub">${isGoat ? 'Full system access — user management, data cleanup, moderation' : 'Approve members and manage the community'}</div>
@@ -2104,211 +2146,82 @@ async function setupAdmin() {
 }
 
 async function loadAdminCounts() {
-  try {
-    const snap = await getDocs(collection(db,'users'));
-    const users = snap.docs.map(d=>d.data());
-    const pending = users.filter(u=>u.status==='pending').length;
-    const members = users.filter(u=>u.status==='approved').length;
-    const banned = users.filter(u=>u.status==='banned').length;
-    const pendEl = document.getElementById('adm-cnt-pending');
-    const membEl = document.getElementById('adm-cnt-members');
-    const banEl = document.getElementById('adm-cnt-banned');
-    if(pendEl) { pendEl.textContent = pending; document.getElementById('adm-stat-pending')?.classList.toggle('adm-stat-alert', pending > 0); }
-    if(membEl) membEl.textContent = members;
-    if(banEl) banEl.textContent = banned;
-  } catch(e) {}
+  const pBadge = document.getElementById('pill-pending-badge');
+  const mBadge = document.getElementById('pill-members-badge');
+  const bBadge = document.getElementById('pill-banned-badge');
+  if(!pBadge || !mBadge || !bBadge) return;
+  getDocs(collection(db,'users')).then(snap=>{
+    let p=0,m=0,b=0;
+    snap.forEach(doc=>{
+      const d=doc.data();
+      if(d.approved === false) p++;
+      if(d.banned) b++;
+      if(d.approved === true) m++;
+    });
+    pBadge.textContent = p;
+    mBadge.textContent = m;
+    bBadge.textContent = b;
+    // visual
+    document.getElementById('pill-pending').classList.toggle('has-count', p>0);
+    document.getElementById('pill-banned').classList.toggle('has-count', b>0);
+  }).catch(()=>{});
 }
-
-async function loadAdminPanel(tab) {
-  const container = document.getElementById('ap-'+tab);
-  if(!container) return;
-  container.innerHTML = '<div class="adm-loading">Loading…</div>';
-
-  if(tab === 'cleanup') {
-    renderDBCleanup(container);
-    return;
-  }
-
-  const snap = await getDocs(collection(db,'users'));
-  const users = snap.docs.map(d=>d.data());
-
-  if(tab==='pending') {
-    const pending = users.filter(u=>u.status==='pending');
-    if(!pending.length) { container.innerHTML='<div class="adm-empty"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:.5"><polyline points="20 6 9 17 4 12"/></svg><span>All caught up! No pending accounts.</span></div>'; return; }
-    container.innerHTML = pending.map(u=>`
-      <div class="adm-row">
-        <div class="adm-ava" style="background:${u.color||avatarColor(u.uid)}" onclick="window._openProfile('${u.uid}')">${avatarHtml(u.icon,u.username,"60%")}</div>
-        <div class="adm-info">
-          <div class="adm-name">${escHtml(u.username)}${u.fullName?` <span style="font-weight:400;color:var(--text-faint);font-size:.72rem">(${escHtml(u.fullName)})</span>`:''}</div>
-          <div class="adm-meta">${u.email||'No email'} · Requested ${u.createdAt?.toDate?u.createdAt.toDate().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'Unknown'}</div>
-        </div>
-        <div class="adm-actions">
-          <button class="ta-btn ta-ghost" onclick="window._openProfile('${u.uid}')">Profile</button>
-          <button class="ta-btn ta-green" onclick="window.approveUser('${u.uid}')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Approve</button>
-          <button class="ta-btn ta-red" onclick="window.denyUser('${u.uid}','${escHtml(u.username)}')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Deny</button>
-        </div>
-      </div>`).join('');
-  } else if(tab==='members') {
-    const members = users.filter(u=>u.status==='approved');
-    members.sort((a,b)=>rankOf(b.rank)-rankOf(a.rank));
-    if(!members.length) { container.innerHTML='<div class="adm-empty">No approved members yet</div>'; return; }
-
-    // Add search bar
-    container.innerHTML = `
-      <div class="adm-search-row">
-        <input type="text" id="adm-member-search" class="field-input" placeholder="Search by username or email…" style="max-width:340px">
-      </div>
-      <div id="adm-members-list"></div>`;
-
-    const renderMemberList = (filter='') => {
-      const filtered = members.filter(u => !filter || u.username?.toLowerCase().includes(filter) || u.email?.toLowerCase().includes(filter));
-      const listEl = document.getElementById('adm-members-list');
-      if(!listEl) return;
-      listEl.innerHTML = filtered.length ? filtered.map(u=>`
-        <div class="adm-row">
-          <div class="adm-ava" style="background:${u.color||avatarColor(u.uid)}" onclick="window._openProfile('${u.uid}')">${avatarHtml(u.icon,u.username,"60%")}</div>
-          <div class="adm-info">
-            <div class="adm-name">${escHtml(u.username)}</div>
-            <div class="adm-meta">${u.email||'No email'} · Joined ${u.createdAt?.toDate?u.createdAt.toDate().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'?'}</div>
-          </div>
-          <div class="adm-actions">
-            <span class="rbadge ${u.rank}">${u.rank}</span>
-            <button class="ta-btn ta-ghost" onclick="window._openProfile('${u.uid}')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Profile</button>
-            ${canChangeRank(u) ? `<button class="ta-btn ta-blue" onclick="window.changeRank('${u.uid}','${u.rank}','${escHtml(u.username)}')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> Rank</button>` : ''}
-            ${canBan(u) ? `<button class="ta-btn ta-red" onclick="window.banUser('${u.uid}','${escHtml(u.username)}')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg> Ban</button>` : ''}
-          </div>
-        </div>`).join('') : '<div class="adm-empty">No members match search</div>';
-    };
-    renderMemberList();
-    setTimeout(() => {
-      document.getElementById('adm-member-search')?.addEventListener('input', e => renderMemberList(e.target.value.trim().toLowerCase()));
-    }, 50);
-  } else if(tab==='banned') {
-    const banned = users.filter(u=>u.status==='banned');
-    container.innerHTML = banned.length ? banned.map(u=>`
-      <div class="adm-row">
-        <div class="adm-ava" style="background:${u.color||avatarColor(u.uid)}" onclick="window._openProfile('${u.uid}')">${avatarHtml(u.icon,u.username,"60%")}</div>
-        <div class="adm-info">
-          <div class="adm-name">${escHtml(u.username)}</div>
-          <div class="adm-meta">${u.email||'No email'}</div>
-        </div>
-        <div class="adm-actions">
-          <button class="ta-btn ta-ghost" onclick="window._openProfile('${u.uid}')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Profile</button>
-          <button class="ta-btn ta-green" onclick="window.unbanUser('${u.uid}')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Unban</button>
-          ${currentUserData.rank==='goat'?`<button class="ta-btn ta-red" onclick="window.deleteAccount('${u.uid}','${escHtml(u.username)}')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg> Delete</button>`:''}
-        </div>
-      </div>`).join('') : '<div class="adm-empty"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:.5"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg><span>No banned users</span></div>';
-  }
-}
+// ...existing code...
 
 // ── DB Cleanup Panel (Goat-only) ──
-async function renderDBCleanup(container) {
+function renderDBCleanupNew(container) {
   container.innerHTML = `
-  <div class="cleanup-panel">
-    <div class="cleanup-warning">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-      <span><strong>Danger Zone</strong> — All destructive actions are irreversible. Be certain before wiping anything.</span>
-    </div>
-
-    <div class="cleanup-section">
-      <div class="cleanup-section-hdr">GoatCoin</div>
-      <div class="cleanup-actions">
-        <div class="cleanup-action-card">
-          <div class="cac-title">Wipe All GoatCoin Balances</div>
-          <div class="cac-desc">Resets every user's coin balance, weekly stats, and BJ win counts to zero. Keeps the documents.</div>
-          <button class="btn btn-danger btn-sm" onclick="window.cleanupWipeAllCoins()">Wipe All Coins</button>
+    <div class="cleanup-panel-new">
+      <div class="cleanup-left-new">
+        <h4>Danger Zone</h4>
+        <p class="muted">These operations are irreversible. Please pick carefully.</p>
+        <div class="field">
+          <label>Channel</label>
+          <select id="cleanup-channel-select"></select>
         </div>
-        <div class="cleanup-action-card">
-          <div class="cac-title">Reset Weekly Stats Only</div>
-          <div class="cac-desc">Resets weekCoins, weekChatMins, weekGameMins, weekBJWins for all users without touching balances.</div>
-          <button class="btn btn-danger btn-sm" onclick="window.cleanupResetWeeklyStats()">Reset Weekly Stats</button>
+        <div class="field">
+          <label>Action</label>
+          <select id="cleanup-action-select"><option value="wipe-coins">Wipe all GoatCoin balances</option><option value="reset-weekly">Reset weekly stats</option><option value="wipe-dms">Wipe all DMs</option><option value="wipe-messages">Wipe all channel messages</option><option value="purge-games">Purge stale games</option><option value="reset-visits">Reset visit counters</option></select>
         </div>
-        <div class="cleanup-action-card">
-          <div class="cac-title">Delete GoatCoin Document</div>
-          <div class="cac-desc">Remove a specific user's GoatCoin document entirely. Enter their UID below.</div>
-          <div style="display:flex;gap:6px;margin-top:.6rem">
-            <input id="cleanup-gc-uid" class="field-input" placeholder="User UID…" style="flex:1;font-size:.78rem">
-            <button class="btn btn-danger btn-sm" onclick="window.cleanupDeleteUserGC()">Delete</button>
-          </div>
+        <div class="field">
+          <label>Filter</label>
+          <input id="cleanup-filter" class="field-input" placeholder="Optional filter (username or uid)">
+        </div>
+        <div style="margin-top:.8rem">
+          <button class="btn btn-danger" id="cleanup-exec">Run Action</button>
         </div>
       </div>
-    </div>
-
-    <div class="cleanup-section">
-      <div class="cleanup-section-hdr">Messages</div>
-      <div class="cleanup-actions">
-        <div class="cleanup-action-card">
-          <div class="cac-title">Wipe Channel Messages</div>
-          <div class="cac-desc">Delete all messages in a specific channel. The channel itself remains.</div>
-          <div style="display:flex;gap:6px;margin-top:.6rem">
-            <select id="cleanup-ch-sel" class="field-input" style="flex:1;font-size:.78rem"><option value="">Loading channels…</option></select>
-            <button class="btn btn-danger btn-sm" onclick="window.cleanupWipeChannel()">Wipe</button>
-          </div>
-        </div>
-        <div class="cleanup-action-card">
-          <div class="cac-title">Wipe All DMs</div>
-          <div class="cac-desc">Delete all direct message threads and their messages. This affects every user.</div>
-          <button class="btn btn-danger btn-sm" onclick="window.cleanupWipeDMs()">Wipe All DMs</button>
-        </div>
+      <div class="cleanup-right-new">
+        <h4>Log</h4>
+        <div class="cleanup-log-new" id="cleanup-log"></div>
       </div>
     </div>
-
-    <div class="cleanup-section">
-      <div class="cleanup-section-hdr">Presence & Stale Data</div>
-      <div class="cleanup-actions">
-        <div class="cleanup-action-card">
-          <div class="cac-title">Clear Offline Presence</div>
-          <div class="cac-desc">Remove all Firestore presence documents where online = false. RTDB presence is auto-managed.</div>
-          <button class="btn btn-ghost btn-sm" onclick="window.cleanupClearOfflinePresence()">Clear Offline Presence</button>
-        </div>
-        <div class="cleanup-action-card">
-          <div class="cac-title">Purge Stale BJ Games</div>
-          <div class="cac-desc">Delete all blackjack games stuck in gameDone or older than 24 hours.</div>
-          <button class="btn btn-ghost btn-sm" onclick="window.cleanupPurgeBJGames()">Purge Stale Games</button>
-        </div>
-        <div class="cleanup-action-card">
-          <div class="cac-title">Clear BJ Challenges</div>
-          <div class="cac-desc">Delete all pending, declined, and cancelled blackjack challenge documents.</div>
-          <button class="btn btn-ghost btn-sm" onclick="window.cleanupClearBJChallenges()">Clear Challenges</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="cleanup-section">
-      <div class="cleanup-section-hdr">Visit Counter</div>
-      <div class="cleanup-actions">
-        <div class="cleanup-action-card">
-          <div class="cac-title">Reset Visit Counter</div>
-          <div class="cac-desc">Set the total visit count back to 0. Affects both RTDB and Firestore counters.</div>
-          <button class="btn btn-ghost btn-sm" onclick="window.cleanupResetVisits()">Reset Visits</button>
-        </div>
-      </div>
-    </div>
-
-    <div id="cleanup-log" class="cleanup-log"></div>
-  </div>`;
-
-  // Load channels into dropdown
-  try {
-    const snap = await getDocs(collection(db,'channels'));
-    const sel = document.getElementById('cleanup-ch-sel');
-    if(sel) {
-      sel.innerHTML = '<option value="">-- Select channel --</option>' +
-        ['general','admin'].map(id=>`<option value="${id}">#${id} (hardcoded)</option>`).join('') +
-        snap.docs.map(d=>`<option value="${d.id}">#${escHtml(d.data().name||d.id)}</option>`).join('');
-    }
-  } catch(e) {}
+  `;
+  // populate channels
+  getDocs(collection(db,'channels')).then(snap=>{
+    const sel = document.getElementById('cleanup-channel-select');
+    sel.innerHTML = '<option value="all">All channels</option>';
+    snap.forEach(s=>{
+      sel.innerHTML += `<option value="${s.id}">${escHtml(s.data().title||s.id)}</option>`;
+    });
+  }).catch(()=>{});
+  document.getElementById('cleanup-exec')?.addEventListener('click', ()=>{
+    const action = document.getElementById('cleanup-action-select').value;
+    const channel = document.getElementById('cleanup-channel-select').value;
+    const filter = document.getElementById('cleanup-filter').value.trim();
+    _cleanupLog(`Starting ${action} on ${channel} ${filter?(' filter:'+filter):''}`);
+    runCleanupAction(action, channel, filter).then(()=>_cleanupLog('Completed','success')).catch(e=>_cleanupLog(e.message,'error'));
+  });
 }
 
 function _cleanupLog(msg, type='info') {
-  const log = document.getElementById('cleanup-log');
-  if(!log) { toast(msg, type); return; }
-  const entry = document.createElement('div');
-  entry.className = `cleanup-log-entry cleanup-log-${type}`;
-  entry.innerHTML = `<span class="cleanup-log-ts">${new Date().toLocaleTimeString()}</span> ${escHtml(msg)}`;
-  log.appendChild(entry);
-  log.scrollTop = log.scrollHeight;
-  toast(msg, type);
+  const wrap = document.getElementById('cleanup-log');
+  if(!wrap) return;
+  const el = document.createElement('div');
+  el.className = 'cleanup-log-entry-new cleanup-log-'+type+'-new';
+  el.textContent = typeof msg === 'string' ? msg : JSON.stringify(msg);
+  wrap.appendChild(el);
+  wrap.scrollTop = wrap.scrollHeight;
 }
 
 window.cleanupWipeAllCoins = function() {
