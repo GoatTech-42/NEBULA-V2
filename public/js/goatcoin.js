@@ -256,15 +256,13 @@ function _renderTab() {
   sunday.setHours(0,0,0,0);
   const saturday = new Date(sunday);
   saturday.setDate(sunday.getDate() + 6);
-  const weekLabel = `${sunday.toLocaleDateString('en-US',{month:'short',day:'numeric'})} â€“ ${saturday.toLocaleDateString('en-US',{month:'short',day:'numeric'})}`;
+  const weekLabel = `${sunday.toLocaleDateString('en-US',{month:'short',day:'numeric'})} — ${saturday.toLocaleDateString('en-US',{month:'short',day:'numeric'})}`;
 
   container.innerHTML = `
     <div class="pad gc-page">
       <!-- Hero Banner -->
       <div class="gc-hero-banner">
-        <div class="gc-hero-bg">
-          <div class="gc-hero-glow"></div>
-        </div>
+        <div class="gc-hero-bg"><div class="gc-hero-glow"></div></div>
         <div class="gc-hero-content">
           <div class="gc-hero-left">
             <div class="gc-hero-icon">${GOATCOIN_ICON_SVG}</div>
@@ -283,43 +281,55 @@ function _renderTab() {
         </div>
       </div>
 
-      <!-- Week Stats -->
+      <!-- Week header -->
       <div class="gc-week-header">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
         <span>Week of ${weekLabel}</span>
       </div>
-      <div class="gc-stats-grid">
+
+      <!-- Redesigned stat tiles -->
+      <div class="gc-stats-strip">
         <div class="gc-stat-tile gc-stat-earned">
-          <div class="gc-stat-tile-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></div>
+          <div class="gc-stat-tile-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+          </div>
           <div class="gc-stat-tile-num">${wCoins.toLocaleString()}</div>
           <div class="gc-stat-tile-label">Earned</div>
         </div>
         <div class="gc-stat-tile gc-stat-chat">
-          <div class="gc-stat-tile-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div>
-          <div class="gc-stat-tile-num">${wChat}m</div>
-          <div class="gc-stat-tile-label">Chat</div>
+          <div class="gc-stat-tile-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+          </div>
+          <div class="gc-stat-tile-num">${wChat}<span style="font-size:.65em;font-weight:600;opacity:.7">m</span></div>
+          <div class="gc-stat-tile-label">Chat Time</div>
         </div>
         <div class="gc-stat-tile gc-stat-games">
-          <div class="gc-stat-tile-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M7 10v4"/><line x1="5" y1="12" x2="9" y2="12"/><circle cx="15" cy="11" r="1" fill="currentColor"/><circle cx="17" cy="13" r="1" fill="currentColor"/></svg></div>
-          <div class="gc-stat-tile-num">${wGame}m</div>
-          <div class="gc-stat-tile-label">Games</div>
+          <div class="gc-stat-tile-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M7 10v4"/><line x1="5" y1="12" x2="9" y2="12"/><circle cx="15" cy="11" r="1" fill="currentColor"/><circle cx="17" cy="13" r="1" fill="currentColor"/></svg>
+          </div>
+          <div class="gc-stat-tile-num">${wGame}<span style="font-size:.65em;font-weight:600;opacity:.7">m</span></div>
+          <div class="gc-stat-tile-label">Game Time</div>
         </div>
         <div class="gc-stat-tile gc-stat-bj">
-          <div class="gc-stat-tile-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2"/><circle cx="8" cy="8" r="1.5" fill="currentColor"/><circle cx="16" cy="16" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg></div>
+          <div class="gc-stat-tile-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2"/><circle cx="8" cy="8" r="1.5" fill="currentColor"/><circle cx="16" cy="16" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg>
+          </div>
           <div class="gc-stat-tile-num">${wBJ}</div>
           <div class="gc-stat-tile-label">BJ Wins</div>
         </div>
       </div>
 
-      <!-- Main Layout -->
+      <!-- Main Layout: BJ + Leaderboard -->
       <div class="gc-main-layout">
         <div class="gc-bj-col" id="gc-bj-col">${_renderBJLobby()}</div>
         <div class="gc-lb-col">
-          <div class="gc-lb-hdr">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-            Leaderboard
+          <div class="gc-lb-card">
+            <div class="gc-lb-card-hdr">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+              Leaderboard
+            </div>
+            <div id="gc-leaderboard-content"><div class="gc-lb-loading">Loading…</div></div>
           </div>
-          <div id="gc-leaderboard-content"><div class="gc-lb-loading">Loadingâ€¦</div></div>
         </div>
       </div>
     </div>`;
@@ -332,9 +342,6 @@ function _renderTab() {
   _fetchIncomingNow();
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-//  LOBBY UI â€” 1v1 only
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function _renderBJLobby() {
   return `<div class="bj-lobby">
     <div class="bj-lobby-card">
