@@ -1,166 +1,308 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-3DNSV0WCYG"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nebula V2 - Under Construction</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
 
-  gtag('config', 'G-3DNSV0WCYG');
-</script>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Under Construction</title>
-    <style>
-        :root {
-            --yellow: #ffde59;
-            --dark: #1a1a1a;
-            --gray: #666666;
-            --bg: #fdfdfd;
-            --grid: #f0f0f0;
-        }
+    *,*::before,*::after { margin:0; padding:0; box-sizing:border-box; }
 
-        body {
-            margin: 0;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background-color: var(--bg);
-            /* Blueprint Grid Background */
-            background-image: 
-                linear-gradient(var(--grid) 1px, transparent 1px),
-                linear-gradient(90deg, var(--grid) 1px, transparent 1px);
-            background-size: 40px 40px;
-            font-family: -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
-            color: var(--dark);
-            overflow: hidden;
-        }
+    :root {
+      --bg: #060d18;
+      --surface: rgba(255,255,255,.04);
+      --border: rgba(255,255,255,.08);
+      --text: #e2e8f0;
+      --text-muted: rgba(226,232,240,.55);
+      --accent: #4fc9ea;
+      --accent-glow: rgba(79,201,234,.25);
+      --warn: #fbbf24;
+      --warn-glow: rgba(251,191,36,.2);
+    }
 
-        .content {
-            position: relative;
-            text-align: center;
-            padding: 3rem;
-            background: rgba(253, 253, 253, 0.9); /* Slight fade for readability over grid */
-            border-radius: 20px;
-        }
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
 
-        /* --- Minimalist Crane (Corrected Sides) --- */
-        .crane {
-            position: relative;
-            width: 200px;
-            height: 140px;
-            margin: 0 auto 40px;
-        }
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      position: relative;
+    }
 
-        .tower {
-            position: absolute;
-            bottom: 0;
-            left: 50%;
-            width: 10px;
-            height: 100px;
-            background: var(--dark);
-            transform: translateX(-50%);
-            border-radius: 2px;
-            z-index: 2;
-        }
+    /* Nebula background */
+    .nebula {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 0;
+    }
+    .nebula .blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(90px);
+      opacity: .45;
+      animation: drift 25s ease-in-out infinite alternate;
+    }
+    .nebula .blob:nth-child(1) {
+      width: 550px; height: 550px;
+      background: radial-gradient(circle, rgba(251,191,36,.25), transparent 70%);
+      top: -20%; left: -10%;
+    }
+    .nebula .blob:nth-child(2) {
+      width: 450px; height: 450px;
+      background: radial-gradient(circle, rgba(79,201,234,.2), transparent 70%);
+      bottom: -20%; right: -15%;
+      animation-delay: -10s;
+    }
 
-        .arm-assembly {
-            position: absolute;
-            top: 30px;
-            left: 50%;
-            width: 0;
-            height: 0;
-            animation: swing 6s ease-in-out infinite;
-            z-index: 1;
-        }
+    /* Stars */
+    .stars {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      background-image:
+        radial-gradient(1.5px 1.5px at 15% 30%, rgba(255,255,255,.65) 0%, transparent 100%),
+        radial-gradient(1px 1px at 35% 70%, rgba(255,255,255,.45) 0%, transparent 100%),
+        radial-gradient(2px 2px at 55% 20%, rgba(255,255,255,.5) 0%, transparent 100%),
+        radial-gradient(1px 1px at 72% 55%, rgba(255,255,255,.35) 0%, transparent 100%),
+        radial-gradient(1.5px 1.5px at 85% 35%, rgba(255,255,255,.55) 0%, transparent 100%),
+        radial-gradient(1px 1px at 25% 85%, rgba(255,255,255,.3) 0%, transparent 100%);
+    }
 
-        .arm {
-            position: absolute;
-            top: -4px;
-            /* Long side is the Jib (right), Short side is Counterweight (left) */
-            left: -40px; 
-            width: 160px; 
-            height: 8px;
-            background: var(--yellow);
-            border-radius: 4px;
-            border: 2px solid var(--dark);
-        }
+    /* Content */
+    .content {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      max-width: 520px;
+      padding: 2rem;
+      animation: fadeUp .7s cubic-bezier(.16,1,.3,1);
+    }
 
-        .hook-line {
-            position: absolute;
-            top: 6px;
-            left: 80px; /* Positioned on the long arm side */
-            width: 2px;
-            height: 40px;
-            background: var(--dark);
-            animation: drop 3s ease-in-out infinite alternate;
-        }
+    /* Construction icon */
+    .icon-wrap {
+      width: 100px;
+      height: 100px;
+      margin: 0 auto 2rem;
+      position: relative;
+      animation: float 4s ease-in-out infinite;
+    }
 
-        .hook-line::after {
-            content: '';
-            position: absolute;
-            bottom: -8px;
-            left: -4px;
-            width: 8px;
-            height: 8px;
-            border: 2px solid var(--dark);
-            border-top: none;
-            border-radius: 0 0 4px 4px;
-        }
+    .gear {
+      position: absolute;
+      animation: spin 8s linear infinite;
+    }
+    .gear:nth-child(1) {
+      top: 0; left: 10px;
+      width: 50px; height: 50px;
+    }
+    .gear:nth-child(2) {
+      bottom: 0; right: 5px;
+      width: 42px; height: 42px;
+      animation-direction: reverse;
+      animation-duration: 6s;
+    }
 
-        /* --- Text Styling --- */
-        h1 {
-            font-size: 2.5rem;
-            font-weight: 800;
-            margin: 0;
-            letter-spacing: -1px;
-            text-transform: uppercase;
-        }
+    .gear svg {
+      width: 100%;
+      height: 100%;
+    }
 
-        p {
-            font-size: 1.1rem;
-            color: var(--gray);
-            margin-top: 10px;
-        }
+    .wrench-icon {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
 
-        .time {
-            color: var(--dark);
-            font-weight: 700;
-            background: var(--yellow);
-            padding: 2px 8px;
-            border-radius: 4px;
-            display: inline-block;
-        }
+    .title-line {
+      font-size: .52rem;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--warn);
+      font-weight: 800;
+      margin-bottom: .75rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: .6rem;
+    }
+    .title-line::before,
+    .title-line::after {
+      content: '';
+      width: 24px;
+      height: 1.5px;
+      background: var(--warn);
+      opacity: .4;
+      border-radius: 2px;
+    }
 
-        /* --- Animations --- */
-        @keyframes swing {
-            0%, 100% { transform: rotate(-8deg); }
-            50% { transform: rotate(10deg); }
-        }
+    h1 {
+      font-size: 2.2rem;
+      font-weight: 900;
+      letter-spacing: -.03em;
+      margin-bottom: .5rem;
+      line-height: 1.1;
+    }
 
-        @keyframes drop {
-            0% { height: 35px; }
-            100% { height: 75px; }
-        }
-    </style>
+    p {
+      font-size: .88rem;
+      color: var(--text-muted);
+      line-height: 1.75;
+      margin-bottom: 2.2rem;
+      max-width: 380px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    /* Status card */
+    .status-card {
+      display: inline-flex;
+      align-items: center;
+      gap: .7rem;
+      background: rgba(255,255,255,.04);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: .8rem 1.5rem;
+      margin-bottom: 2rem;
+      backdrop-filter: blur(12px);
+    }
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--warn);
+      box-shadow: 0 0 8px var(--warn-glow);
+      animation: pulse 2s ease-in-out infinite;
+    }
+    .status-text {
+      font-size: .76rem;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+    .status-text span {
+      color: var(--warn);
+      font-weight: 800;
+    }
+
+    /* Progress bar */
+    .progress-wrap {
+      width: 200px;
+      height: 4px;
+      border-radius: 4px;
+      background: rgba(255,255,255,.08);
+      margin: 0 auto 2.5rem;
+      overflow: hidden;
+    }
+    .progress-bar {
+      height: 100%;
+      border-radius: 4px;
+      background: linear-gradient(90deg, var(--accent), var(--warn));
+      width: 65%;
+      animation: progressGlow 2s ease-in-out infinite;
+      box-shadow: 0 0 10px var(--accent-glow);
+    }
+
+    /* Footer */
+    .footer-tag {
+      position: fixed;
+      bottom: 1.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: .52rem;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      opacity: .4;
+      z-index: 1;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px) }
+      to { opacity: 1; transform: translateY(0) }
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0) }
+      50% { transform: translateY(-10px) }
+    }
+    @keyframes spin {
+      from { transform: rotate(0deg) }
+      to { transform: rotate(360deg) }
+    }
+    @keyframes drift {
+      from { transform: translate(0, 0) scale(1) }
+      to { transform: translate(25px, -15px) scale(1.06) }
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1) }
+      50% { opacity: .5; transform: scale(1.3) }
+    }
+    @keyframes progressGlow {
+      0%, 100% { opacity: .8 }
+      50% { opacity: 1 }
+    }
+
+    @media (max-width: 480px) {
+      h1 { font-size: 1.7rem; }
+      p { font-size: .82rem; }
+      .icon-wrap { width: 80px; height: 80px; }
+    }
+  </style>
 </head>
 <body>
+  <div class="nebula">
+    <div class="blob"></div>
+    <div class="blob"></div>
+  </div>
+  <div class="stars"></div>
 
-    <div class="content">
-        <div class="crane">
-            <div class="tower"></div>
-            <div class="arm-assembly">
-                <div class="arm"></div>
-                <div class="hook-line"></div>
-            </div>
-        </div>
-
-        <h1>Under Construction</h1>
-        <p>We’ll be back up <span class="time">soon.</span></p>
+  <div class="content">
+    <div class="icon-wrap">
+      <div class="gear">
+        <svg viewBox="0 0 24 24" fill="none" stroke="rgba(251,191,36,.5)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/>
+        </svg>
+      </div>
+      <div class="gear">
+        <svg viewBox="0 0 24 24" fill="none" stroke="rgba(79,201,234,.45)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/>
+        </svg>
+      </div>
+      <div class="wrench-icon">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.6)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/>
+        </svg>
+      </div>
     </div>
 
+    <div class="title-line">Maintenance</div>
+    <h1>Under Construction</h1>
+    <p>We're working on something amazing behind the scenes. Nebula is getting an upgrade and will be back online shortly.</p>
+
+    <div class="status-card">
+      <div class="status-dot"></div>
+      <div class="status-text">Status: <span>Building</span></div>
+    </div>
+
+    <div class="progress-wrap">
+      <div class="progress-bar"></div>
+    </div>
+  </div>
+
+  <div class="footer-tag">nebula v2 &mdash; beyond the stars</div>
 </body>
 </html>

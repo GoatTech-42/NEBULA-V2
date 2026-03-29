@@ -1,6 +1,3 @@
-// ═══════════════════════════════════════════════════
-//  app.js — Core app logic
-// ═══════════════════════════════════════════════════
 import {
   db, auth,
   doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs,
@@ -15,7 +12,7 @@ import { renderBadgeRow, openProfileModal, renderOwnProfile, checkAutoAwards, BA
 import { renderShopTab, initShop } from './shop.js';
 import { CMD_ICONS } from './icons.js';
 
-// ── State ──
+// â”€â”€ State â”€â”€
 let currentUser = null;
 let currentUserData = null;
 let currentChannel = null;
@@ -34,11 +31,11 @@ const _unreadChannels = {};
 const _unreadDMs = {};
 let _unreadEnabled = true;
 
-// Channel message limit — prune when exceeded
+// Channel message limit â€” prune when exceeded
 const CHANNEL_MSG_LIMIT = 100;
 const CHANNEL_MSG_PRUNE_TO = 80;
 
-// ── Rank utils ──
+// â”€â”€ Rank utils â”€â”€
 const RANKS = { earthbound:0, planetary:1, solar:2, galactic:3, universal:4, goat:5 };
 const rankOf = r => RANKS[r] ?? -1;
 const canModerate = r => rankOf(r) >= rankOf('universal');
@@ -52,7 +49,7 @@ const AV_COLORS = ['#ef4444','#f97316','#eab308','#22c55e','#14b8a6','#3b82f6','
 function avatarColor(uid) { let h=0; for(let c of uid) h=(h<<5)-h+c.charCodeAt(0); return AV_COLORS[Math.abs(h)%AV_COLORS.length]; }
 function avatarInitial(u) { return (u||'?')[0].toUpperCase(); }
 
-// ── Toast ──
+// â”€â”€ Toast â”€â”€
 function toast(msg, type='info', dur=3000) {
   const stack = document.getElementById('notif-stack');
   const el = document.createElement('div');
@@ -64,7 +61,7 @@ function toast(msg, type='info', dur=3000) {
   setTimeout(()=>{ el.style.animation='fadeOut .3s ease forwards'; setTimeout(()=>el.remove(),300); }, dur);
 }
 
-// ── Modal ──
+// â”€â”€ Modal â”€â”€
 function showModal(html, onClose) {
   const ov = document.getElementById('modal-overlay');
   const wrap = document.getElementById('modal-wrap');
@@ -90,9 +87,14 @@ function closeModal(cb) {
   },200);
 }
 
-// ── Theme ──
+// â”€â”€ Theme â”€â”€
 const THEME_FILES = { 'og':'og.css','dark':'dark.css','light':'light.css','synthwave':'synthwave.css','aurora':'aurora.css','crimson':'crimson.css','midnight':'midnight.css','slate':'slate.css','forest':'forest.css','ocean':'ocean.css','rose':'rose.css','solar':'solar.css','void':'void.css','neon':'neon.css','blush':'blush.css','ice':'ice.css' };
 let _themeTransitioning = false;
+
+function loadTheme() {
+  const match = document.cookie.match(/nebula_theme=(\w+)/);
+  return match ? match[1] : 'og';
+}
 
 function applyTheme(name, animate = true) {
   const file = THEME_FILES[name] || 'og.css';
@@ -102,7 +104,7 @@ function applyTheme(name, animate = true) {
     let link = document.getElementById('theme-stylesheet');
     if (!link) { link = document.createElement('link'); link.rel='stylesheet'; link.id='theme-stylesheet'; document.head.appendChild(link); }
     link.href = `css/themes/${file}?v=${Date.now()}`;
-    document.getElementById('pill-pending').addEventListener('click', async () => loadAdminPanel('pending'));
+    return;
   }
   _themeTransitioning = true;
   const overlay = document.createElement('div');
@@ -123,37 +125,8 @@ function applyTheme(name, animate = true) {
     setTimeout(revealAndClean, 300);
   }, { once: true });
 }
-function setupAdmin() {
-  const wrap = document.getElementById('admin-section');
-  if(!wrap) return;
-    wrap.innerHTML = `
-    <div class="admin-redesign-wrap">
-      <div class="admin-redesign-top">
-        <div class="admin-redesign-title">Administration</div>
-        <div class="admin-redesign-actions">
-          <button class="btn btn-sm" id="adm-refresh">Refresh</button>
-        </div>
-      </div>
-      <div class="admin-pills" id="admin-pills">
-        <div class="admin-pill" id="pill-pending">Pending <span class="pill-badge" id="pill-pending-badge">0</span></div>
-        <div class="admin-pill" id="pill-members">Members <span class="pill-badge" id="pill-members-badge">0</span></div>
-        <div class="admin-pill" id="pill-banned">Banned <span class="pill-badge" id="pill-banned-badge">0</span></div>
-        <div class="admin-pill" id="pill-cleanup">Cleanup</div>
-      </div>
-      <div id="adm-content" class="admin-content"></div>
-    </div>
-  `;
 
-  document.getElementById('pill-pending').addEventListener('click', ()=>loadAdminPanel('pending'));
-  document.getElementById('pill-members').addEventListener('click', ()=>loadAdminPanel('members'));
-  document.getElementById('pill-banned').addEventListener('click', ()=>loadAdminPanel('banned'));
-  document.getElementById('pill-cleanup').addEventListener('click', ()=>loadAdminPanel('cleanup'));
-  document.getElementById('adm-refresh').addEventListener('click', ()=>loadAdminCounts());
-  loadAdminCounts();
-  loadAdminPanel('pending');
-}
-
-// ── Notification Permission ──
+// â”€â”€ Notification Permission â”€â”€
 function requestNotifPermission() {
   if(!('Notification' in window)) return;
   if(Notification.permission === 'default') {
@@ -163,8 +136,9 @@ function requestNotifPermission() {
       });
     }, 3000);
   }
+}
 
-// ── Auth Screen ──
+// â”€â”€ Auth Screen â”€â”€
 function showAuth() {
   document.getElementById('auth-screen').classList.remove('hidden');
   document.getElementById('pending-screen').classList.add('hidden');
@@ -265,7 +239,7 @@ function setupAuth() {
   });
 }
 
-// ── Main App Init ──
+// â”€â”€ Main App Init â”€â”€
 async function initApp(user) {
   if(_pendingSignup) return;
   const snap = await getDoc(doc(db,'users',user.uid));
@@ -341,7 +315,7 @@ async function initApp(user) {
   hideSkeleton();
 }
 
-// ── Sidebar ──
+// â”€â”€ Sidebar â”€â”€
 function buildSidebar() {
   const d = currentUserData;
   const ava = document.getElementById('sp-ava');
@@ -372,7 +346,7 @@ function buildSidebar() {
   });
 }
 
-// ── Nav ──
+// â”€â”€ Nav â”€â”€
 function setupNav() {
   document.querySelectorAll('[data-section]').forEach(item => {
     item.addEventListener('click', () => navigate(item.dataset.section));
@@ -392,7 +366,7 @@ function navigate(section) {
   document.getElementById('mobile-drawer')?.remove();
 }
 
-// ── Home / Visits ──
+// â”€â”€ Home / Visits â”€â”€
 const TOOLTIPS_RAW = [
   "nebula never dies", "disable your adblocker for goatcoin", "lock in gng", "stfu fleece", "dm me for tooltip suggestions", "now with more customization", "plz dont hack", "find the tabernacle", "is ts peak", "goattech is better", "proxies dont take the internet", "no goofy ahh minecraft kids", "definitely not vibe coded", "join hackclub", "67 67 676767 hahahhahahah", "great uncle tup tup never dies", "lightspeed", "why are you reading this", "in the big 26", "touch grass gng", "lets go gambling", "all on red", "ask not what nebula can do for you", "imagine not having the goat rank", "goatcoin > bitcoin", "ctrl+k to search anything", "new features every week", "the stars are watching",
 ];
@@ -436,11 +410,11 @@ function initHome() {
     _tooltipInterval = setInterval(cycle, 4200);
     document.addEventListener('visibilitychange', () => {
       if(document.hidden) {
-        // Tab lost focus — immediately remove ALL tooltip elements to prevent overlap on return
+        // Tab lost focus â€” immediately remove ALL tooltip elements to prevent overlap on return
         wrap.querySelectorAll('.tt-el').forEach(el => el.remove());
         if(_tooltipInterval) { clearInterval(_tooltipInterval); _tooltipInterval = null; }
       } else {
-        // Tab regained focus — clean start with a single fresh tooltip
+        // Tab regained focus â€” clean start with a single fresh tooltip
         wrap.querySelectorAll('.tt-el').forEach(el => el.remove());
         cycle();
         if(!_tooltipInterval) _tooltipInterval = setInterval(cycle, 4200);
@@ -538,7 +512,7 @@ async function setupBattery() {
   }
 }
 
-// ── Presence — REMOVED to save Firebase quota ──
+// â”€â”€ Presence â€” REMOVED to save Firebase quota â”€â”€
 // Typing indicators are kept per-channel via RTDB.
 function setupPresence() {
   // No-op: presence system removed to conserve RTDB/Firestore quota
@@ -547,7 +521,7 @@ function setupPresence() {
 function trackVisits() {
   const el = document.getElementById('visits-count');
   if(!el) return;
-  // Use RTDB for visit counter — much cheaper than Firestore
+  // Use RTDB for visit counter â€” much cheaper than Firestore
   if(_rtdb) {
     const visitsRef = rtRef(_rtdb, 'meta/visits');
     rtGet(visitsRef).then(snap => {
@@ -575,7 +549,7 @@ function trackVisits() {
   }
 }
 
-// ── Channel message pruning ──
+// â”€â”€ Channel message pruning â”€â”€
 async function pruneChannelIfNeeded(channelId) {
   try {
     const msgsRef = collection(db, `channels/${channelId}/messages`);
@@ -591,7 +565,7 @@ async function pruneChannelIfNeeded(channelId) {
   }
 }
 
-// ── Chat ──
+// â”€â”€ Chat â”€â”€
 const HARDCODED_CHANNELS = [
   { id:'general', name:'general', icon:'#', announce:false, passwordProtected:false, minRank:'planetary' },
   { id:'admin', name:'admin', icon:'#', announce:false, passwordProtected:false, minRank:'universal', adminOnly:true }
@@ -655,7 +629,7 @@ async function openChannel(ch) {
   const annBadge = document.getElementById('chat-announce-badge');
   annBadge.classList.toggle('hidden', !ch.announce);
 
-  // Wipe thread button — goat only
+  // Wipe thread button â€” goat only
   const ctbRight = document.querySelector('#chat-window .ctb-right');
   if(ctbRight) {
     const existingWipe = ctbRight.querySelector('.wipe-thread-btn');
@@ -685,7 +659,7 @@ async function openChannel(ch) {
   document.getElementById('chat-send-btn').disabled = isAnnounce;
   document.getElementById('chat-input').placeholder = isAnnounce ? 'Announcements only' : `Message #${ch.name}`;
 
-  // Prune in background — won't block UI
+  // Prune in background â€” won't block UI
   setTimeout(() => pruneChannelIfNeeded(ch.id), 2000);
 }
 
@@ -694,7 +668,7 @@ function subscribeChannel(channelId) {
   let initialized = false;
   lastMsgSender = null; lastMsgTime = null;
 
-  // Use typing from RTDB if available, else Firestore — unsub previous listener first
+  // Use typing from RTDB if available, else Firestore â€” unsub previous listener first
   if(_typingUnsub) { _typingUnsub(); _typingUnsub = null; }
   if(_rtdb) {
     const typingRef = rtRef(_rtdb, `typing/${channelId}`);
@@ -960,7 +934,7 @@ function scrollToBottom(force=false) {
   if(force || nearBottom) wrap.scrollTop = wrap.scrollHeight;
 }
 
-// ── Chat Input ──
+// â”€â”€ Chat Input â”€â”€
 function setupChatInput() {
   const input = document.getElementById('chat-input');
   const sendBtn = document.getElementById('chat-send-btn');
@@ -985,7 +959,7 @@ async function sendTyping() {
   clearTimeout(typingDebounce);
   typingDebounce = setTimeout(async ()=>{
     if(_rtdb && currentChannel) {
-      // Use RTDB for typing — much cheaper
+      // Use RTDB for typing â€” much cheaper
       const typRef = rtRef(_rtdb, `typing/${currentChannel.id}/${currentUser.uid}`);
       rtSet(typRef, { username: currentUserData.username, ts: Date.now() }).catch(()=>{});
       // Auto-clear after 4s
@@ -1002,7 +976,7 @@ async function sendMessage() {
   const btn = document.getElementById('chat-send-btn');
   const text = input.value.trim();
   if(!text || !currentChannel) return;
-  if(text.length > 500) { toast('That message is too long — 500 chars max.', 'warning'); return; }
+  if(text.length > 500) { toast('That message is too long â€” 500 chars max.', 'warning'); return; }
   if(btn.disabled) return;
 
   input.value = '';
@@ -1022,7 +996,7 @@ async function sendMessage() {
   finally { btn.disabled = false; }
 }
 
-// ── Edit/Delete ──
+// â”€â”€ Edit/Delete â”€â”€
 window.editMsg = function(id, encodedText) {
   const text = decodeURIComponent(encodedText);
   const el = document.getElementById('msg-'+id);
@@ -1064,27 +1038,27 @@ window.deleteMsg = function(id) {
   };
 };
 
-// ── Reactions ──
+// â”€â”€ Reactions â”€â”€
 
 // Emoji Reaction System
 const REACTION_DEFS = {
-  thumbsup:    { label: '👍 Like',         emoji: '👍' },
-  thumbsdown:  { label: '👎 Dislike',      emoji: '👎' },
-  fire:        { label: '🔥 Fire',         emoji: '🔥' },
-  wilted:      { label: '🥀 Wilted',       emoji: '🥀' },
-  heartbreak:  { label: '💔 Heartbreak',   emoji: '💔' },
-  skull:       { label: '💀 Skull',        emoji: '💀' },
-  laugh:       { label: '😂 LOL',          emoji: '😂' },
-  mindblown:   { label: '🤯 Mind Blown',   emoji: '🤯' },
-  wave:        { label: '👋 Wave',         emoji: '👋' },
-  star:        { label: '⭐ Star',         emoji: '⭐' },
-  party:       { label: '🎉 Party',        emoji: '🎉' },
-  goat:        { label: '🐐 GOAT',         emoji: '🐐' },
+  thumbsup:    { label: 'ðŸ‘ Like',         emoji: 'ðŸ‘' },
+  thumbsdown:  { label: 'ðŸ‘Ž Dislike',      emoji: 'ðŸ‘Ž' },
+  fire:        { label: 'ðŸ”¥ Fire',         emoji: 'ðŸ”¥' },
+  wilted:      { label: 'ðŸ¥€ Wilted',       emoji: 'ðŸ¥€' },
+  heartbreak:  { label: 'ðŸ’” Heartbreak',   emoji: 'ðŸ’”' },
+  skull:       { label: 'ðŸ’€ Skull',        emoji: 'ðŸ’€' },
+  laugh:       { label: 'ðŸ˜‚ LOL',          emoji: 'ðŸ˜‚' },
+  mindblown:   { label: 'ðŸ¤¯ Mind Blown',   emoji: 'ðŸ¤¯' },
+  wave:        { label: 'ðŸ‘‹ Wave',         emoji: 'ðŸ‘‹' },
+  star:        { label: 'â­ Star',         emoji: 'â­' },
+  party:       { label: 'ðŸŽ‰ Party',        emoji: 'ðŸŽ‰' },
+  goat:        { label: 'ðŸ GOAT',         emoji: 'ðŸ' },
 };
 
 const REACTION_KEYS = Object.keys(REACTION_DEFS);
 
-// window.addReaction — emoji picker
+// window.addReaction â€” emoji picker
 window.addReaction = function(msgId) {
   // Remove any existing picker
   document.querySelectorAll('.epicker').forEach(p=>p.remove());
@@ -1118,7 +1092,7 @@ window.addReaction = function(msgId) {
   }, 10);
 };
 
-// renderReactions — emoji chips
+// renderReactions â€” emoji chips
 function renderReactions(container, reactions, msgId) {
   if(!container) return;
   container.innerHTML = '';
@@ -1136,11 +1110,11 @@ function renderReactions(container, reactions, msgId) {
   });
 }
 
-// ── Members — simple list sorted by rank (no presence) ──
+// â”€â”€ Members â€” simple list sorted by rank (no presence) â”€â”€
 async function loadAdminPanel(tab) {
   const c = document.getElementById('adm-content');
   if(!c) return;
-  c.innerHTML = '<div class="adm-loading">Loading…</div>';
+  c.innerHTML = '<div class="adm-loading">Loadingâ€¦</div>';
   if(tab === 'pending') {
     getDocs(query(collection(db,'users'), where('approved','==', false))).then(snap=>{
       let html = '<div class="adm-list">';
@@ -1206,7 +1180,7 @@ function showCreateChannelModal() {
   `);
 }
 
-// ── Wipe Thread (goat only) ──
+// â”€â”€ Wipe Thread (goat only) â”€â”€
 window.wipeThread = function(channelId, channelName) {
   if(currentUserData?.rank !== 'goat') return;
   showModal(`
@@ -1271,7 +1245,7 @@ window.createChannel = async function() {
   } catch(e) { if(err) err.textContent=e.message; }
 };
 
-// ── DMs ──
+// â”€â”€ DMs â”€â”€
 function initDMs() {
   const searchInp = document.getElementById('dm-search-input');
   const searchWrap = document.getElementById('dm-search-wrap');
@@ -1456,7 +1430,7 @@ function setupDMInput() {
   if(!input||!sendBtn) return;
   input.addEventListener('keydown', e => { if(e.key==='Enter'&&!e.shiftKey) { e.preventDefault(); sendDM(); } });
   sendBtn.addEventListener('click', sendDM);
-  // DM typing indicator (RTDB) — per DM thread
+  // DM typing indicator (RTDB) â€” per DM thread
   let dmTypingDebounce = null;
   input.addEventListener('input', () => {
     if(!currentDM || !_rtdb) return;
@@ -1483,7 +1457,7 @@ async function sendDM() {
   await updateDoc(doc(db,'dms',currentDM.id),{lastTs:serverTimestamp()});
 }
 
-// ── Profile ──
+// â”€â”€ Profile â”€â”€
 const AVATAR_COLORS = ['#ef4444','#f97316','#eab308','#22c55e','#14b8a6','#3b82f6','#8b5cf6','#ec4899','#06b6d4','#84cc16','#f43f5e','#a855f7','#10b981','#0ea5e9','#f59e0b','#64748b'];
 
 function setupProfile() {
@@ -1530,7 +1504,7 @@ function avatarHtml(iconKey, username, size='100%') {
   return `<span style="font-weight:900">${avatarInitial(username)}</span>`;
 }
 
-// ── Propagate profile changes (username/color/icon/badges) to all existing messages ──
+// â”€â”€ Propagate profile changes (username/color/icon/badges) to all existing messages â”€â”€
 window.propagateProfileToMessages = propagateProfileToMessages;
 async function propagateProfileToMessages(uid, updates) {
   // Update channel messages
@@ -1667,7 +1641,7 @@ function renderProfileEdit() {
     </div>
   `;
 
-  // ── Color swatches ──
+  // â”€â”€ Color swatches â”€â”€
   const AVATAR_COLORS = ['#ef4444','#f97316','#eab308','#22c55e','#14b8a6','#3b82f6','#8b5cf6','#ec4899','#06b6d4','#84cc16','#f43f5e','#a855f7','#10b981','#0ea5e9','#f59e0b','#64748b'];
   const swatchWrap = document.getElementById('color-swatches');
   AVATAR_COLORS.forEach(color => {
@@ -1695,7 +1669,7 @@ function renderProfileEdit() {
     swatchWrap.appendChild(sw);
   });
 
-  // ── Icon grid ──
+  // â”€â”€ Icon grid â”€â”€
   const iconGrid = document.getElementById('ava-icon-grid');
   if(iconGrid) {
     const letterOpt = document.createElement('div');
@@ -1760,7 +1734,7 @@ function renderProfileEdit() {
     if(live) live.innerHTML = previewHtml;
   }
 
-  // ── Username save ──
+  // â”€â”€ Username save â”€â”€
   document.getElementById('prof-username-btn')?.addEventListener('click', async () => {
     const inp = document.getElementById('prof-username-inp');
     const err = document.getElementById('prof-username-err');
@@ -1784,7 +1758,7 @@ function renderProfileEdit() {
     } catch(e) { err.textContent = e.message; }
   });
 
-  // ── Email update ──
+  // â”€â”€ Email update â”€â”€
   document.getElementById('prof-email-btn')?.addEventListener('click', async () => {
     const err = document.getElementById('prof-email-err');
     const newEmail = document.getElementById('prof-email-inp').value.trim();
@@ -1793,7 +1767,7 @@ function renderProfileEdit() {
     showModal(`
       <h3>Confirm Identity</h3>
       <p class="modal-p">Enter your current password to update your email address.</p>
-      <div class="field-group"><label class="field-label">Current Password</label><input id="m-reauth-pass" class="field-input" type="password" placeholder="••••••••" autocomplete="current-password"></div>
+      <div class="field-group"><label class="field-label">Current Password</label><input id="m-reauth-pass" class="field-input" type="password" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" autocomplete="current-password"></div>
       <div class="merr" id="m-reauth-err"></div>
       <div class="modal-actions">
         <button class="btn btn-ghost btn-sm" onclick="document.getElementById('modal-overlay').click()">Cancel</button>
@@ -1818,7 +1792,7 @@ function renderProfileEdit() {
     };
   });
 
-  // ── Password change ──
+  // â”€â”€ Password change â”€â”€
   document.getElementById('prof-pass-btn')?.addEventListener('click', async () => {
     const err = document.getElementById('prof-pass-err');
     const cur = document.getElementById('prof-pass-cur').value;
@@ -1843,7 +1817,7 @@ function renderProfileEdit() {
   });
 }
 
-// ── Settings ──
+// â”€â”€ Settings â”€â”€
 function setupSettings() {
   document.querySelectorAll('.stab').forEach(t => {
     t.addEventListener('click', () => {
@@ -2091,7 +2065,7 @@ async function buildChannelNotifList() {
   });
 }
 
-// ── Admin Panel ──
+// â”€â”€ Admin Panel â”€â”€
 async function setupAdmin() {
   const d = currentUserData;
   const isGoat = d.rank === 'goat';
@@ -2107,13 +2081,13 @@ async function setupAdmin() {
         <span class="admin-topbar-icon">${isGoat ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>' : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>'}</span>
         <div>
           <div class="admin-topbar-title">${isGoat ? 'Goat Console' : 'Mod Panel'}</div>
-          <div class="admin-topbar-sub">${isGoat ? 'Full system access — user management, data cleanup, moderation' : 'Approve members and manage the community'}</div>
+          <div class="admin-topbar-sub">${isGoat ? 'Full system access â€” user management, data cleanup, moderation' : 'Approve members and manage the community'}</div>
         </div>
       </div>
       <div class="admin-stats-row" id="admin-stats-row">
-        <div class="admin-stat-pill" id="adm-stat-pending"><span id="adm-cnt-pending">…</span> Pending</div>
-        <div class="admin-stat-pill" id="adm-stat-members"><span id="adm-cnt-members">…</span> Members</div>
-        <div class="admin-stat-pill" id="adm-stat-banned"><span id="adm-cnt-banned">…</span> Banned</div>
+        <div class="admin-stat-pill" id="adm-stat-pending"><span id="adm-cnt-pending">â€¦</span> Pending</div>
+        <div class="admin-stat-pill" id="adm-stat-members"><span id="adm-cnt-members">â€¦</span> Members</div>
+        <div class="admin-stat-pill" id="adm-stat-banned"><span id="adm-cnt-banned">â€¦</span> Banned</div>
       </div>
     </div>
     <div class="admin-tabs" id="admin-tabs">
@@ -2123,10 +2097,10 @@ async function setupAdmin() {
       ${isGoat ? `<button class="adm-tab" data-tab="cleanup"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg> DB Cleanup</button>` : ''}
     </div>
     <div class="admin-panel-area">
-      <div class="adm-panel active" id="ap-pending"><div class="adm-loading">Loading…</div></div>
-      <div class="adm-panel" id="ap-members"><div class="adm-loading">Loading…</div></div>
-      <div class="adm-panel" id="ap-banned"><div class="adm-loading">Loading…</div></div>
-      ${isGoat ? '<div class="adm-panel" id="ap-cleanup"><div class="adm-loading">Loading…</div></div>' : ''}
+      <div class="adm-panel active" id="ap-pending"><div class="adm-loading">Loadingâ€¦</div></div>
+      <div class="adm-panel" id="ap-members"><div class="adm-loading">Loadingâ€¦</div></div>
+      <div class="adm-panel" id="ap-banned"><div class="adm-loading">Loadingâ€¦</div></div>
+      ${isGoat ? '<div class="adm-panel" id="ap-cleanup"><div class="adm-loading">Loadingâ€¦</div></div>' : ''}
     </div>
   </div>`;
 
@@ -2168,7 +2142,7 @@ async function loadAdminCounts() {
 }
 // ...existing code...
 
-// ── DB Cleanup Panel (Goat-only) ──
+// â”€â”€ DB Cleanup Panel (Goat-only) â”€â”€
 function renderDBCleanupNew(container) {
   container.innerHTML = `
     <div class="cleanup-panel-new">
@@ -2442,7 +2416,7 @@ window.applyRank = async function(uid, rank) {
   closeModal(()=>{ loadAdminPanel('members'); toast('Rank updated','success'); });
 };
 
-// ── Game Vault ──
+// â”€â”€ Game Vault â”€â”€
 function cleanHTML(html) {
   html = html.replace(/#sidebarad1\s*,\s*\n?#sidebarad2[\s\S]*?\.sidebar-frame\s*\{[\s\S]*?\}/g, '');
   html = html.replace(/<div\s+id=["']sidebarad[12]["'][^>]*>[\s\S]*?<\/div>\s*(<\/div>)?/g, '');
@@ -2486,7 +2460,7 @@ window.fullscreenGame = function() {
   else if(frame.webkitRequestFullscreen) frame.webkitRequestFullscreen();
 };
 
-// ── Profile click handler ──
+// â”€â”€ Profile click handler â”€â”€
 window._openProfile = function(uid) {
   openProfileModal(uid, currentUserData);
 };
@@ -2503,7 +2477,7 @@ window._openDMWithUid = async function(uid) {
   setTimeout(()=>openDM(other), 100);
 };
 
-// ── Boot ──
+// â”€â”€ Boot â”€â”€
 function boot() {
   applyTheme(loadTheme(), false);
   setupAuth();
@@ -2519,21 +2493,21 @@ function boot() {
 
 document.addEventListener('DOMContentLoaded', boot);
 
-// ── Keyboard Shortcuts ──
+// â”€â”€ Keyboard Shortcuts â”€â”€
 function setupKeyboardShortcuts() {
   document.addEventListener('keydown', e => {
     // Don't trigger shortcuts when typing in inputs
     const tag = document.activeElement?.tagName;
     const isInput = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || document.activeElement?.isContentEditable;
 
-    // Ctrl+K / Cmd+K — command palette (always works)
+    // Ctrl+K / Cmd+K â€” command palette (always works)
     if((e.ctrlKey || e.metaKey) && e.key === 'k') {
       e.preventDefault();
       toggleCommandPalette();
       return;
     }
 
-    // Escape — close things
+    // Escape â€” close things
     if(e.key === 'Escape') {
       const cmd = document.getElementById('cmd-palette');
       if(cmd && !cmd.classList.contains('hidden')) {
@@ -2555,7 +2529,7 @@ function setupKeyboardShortcuts() {
 
     if(isInput) return;
 
-    // Number keys — navigate sections (1-8 for regular, 1-9 if admin)
+    // Number keys â€” navigate sections (1-8 for regular, 1-9 if admin)
     const navSections = _getNavSections();
     if(e.key >= '1' && e.key <= '9') {
       const idx = parseInt(e.key) - 1;
@@ -2576,7 +2550,7 @@ function _getNavSections() {
   return base;
 }
 
-// ── Command Palette ──
+// â”€â”€ Command Palette â”€â”€
 function setupCommandPalette() {
   const palette = document.getElementById('cmd-palette');
   const overlay = document.getElementById('cmd-overlay');
@@ -2666,7 +2640,7 @@ function toggleCommandPalette() {
   }
 }
 
-// ── DM char counter ──
+// â”€â”€ DM char counter â”€â”€
 (function() {
   const dmInput = document.getElementById('dm-input');
   const dmCtr = document.getElementById('dm-char-ctr');
@@ -2678,3 +2652,6 @@ function toggleCommandPalette() {
     });
   }
 })();
+
+// â”€â”€ Exports for other modules â”€â”€
+export { toast, avatarColor, avatarInitial, escHtml, avatarHtml, canModerate, RANK_COLORS, RANKS, rankOf, SVG_ICONS, renderRankBadge };

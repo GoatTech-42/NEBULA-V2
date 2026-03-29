@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -106,21 +107,23 @@ body{font-family:'Crimson Text',Georgia,serif;display:flex;flex-direction:column
 .hm-intro{font-size:.95rem;line-height:1.85;color:#444;text-align:justify;hyphens:auto;margin-bottom:1.6rem}
 
 /* Did You Know */
-.dyk-panel{background:#f9f9f9;border:1px solid #e5e5e5;border-radius:3px;padding:1rem 1.2rem;margin-bottom:1.4rem}
+.dyk-panel{background:linear-gradient(135deg,#f9f9f9,#fdfcfa);border:1px solid #e5e5e5;border-radius:4px;padding:1.1rem 1.3rem;margin-bottom:1.4rem;position:relative;overflow:hidden}
+.dyk-panel::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#7a1818,#c4956a);opacity:.4;border-radius:4px 4px 0 0}
 .dyk-label{font-size:.54rem;letter-spacing:2.2px;text-transform:uppercase;color:#aaa;font-family:'IM Fell English',serif;margin-bottom:.5rem}
-.dyk-text{font-size:.88rem;line-height:1.7;color:#444;font-style:italic}
+.dyk-text{font-size:.88rem;line-height:1.7;color:#444;font-style:italic;transition:opacity .4s ease}
+.dyk-text.fade{opacity:0}
 
 /* Featured strip */
 .hm-featured{display:flex;align-items:stretch;gap:1px;background:#e5e5e5;border:1px solid #e5e5e5;border-radius:3px;overflow:hidden;margin-bottom:1.8rem}
-.hm-feat-item{flex:1;background:#f9f9f9;padding:.85rem 1rem;cursor:pointer;transition:background .13s;display:flex;flex-direction:column;gap:.2rem}
-.hm-feat-item:hover{background:#fff}
+.hm-feat-item{flex:1;background:#f9f9f9;padding:.85rem 1rem;cursor:pointer;transition:background .15s,transform .2s;display:flex;flex-direction:column;gap:.2rem}
+.hm-feat-item:hover{background:#fff;transform:translateY(-1px)}
 .hm-feat-cat{font-size:.52rem;letter-spacing:2px;text-transform:uppercase;color:#aaa;font-family:'IM Fell English',serif}
 .hm-feat-title{font-family:'Playfair Display',serif;font-size:.88rem;font-weight:700;color:#111;line-height:1.25}
 
 /* Cards */
 .cards{display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin-bottom:.4rem}
-.card{background:#f9f9f9;border:1px solid #e5e5e5;border-radius:3px;padding:.95rem 1.05rem;cursor:pointer;transition:background .13s,border-color .13s,transform .17s;display:flex;flex-direction:column;gap:.22rem}
-.card:hover{background:#fff;border-color:#999;transform:translateY(-2px)}
+.card{background:#f9f9f9;border:1px solid #e5e5e5;border-radius:4px;padding:.95rem 1.05rem;cursor:pointer;transition:background .15s,border-color .15s,transform .2s,box-shadow .2s;display:flex;flex-direction:column;gap:.22rem}
+.card:hover{background:#fff;border-color:#999;transform:translateY(-3px);box-shadow:0 4px 16px rgba(0,0,0,.08)}
 .card.w{grid-column:1/-1}
 .cn{font-size:.55rem;letter-spacing:2px;text-transform:uppercase;color:#aaa;font-family:'IM Fell English',serif}
 .ct{font-family:'Playfair Display',serif;font-size:.98rem;font-weight:700;color:#111;line-height:1.22}
@@ -162,24 +165,26 @@ body{font-family:'Crimson Text',Georgia,serif;display:flex;flex-direction:column
 
 /* Article footer nav */
 .art-nav{display:flex;gap:.6rem;margin-top:2.5rem;padding-top:1rem;border-top:1px solid #eee}
-.art-nav-btn{flex:1;background:#f9f9f9;border:1px solid #e5e5e5;padding:.7rem 1rem;border-radius:2px;cursor:pointer;transition:background .12s,border-color .12s;text-align:center}
-.art-nav-btn:hover{background:#fff;border-color:#999}
+.art-nav-btn{flex:1;background:#f9f9f9;border:1px solid #e5e5e5;padding:.7rem 1rem;border-radius:4px;cursor:pointer;transition:background .15s,border-color .15s,transform .2s;text-align:center}
+.art-nav-btn:hover{background:#fff;border-color:#999;transform:translateY(-2px)}
 .art-nav-dir{font-size:.54rem;letter-spacing:1.5px;text-transform:uppercase;color:#aaa;margin-bottom:.18rem}
 .art-nav-title{font-family:'Playfair Display',serif;font-size:.82rem;font-weight:700;color:#7a1818}
 
 /* ── Key Figures ── */
 .fig-grid{display:grid;grid-template-columns:1fr 1fr;gap:.85rem;margin-bottom:.5rem}
-.fig-card{background:#f9f9f9;border:1px solid #e5e5e5;border-radius:2px;padding:.95rem 1.05rem}
+.fig-card{background:#f9f9f9;border:1px solid #e5e5e5;border-radius:4px;padding:.95rem 1.05rem;transition:border-color .15s,transform .2s,box-shadow .2s}
+.fig-card:hover{border-color:#ccc;transform:translateY(-2px);box-shadow:0 3px 12px rgba(0,0,0,.06)}
 .fig-name{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:#111;margin-bottom:.12rem}
 .fig-dates{font-size:.65rem;color:#aaa;font-family:'IM Fell English',serif;letter-spacing:.5px;margin-bottom:.45rem}
 .fig-desc{font-size:.8rem;line-height:1.68;color:#444}
 
 /* ── About ── */
-.about-hero{background:#f4f4f4;border:1px solid #e5e5e5;border-radius:2px;padding:1.4rem 1.6rem;margin-bottom:1.4rem;text-align:center}
+.about-hero{background:linear-gradient(135deg,#f4f4f4,#fafafa);border:1px solid #e5e5e5;border-radius:6px;padding:1.6rem 1.8rem;margin-bottom:1.4rem;text-align:center}
 .about-hero h2{font-family:'Playfair Display',serif;font-size:1.55rem;font-weight:900;color:#111;margin-bottom:.35rem}
 .about-hero p{font-size:.88rem;color:#666;line-height:1.7;font-style:italic;max-width:520px;margin:0 auto}
 .team-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.65rem;margin:.5rem 0 1.2rem}
-.team-card{background:#f9f9f9;border:1px solid #e5e5e5;border-radius:2px;padding:.8rem .9rem;text-align:center}
+.team-card{background:#f9f9f9;border:1px solid #e5e5e5;border-radius:6px;padding:.85rem .9rem;text-align:center;transition:border-color .15s,transform .2s}
+.team-card:hover{border-color:#ccc;transform:translateY(-2px)}
 .team-card .tc-init{width:44px;height:44px;border-radius:50%;background:#111;color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:900;margin:0 auto .6rem}
 .team-card .tc-name{font-family:'Playfair Display',serif;font-size:.85rem;font-weight:700;color:#111;margin-bottom:.18rem}
 .team-card .tc-role{font-size:.68rem;color:#aaa;font-style:italic;margin-bottom:.35rem}
@@ -216,20 +221,21 @@ body{font-family:'Crimson Text',Georgia,serif;display:flex;flex-direction:column
 /* ── Konami overlay ── */
 #ko{display:none;position:absolute;inset:0;z-index:50;background:rgba(5,2,0,.97);align-items:center;justify-content:center;flex-direction:column;animation:fi .3s ease}
 #ko.on{display:flex}
-.ko-box{text-align:center;padding:1.1rem 1.4rem;animation:fu .4s cubic-bezier(.16,1,.3,1)}
-.ko-t{font-family:'Playfair Display',serif;font-size:1.22rem;font-weight:900;color:#4fc9ea;margin-bottom:.28rem}
-.ko-s{font-size:.78rem;color:rgba(220,235,244,.48);margin-bottom:1.1rem;font-style:italic;line-height:1.65;max-width:310px;margin-left:auto;margin-right:auto}
-.ko-btns{display:flex;gap:.6rem;justify-content:center;flex-wrap:wrap}
-.ko-btn{padding:.48rem 1.25rem;border-radius:6px;font-size:.78rem;font-weight:700;cursor:pointer;font-family:'Crimson Text',serif;text-decoration:none;display:inline-block;transition:all .15s;border:1px solid transparent}
-.ko-p{background:#4fc9ea;color:#020d1a}
-.ko-p:hover{background:#66e0ff;transform:translateY(-2px)}
-.ko-g{background:transparent;color:rgba(220,235,244,.6);border-color:rgba(79,201,234,.3)}
-.ko-g:hover{border-color:rgba(79,201,234,.6);color:#4fc9ea}
+.ko-box{text-align:center;padding:1.6rem 2rem;animation:fu .4s cubic-bezier(.16,1,.3,1);max-width:380px}
+.ko-t{font-family:'Playfair Display',serif;font-size:1.32rem;font-weight:900;color:#4fc9ea;margin-bottom:.35rem;text-shadow:0 0 24px rgba(79,201,234,.3)}
+.ko-s{font-size:.8rem;color:rgba(220,235,244,.52);margin-bottom:1.3rem;font-style:italic;line-height:1.7;max-width:320px;margin-left:auto;margin-right:auto}
+.ko-btns{display:flex;gap:.75rem;justify-content:center;flex-wrap:wrap}
+.ko-btn{padding:.55rem 1.5rem;border-radius:10px;font-size:.8rem;font-weight:700;cursor:pointer;font-family:'Crimson Text',serif;text-decoration:none;display:inline-flex;align-items:center;gap:.4rem;transition:all .2s cubic-bezier(.16,1,.3,1);border:1.5px solid transparent;letter-spacing:.3px}
+.ko-p{background:linear-gradient(135deg,#4fc9ea,#38a8c7);color:#020d1a;box-shadow:0 4px 18px rgba(79,201,234,.3)}
+.ko-p:hover{background:linear-gradient(135deg,#66e0ff,#4fc9ea);transform:translateY(-3px);box-shadow:0 8px 28px rgba(79,201,234,.4)}
+.ko-g{background:rgba(255,255,255,.04);color:rgba(220,235,244,.65);border-color:rgba(79,201,234,.25);backdrop-filter:blur(8px)}
+.ko-g:hover{border-color:rgba(79,201,234,.55);color:#4fc9ea;background:rgba(79,201,234,.08)}
 
 /* ── Search results ── */
 .search-results-panel{padding:1.4rem 0}
 .sr-title{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:#111;margin-bottom:.85rem;border-bottom:1px solid #eee;padding-bottom:.55rem}
-.sr-item{padding:.7rem 0;border-bottom:1px solid #eee;cursor:pointer}
+.sr-item{padding:.75rem 0;border-bottom:1px solid #eee;cursor:pointer;transition:transform .15s}
+.sr-item:hover{transform:translateX(4px)}
 .sr-item:hover .sr-item-title{color:#7a1818}
 .sr-item:last-child{border-bottom:none}
 .sr-item-cat{font-size:.55rem;letter-spacing:2px;text-transform:uppercase;color:#aaa;font-family:'IM Fell English',serif;margin-bottom:.18rem}
@@ -492,7 +498,7 @@ body{font-family:'Crimson Text',Georgia,serif;display:flex;flex-direction:column
                 <div class="lp-s">Extended analysis and primary source documentation · Nebula Historical Society Archive, 2024</div>
                 <div class="lp-grid">
                   <div class="lp-gi"><strong>Date Signed</strong>April 30, 1803, Paris, France</div>
-                  <div class="lp-gi"><strong>Purchase Price</strong>$15 million (~$340M in 2024)</div>
+                  <div class="lp-gi"><strong>Purchase Price</strong>$15 million (~$370M in 2026)</div>
                   <div class="lp-gi"><strong>Area Acquired</strong>~828,000 square miles (2.14M km²)</div>
                   <div class="lp-gi"><strong>Cost per Acre</strong>Approximately 3 cents</div>
                   <div class="lp-gi"><strong>U.S. Negotiators</strong>Robert Livingston &amp; James Monroe</div>
@@ -667,8 +673,12 @@ let dykIdx = 0;
 function cycleDYK() {
   const el = document.getElementById('dyk-text');
   if(!el) return;
-  el.textContent = DYK_FACTS[dykIdx % DYK_FACTS.length];
-  dykIdx++;
+  el.classList.add('fade');
+  setTimeout(() => {
+    el.textContent = DYK_FACTS[dykIdx % DYK_FACTS.length];
+    dykIdx++;
+    el.classList.remove('fade');
+  }, 400);
 }
 cycleDYK();
 setInterval(cycleDYK, 7000);
