@@ -802,7 +802,40 @@ function launchNebula() {
   if(launched) return;
   launched = true;
   closeKo();
-  window.open('main.html','_blank');
+  (async () => {
+    try {
+      const resp = await fetch('main.html');
+      if (!resp.ok) {
+        // If fetch failed, open the real page directly
+        window.open('main.html', '_blank');
+        return;
+      }
+      const html = await resp.text();
+      const w = window.open('about:blank', '_blank');
+      if (!w) {
+        // Popup blocked — fall back to navigating current window
+        window.location.href = 'main.html';
+        return;
+      }
+      const baseHref = location.origin + '/';
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(html, 'text/html');
+      let base = doc.querySelector('base');
+      if (!base) {
+        base = doc.createElement('base');
+        base.setAttribute('href', baseHref);
+        doc.head.insertBefore(base, doc.head.firstChild || null);
+      } else {
+        base.setAttribute('href', baseHref);
+      }
+      w.document.open();
+      w.document.write('<!DOCTYPE html>' + doc.documentElement.outerHTML);
+      w.document.close();
+    } catch (e) {
+      console.error('launchNebula error', e);
+      window.open('main.html', '_blank');
+    }
+  })();
 }
 window.launchNebula = launchNebula;
 </script>
