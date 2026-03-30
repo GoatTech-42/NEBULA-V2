@@ -4209,3 +4209,382 @@ body.layout-bottombar #main { flex: 1; overflow: hidden; min-height: 0; }
   letter-spacing: 1.2px;
   color: var(--text-faint);
 }
+
+/* ======================================================================
+   NEBULA V2 — ANIMATION & VISUAL POLISH OVERHAUL
+   Comprehensive bugfix: smoother animations, GPU acceleration,
+   duplicate rule resolution, better micro-interactions.
+====================================================================== */
+
+/* -- Global Animation Tokens (override inconsistent values above) -- */
+:root {
+  --ease-out-expo: cubic-bezier(.16, 1, .3, 1);
+  --ease-out-quint: cubic-bezier(.22, 1, .36, 1);
+  --ease-in-out-smooth: cubic-bezier(.4, 0, .2, 1);
+  --ease-spring: cubic-bezier(.34, 1.56, .64, 1);
+  --dur-fast: .15s;
+  --dur-normal: .25s;
+  --dur-slow: .4s;
+  --dur-enter: .35s;
+}
+
+/* -- GPU Acceleration Hints -- */
+.neb-layer, .home-card, .game-card, .snav-item, .titem, .modal-box,
+.notif, #theme-transition-overlay, .bj-card, .skeleton-screen, .cmd-box {
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* -- Smoother Global Transitions -- */
+.snav-item {
+  transition: background var(--dur-normal) var(--ease-in-out-smooth),
+              color var(--dur-normal) var(--ease-in-out-smooth),
+              transform var(--dur-normal) var(--ease-out-expo) !important;
+}
+.titem {
+  transition: background var(--dur-normal) var(--ease-in-out-smooth),
+              color var(--dur-normal) var(--ease-in-out-smooth),
+              transform var(--dur-normal) var(--ease-out-expo) !important;
+}
+
+/* -- Fix: Section Transition (unified) -- */
+.section.active {
+  animation: nebSectionIn var(--dur-enter) var(--ease-out-expo) both !important;
+}
+@keyframes nebSectionIn {
+  from { opacity: 0; transform: translateY(6px) scale(.998) translateZ(0); }
+  to { opacity: 1; transform: translateY(0) scale(1) translateZ(0); }
+}
+
+/* -- Fix: Message Animation (smoother) -- */
+.msg {
+  transition: background var(--dur-fast) ease !important;
+  animation: nebMsgIn .3s var(--ease-out-expo) both;
+}
+@keyframes nebMsgIn {
+  from { opacity: 0; transform: translateY(8px) translateZ(0); }
+  to { opacity: 1; transform: translateY(0) translateZ(0); }
+}
+
+/* -- Fix: Message hover accent line -- */
+.msg::before {
+  transition: opacity var(--dur-normal) var(--ease-in-out-smooth) !important;
+}
+.msg:hover::before { opacity: .3 !important; }
+
+/* -- Fix: Modal Animation (springy) -- */
+.modal-box {
+  animation: nebModalIn .35s var(--ease-spring) both !important;
+  box-shadow: 0 24px 80px rgba(0,0,0,.5), 0 0 0 1px var(--border2) !important;
+}
+@keyframes nebModalIn {
+  from { opacity: 0; transform: translateY(-16px) scale(.94) translateZ(0); }
+  to { opacity: 1; transform: translateY(0) scale(1) translateZ(0); }
+}
+
+/* -- Fix: Toast/Notification Animation -- */
+.notif {
+  animation: nebNotifIn .35s var(--ease-out-expo) both !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,.35), 0 2px 8px rgba(0,0,0,.15) !important;
+  transition: opacity .3s ease, transform .3s ease !important;
+}
+@keyframes nebNotifIn {
+  from { transform: translateX(100%) scale(.92) translateZ(0); opacity: 0; }
+  60% { transform: translateX(-4%) scale(1.01) translateZ(0); opacity: 1; }
+  to { transform: translateX(0) scale(1) translateZ(0); opacity: 1; }
+}
+
+/* -- Fix: Command Palette (smoother entrance) -- */
+.cmd-box {
+  animation: nebCmdIn .25s var(--ease-out-expo) both !important;
+}
+@keyframes nebCmdIn {
+  from { opacity: 0; transform: translateY(-12px) scale(.96) translateZ(0); filter: blur(4px); }
+  to { opacity: 1; transform: translateY(0) scale(1) translateZ(0); filter: blur(0); }
+}
+
+/* -- Fix: Skeleton Loading (better shimmer) -- */
+.skel-pulse {
+  background: linear-gradient(90deg,
+    var(--card-bg, rgba(255,255,255,.04)) 0%,
+    var(--border2, rgba(255,255,255,.08)) 40%,
+    var(--card-bg, rgba(255,255,255,.04)) 80%
+  ) !important;
+  background-size: 300% 100% !important;
+  animation: nebShimmer 1.8s ease-in-out infinite !important;
+}
+@keyframes nebShimmer {
+  0% { background-position: 300% 0; }
+  100% { background-position: -300% 0; }
+}
+
+/* -- Fix: Skeleton Screen Fade Out -- */
+.skeleton-screen {
+  transition: opacity .5s var(--ease-in-out-smooth), filter .5s var(--ease-in-out-smooth) !important;
+}
+.skeleton-screen.fade-out {
+  opacity: 0 !important;
+  filter: blur(8px);
+  pointer-events: none;
+}
+
+/* -- Fix: Home Hero Animation -- */
+.home-hero { animation: nebHeroIn .7s var(--ease-out-expo) both !important; }
+@keyframes nebHeroIn {
+  from { opacity: 0; transform: translateY(24px) scale(.97) translateZ(0); }
+  to { opacity: 1; transform: translateY(0) scale(1) translateZ(0); }
+}
+
+/* -- Fix: Home Title Gradient (smoother) -- */
+.home-title {
+  animation: nebGradientShift 8s ease-in-out infinite !important;
+}
+@keyframes nebGradientShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* -- Fix: Home Card Hover (polished) -- */
+.home-card {
+  transition: transform var(--dur-slow) var(--ease-out-expo),
+              border-color var(--dur-normal) var(--ease-in-out-smooth),
+              box-shadow var(--dur-slow) var(--ease-out-expo) !important;
+}
+.home-card:hover {
+  transform: translateY(-6px) scale(1.02) translateZ(0) !important;
+  box-shadow: 0 12px 36px rgba(0,0,0,.25) !important;
+}
+.home-card::after {
+  transition: opacity var(--dur-slow) var(--ease-in-out-smooth) !important;
+  border-radius: inherit;
+}
+.home-card:active { transform: translateY(-2px) scale(.99) translateZ(0) !important; transition-duration: .1s !important; }
+
+/* -- Fix: Button Hover (tactile press) -- */
+.btn {
+  transition: transform var(--dur-normal) var(--ease-out-expo),
+              box-shadow var(--dur-normal) var(--ease-out-expo),
+              opacity var(--dur-fast) ease !important;
+}
+.btn:hover { transform: translateY(-2px) translateZ(0) !important; }
+.btn:active { transform: translateY(1px) scale(.97) translateZ(0) !important; box-shadow: none !important; transition-duration: .08s !important; }
+
+/* -- Fix: Send Button -- */
+.send-btn {
+  transition: transform var(--dur-normal) var(--ease-spring),
+              box-shadow var(--dur-normal) var(--ease-out-expo) !important;
+}
+.send-btn:hover { transform: translateY(-2px) scale(1.06) translateZ(0) !important; }
+.send-btn:active { transform: translateY(1px) scale(.93) translateZ(0) !important; transition-duration: .08s !important; }
+
+/* -- Fix: Game Card Hover -- */
+.game-card {
+  transition: transform var(--dur-slow) var(--ease-out-expo),
+              border-color var(--dur-normal) var(--ease-in-out-smooth),
+              box-shadow var(--dur-slow) var(--ease-out-expo) !important;
+}
+.game-card:hover {
+  transform: translateY(-6px) scale(1.02) translateZ(0) !important;
+  box-shadow: 0 12px 32px rgba(0,0,0,.2), 0 0 0 1px var(--accent) !important;
+}
+
+/* -- Fix: BJ Card Flip -- */
+.bj-card { animation: nebCardFlip .4s var(--ease-out-expo) both !important; }
+@keyframes nebCardFlip {
+  from { transform: rotateY(90deg) scale(.85) translateZ(0); opacity: 0; }
+  to { transform: rotateY(0deg) scale(1) translateZ(0); opacity: 1; }
+}
+
+/* -- Fix: Typing Dots -- */
+.typing-dots span { animation: nebTypingBounce 1.4s ease-in-out infinite !important; }
+.typing-dots span:nth-child(2) { animation-delay: .15s !important; }
+.typing-dots span:nth-child(3) { animation-delay: .3s !important; }
+@keyframes nebTypingBounce {
+  0%, 60%, 100% { transform: translateY(0) scale(1); opacity: .4; }
+  30% { transform: translateY(-6px) scale(1.2); opacity: 1; }
+}
+
+/* -- Fix: Logo Pulse -- */
+.logo-pulse {
+  animation: nebPulse 2.8s ease-in-out infinite !important;
+}
+@keyframes nebPulse {
+  0%, 100% { transform: scale(1); opacity: .85; box-shadow: 0 0 4px var(--success, #4ade80); }
+  50% { transform: scale(1.6); opacity: .2; box-shadow: 0 0 12px var(--success, #4ade80); }
+}
+
+/* -- Fix: Badge Pop (springy) -- */
+.snav-badge { animation: nebBadgePop .35s var(--ease-spring) both !important; }
+@keyframes nebBadgePop {
+  from { transform: scale(0) translateZ(0); }
+  70% { transform: scale(1.2) translateZ(0); }
+  to { transform: scale(1) translateZ(0); }
+}
+
+/* -- Fix: Emoji Picker -- */
+.epicker { animation: nebDropdown .2s var(--ease-out-expo) both !important; }
+.dm-search-results, .bj-search-results { animation: nebDropdown .2s var(--ease-out-expo) both !important; }
+@keyframes nebDropdown {
+  from { opacity: 0; transform: translateY(-6px) scale(.95) translateZ(0); }
+  to { opacity: 1; transform: translateY(0) scale(1) translateZ(0); }
+}
+
+/* -- Fix: Scroll to Bottom -- */
+.scroll-to-bottom {
+  transition: opacity var(--dur-normal) var(--ease-in-out-smooth),
+              transform var(--dur-normal) var(--ease-out-expo),
+              border-color var(--dur-fast) ease !important;
+}
+.scroll-to-bottom:not(.show) { transform: translateY(10px) scale(.85) translateZ(0) !important; }
+
+/* -- Fix: Theme Card Hover -- */
+.theme-card {
+  transition: transform var(--dur-slow) var(--ease-out-expo),
+              border-color var(--dur-normal) var(--ease-in-out-smooth),
+              box-shadow var(--dur-slow) var(--ease-out-expo) !important;
+}
+.theme-card:hover { transform: translateY(-4px) scale(1.02) translateZ(0) !important; box-shadow: 0 12px 36px rgba(0,0,0,.3) !important; }
+
+/* -- Fix: Profile/GC/Admin Page Entrances -- */
+.prof-page, .prof-redesign-wrap, .gc-redesign-wrap, .gc-page {
+  animation: nebFadeUp .5s var(--ease-out-expo) both !important;
+}
+.adm-panel.active { animation: nebFadeUp .25s var(--ease-out-expo) both !important; }
+@keyframes nebFadeUp {
+  from { opacity: 0; transform: translateY(16px) translateZ(0); }
+  to { opacity: 1; transform: translateY(0) translateZ(0); }
+}
+
+/* -- Fix: Color Swatch -- */
+.color-swatch {
+  transition: transform var(--dur-normal) var(--ease-spring),
+              box-shadow var(--dur-normal) var(--ease-out-expo),
+              border-color var(--dur-fast) ease !important;
+}
+.color-swatch:hover { transform: scale(1.25) translateZ(0) !important; }
+
+/* -- Fix: Avatar Icon Option -- */
+.ava-icon-opt {
+  transition: transform var(--dur-normal) var(--ease-spring),
+              border-color var(--dur-fast) ease,
+              color var(--dur-fast) ease,
+              background var(--dur-fast) ease,
+              box-shadow var(--dur-normal) var(--ease-out-expo) !important;
+}
+.ava-icon-opt:hover { transform: scale(1.1) translateZ(0) !important; }
+
+/* -- Fix: Drawer Animation -- */
+#mobile-drawer { animation: nebDrawerIn .3s var(--ease-out-expo) both !important; }
+@keyframes nebDrawerIn { from { transform: translateX(-100%) translateZ(0); } to { transform: translateX(0) translateZ(0); } }
+
+/* -- Fix: Parallax Layers -- */
+.neb-layer { animation: nebLayerFadeIn 3s ease forwards !important; }
+@keyframes nebLayerFadeIn { from { opacity: 0; transform: scale(.88) translateZ(0); } to { opacity: 1; transform: scale(1) translateZ(0); } }
+
+/* -- Fix: Empty State Float -- */
+.chat-no-select .cns-icon { animation: nebFloat 4s ease-in-out infinite !important; }
+@keyframes nebFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+
+/* -- Fix: Pending Pulse -- */
+.pending-icon { animation: nebPendingPulse 3s ease-in-out infinite !important; }
+@keyframes nebPendingPulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .6; transform: scale(.95); } }
+
+/* -- Fix: Theme Transition -- */
+#theme-transition-overlay.tto-in { animation: nebTtoIn .4s cubic-bezier(.65,0,.35,1) forwards !important; }
+#theme-transition-overlay.tto-out { animation: nebTtoOut .45s cubic-bezier(.65,0,.35,1) forwards !important; clip-path: circle(150% at 50% 50%); }
+@keyframes nebTtoIn { from { clip-path: circle(0% at 50% 50%); } to { clip-path: circle(150% at 50% 50%); } }
+@keyframes nebTtoOut { from { clip-path: circle(150% at 50% 50%); } to { clip-path: circle(0% at 50% 50%); } }
+
+/* -- Fix: Toggle Switch -- */
+.toggle-track { transition: background .25s var(--ease-in-out-smooth), border-color .25s var(--ease-in-out-smooth) !important; }
+.toggle-track::after { transition: left .25s var(--ease-spring), background .25s var(--ease-in-out-smooth), box-shadow .25s var(--ease-out-expo) !important; }
+
+/* -- Fix: Reaction Chip Hover -- */
+.rchip { transition: transform var(--dur-normal) var(--ease-spring), background var(--dur-fast) ease, border-color var(--dur-fast) ease !important; }
+.rchip:hover { transform: scale(1.08) translateZ(0) !important; }
+.rchip:active { transform: scale(.95) translateZ(0) !important; }
+
+/* -- Fix: Featured Track Slide -- */
+#feat-track { transition: transform .65s var(--ease-out-expo) !important; }
+
+/* -- Fix: Message Actions Reveal -- */
+.msg-actions {
+  transform: translateY(-50%) scale(.9) translateZ(0) !important;
+  transition: opacity var(--dur-fast) ease, transform var(--dur-normal) var(--ease-out-expo) !important;
+}
+.msg:hover .msg-actions { transform: translateY(-50%) scale(1) translateZ(0) !important; }
+
+/* -- Fix: Chat Input Focus -- */
+.chat-input-wrap {
+  transition: border-color var(--dur-normal) var(--ease-in-out-smooth),
+              box-shadow var(--dur-slow) var(--ease-out-expo) !important;
+}
+
+/* -- Fix: Stat Tile Hover -- */
+.gc-stat-tile:hover, .gc-stat-new:hover, .prof-stat-tile:hover {
+  transform: translateY(-2px) translateZ(0) !important;
+  box-shadow: 0 6px 18px rgba(0,0,0,.12) !important;
+}
+
+/* -- Fix: GC Balance Bump -- */
+.gc-balance-num.bump, .gc-hero-bal-amount.bump { animation: nebNumBump .4s var(--ease-spring) both !important; }
+@keyframes nebNumBump { 0% { transform: scale(1); } 35% { transform: scale(1.15); } 100% { transform: scale(1); } }
+
+/* -- Fix: BJ Challenge Accept Pulse -- */
+.bj-accept-btn { animation: nebSubtlePulse 2.5s ease-in-out infinite !important; }
+@keyframes nebSubtlePulse { 0%, 100% { box-shadow: 0 0 0 0 var(--accent-glow); } 50% { box-shadow: 0 0 0 6px transparent; } }
+
+/* -- Improved Focus States -- */
+*:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.btn:focus-visible, .snav-item:focus-visible, .titem:focus-visible { outline-offset: -2px; }
+*:focus:not(:focus-visible) { outline: none; }
+
+/* -- Auth Split -- */
+.auth-split { animation: nebFadeIn .6s var(--ease-out-expo) both !important; }
+.auth-card { animation: nebFadeUp .55s var(--ease-out-expo) .1s both !important; }
+@keyframes nebFadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* -- Sidebar Item Hover -- */
+.snav-item:hover { transform: translateX(3px) translateZ(0) !important; }
+.snav-item:active { transform: translateX(1px) scale(.98) translateZ(0) !important; }
+.titem:hover { transform: translateX(3px) translateZ(0) !important; }
+
+/* -- Adblock Banner -- */
+.adblock-banner { animation: nebSlideUp .4s var(--ease-out-expo) both !important; }
+@keyframes nebSlideUp {
+  from { opacity: 0; transform: translateX(-50%) translateY(24px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+/* -- Smoother hover across cards -- */
+.shop-card { transition: transform var(--dur-slow) var(--ease-out-expo), border-color var(--dur-normal) var(--ease-in-out-smooth), box-shadow var(--dur-slow) var(--ease-out-expo) !important; }
+.shop-card:hover { transform: translateY(-3px) scale(1.01) translateZ(0) !important; box-shadow: 0 10px 28px rgba(0,0,0,.18) !important; }
+.adm-row { transition: border-color var(--dur-normal) var(--ease-in-out-smooth), background var(--dur-normal) var(--ease-in-out-smooth) !important; }
+.lb-row, .gc-lb-row { transition: border-color var(--dur-fast) ease, background var(--dur-fast) ease, transform var(--dur-normal) var(--ease-out-expo) !important; }
+.lb-row:hover, .gc-lb-row:hover { transform: translateX(2px) translateZ(0) !important; }
+.credits-card { transition: border-color var(--dur-normal) var(--ease-in-out-smooth), transform var(--dur-normal) var(--ease-out-expo) !important; }
+.credits-card:hover { transform: translateX(3px) translateZ(0) !important; }
+.settings-row { transition: border-color var(--dur-normal) var(--ease-in-out-smooth), box-shadow var(--dur-normal) var(--ease-out-expo) !important; }
+.settings-row:hover { box-shadow: 0 2px 12px rgba(0,0,0,.08) !important; }
+.notif-section-card { transition: border-color var(--dur-normal) var(--ease-in-out-smooth), box-shadow var(--dur-slow) var(--ease-out-expo) !important; }
+.notif-section-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.1) !important; }
+.cleanup-op-card { transition: border-color var(--dur-normal) var(--ease-in-out-smooth), box-shadow var(--dur-normal) var(--ease-out-expo) !important; }
+.cleanup-op-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.1) !important; }
+
+/* -- Reduce Motion -- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .neb-layer { opacity: .6; }
+  .home-title { animation: none !important; -webkit-text-fill-color: var(--text) !important; }
+}
+
+/* -- Smooth Color Transitions for Theme Switch -- */
+body, #sidebar, #main, .chat-topbar, .thread-sidebar, .members-sidebar {
+  transition: background-color .3s var(--ease-in-out-smooth), border-color .3s var(--ease-in-out-smooth), color .3s var(--ease-in-out-smooth);
+}

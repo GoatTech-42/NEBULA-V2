@@ -56,9 +56,19 @@ function toast(msg, type='info', dur=3000) {
   el.className = `notif ${type}`;
   el.innerHTML = `<div class="notif-dot"></div><span class="nmsg">${msg}</span>`;
   el.style.cursor = 'pointer';
-  el.addEventListener('click', () => { el.style.animation='fadeOut .25s ease forwards'; setTimeout(()=>el.remove(),250); });
+  let dismissed = false;
+  const dismiss = () => {
+    if (dismissed) return;
+    dismissed = true;
+    el.style.transition = 'opacity .3s ease, transform .3s cubic-bezier(.4,0,.2,1)';
+    el.style.opacity = '0';
+    el.style.transform = 'translateX(40px) scale(.92)';
+    el.addEventListener('transitionend', () => el.remove(), { once: true });
+    setTimeout(() => el.remove(), 350); // fallback
+  };
+  el.addEventListener('click', dismiss);
   stack.appendChild(el);
-  setTimeout(()=>{ el.style.animation='fadeOut .3s ease forwards'; setTimeout(()=>el.remove(),300); }, dur);
+  setTimeout(dismiss, dur);
 }
 
 // Ã¢â€â‚¬Ã¢â€â‚¬ Modal Ã¢â€â‚¬Ã¢â€â‚¬
@@ -77,14 +87,15 @@ function closeModal(cb) {
   const ov = document.getElementById('modal-overlay');
   const wrap = document.getElementById('modal-wrap');
   const box = document.getElementById('modal-box-main');
+  if(ov.classList.contains('hidden')) { if(cb) cb(); return; }
   ov.classList.add('closing');
+  if(box) { box.style.transition='opacity .2s ease, transform .2s cubic-bezier(.4,0,.2,1)'; box.style.opacity='0'; box.style.transform='translateY(8px) scale(.96)'; }
   setTimeout(()=>{
     ov.classList.add('hidden'); ov.classList.remove('closing');
     if(wrap) wrap.classList.add('hidden');
-    box.classList.add('hidden');
-    box.innerHTML='';
+    if(box) { box.classList.add('hidden'); box.innerHTML=''; box.style.opacity=''; box.style.transform=''; box.style.transition=''; }
     if(cb) cb();
-  },200);
+  },220);
 }
 
 // Ã¢â€â‚¬Ã¢â€â‚¬ Theme Ã¢â€â‚¬Ã¢â€â‚¬
@@ -162,7 +173,7 @@ function showAuth() {
 
 function hideSkeleton() {
   const sk = document.querySelector('.skeleton-screen');
-  if(sk) { sk.classList.add('fade-out'); setTimeout(()=>sk.remove(),400); }
+  if(sk) { sk.classList.add('fade-out'); setTimeout(()=>{ if(sk.parentNode) sk.remove(); },600); }
 }
 
 function setupAuth() {
@@ -466,6 +477,11 @@ function initHome() {
 
   document.querySelectorAll('.home-card[data-goto]').forEach(c => {
     c.addEventListener('click', () => navigate(c.dataset.goto));
+    c.addEventListener('mousemove', e => {
+      const r = c.getBoundingClientRect();
+      c.style.setProperty('--mx', ((e.clientX - r.left) / r.width * 100) + '%');
+      c.style.setProperty('--my', ((e.clientY - r.top) / r.height * 100) + '%');
+    });
   });
 }
 
