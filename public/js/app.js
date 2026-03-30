@@ -256,8 +256,15 @@ function setupAuth() {
         'auth/too-many-requests':'Too many tries. Give it a minute and try again.',
         'auth/operation-not-allowed':'Sign-ups are closed right now. Ask an admin for access.',
         'auth/network-request-failed':'Connection issue. Check your internet and try again.',
+        'auth/firebase-app-check-token-is-invalid':'Security verification failed. Try refreshing the page. If this keeps happening, clear your browser cache.',
+        'appCheck/throttled':'Security verification is temporarily blocked. Please wait a few minutes and refresh the page.',
       };
-      err.textContent = msgs[ex.code] || ex.message;
+      // Also handle App Check errors that may not have a .code property
+      const errMsg = msgs[ex.code]
+        || (ex.message && ex.message.includes('app-check') ? 'Security verification issue. Please refresh the page and try again.' : null)
+        || (ex.message && ex.message.includes('throttled') ? 'Too many security check failures. Please wait a few minutes and refresh.' : null)
+        || ex.message;
+      err.textContent = errMsg;
       btn.disabled = false;
       btn.textContent = mode==='login' ? 'ENTER' : 'REQUEST ACCESS';
     }

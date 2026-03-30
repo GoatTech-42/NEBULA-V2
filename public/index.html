@@ -802,11 +802,7 @@ function launchNebula() {
   if(launched) return;
   launched = true;
   closeKo();
-  fetch('main.html').then(r=>r.text()).then(html=>{
-    const w = window.open('about:blank','_blank');
-    if(!w) { launched=false; window.open('main.html','_blank'); return; }
-    w.document.open(); w.document.write(html); w.document.close();
-  }).catch(()=>{ launched=false; window.open('main.html','_blank'); });
+  window.open('main.html','_blank');
 }
 window.launchNebula = launchNebula;
 </script>
