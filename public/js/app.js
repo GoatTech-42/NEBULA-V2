@@ -1135,8 +1135,9 @@ async function loadMembers(ch) {
 
   // Update header to show channel info
   if(headerEl) {
+    const hdrTitle = (ch && ch.adminOnly) ? 'Admins' : 'Members';
     headerEl.innerHTML = `
-      <div class="ms-header-title">Members</div>
+      <div class="ms-header-title">${hdrTitle}</div>
       <div class="ms-channel-info">
         <span class="ms-channel-hash">#</span>
         <span class="ms-channel-label" id="ms-channel-label">${escHtml(ch.name)}</span>
@@ -1146,7 +1147,12 @@ async function loadMembers(ch) {
   list.innerHTML = '<div class="ms-loading"><div class="ms-loading-dot"></div><div class="ms-loading-dot"></div><div class="ms-loading-dot"></div></div>';
   try {
     const snap = await getDocs(query(collection(db,'users'), where('status','==','approved')));
-    const members = snap.docs.map(d => d.data()).sort((a,b) => rankOf(b.rank) - rankOf(a.rank));
+    let members = snap.docs.map(d => d.data()).sort((a,b) => rankOf(b.rank) - rankOf(a.rank));
+
+    // If this channel is admin-only (e.g. #admin), only show moderator/admin ranks
+    if(ch && ch.adminOnly) {
+      members = members.filter(u => canModerate(u.rank));
+    }
 
     // Group by rank tier
     const tiers = [
