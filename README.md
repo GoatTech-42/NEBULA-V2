@@ -6,7 +6,7 @@
 
 ## Overview
 
-Nebula V2 is a zero-framework web app built entirely with vanilla HTML/CSS/JS and Firebase. It features multi-channel chat, direct messages, a game vault with 100+ titles, a full GoatCoin currency/gambling system, rich user profiles with badges, 16 color themes, and a comprehensive admin panel. The entry point is disguised as a legitimate academic history website with a hidden Konami Code portal.
+Nebula V2 is a zero-framework web app built entirely with vanilla HTML/CSS/JS and Firebase. It features multi-channel chat, direct messages, a game vault with 100+ titles, a full GoatCoin currency/gambling system, rich user profiles with badges, 29 color themes, and a comprehensive admin panel. The entry point is disguised as a legitimate academic history website with a hidden Konami Code portal.
 
 ---
 
@@ -21,8 +21,8 @@ firebase login
 firebase deploy --only hosting
 ```
 
-**Firebase project**: `nebulav2`
-**RTDB URL**: `https://nebulav2-default-rtdb.firebaseio.com`
+**Firebase project**: `nebulahistorians`
+**RTDB URL**: `https://nebulahistorians-default-rtdb.firebaseio.com`
 
 ---
 
@@ -51,25 +51,38 @@ public/
 ├── construction.html         # Maintenance page
 ├── css/
 │   ├── layout.css            # Core layout & component styles
-│   └── themes/               # 16 color themes
-│       ├── og.css            # Default theme
-│       ├── dark.css
-│       ├── light.css
-│       ├── aurora.css
-│       ├── synthwave.css
-│       ├── crimson.css
-│       ├── midnight.css
-│       ├── slate.css
-│       ├── forest.css
-│       ├── ocean.css
-│       ├── rose.css
-│       ├── solar.css
-│       ├── void.css
-│       ├── neon.css
-│       ├── blush.css
-│       └── ice.css
+│   └── themes/               # 29 color themes
+│       ├── og.css            # Default (deep blue)
+│       ├── dark.css          # Pure black, purple accent
+│       ├── light.css         # Clean white, blue accent
+│       ├── aurora.css        # Northern lights, emerald
+│       ├── synthwave.css     # Retro neon grid
+│       ├── crimson.css       # Deep red dark
+│       ├── midnight.css      # Warm amber dark
+│       ├── slate.css         # Minimal indigo mono
+│       ├── forest.css        # Deep green night
+│       ├── ocean.css         # Deep sea cyan
+│       ├── rose.css          # Pink & magenta dark
+│       ├── solar.css         # Blazing gold dark
+│       ├── void.css          # Pure black minimal
+│       ├── neon.css          # Electric green hacker
+│       ├── blush.css         # Warm pink glow
+│       ├── ice.css           # Cool indigo frosted
+│       ├── candy.css         # Sweet pastels
+│       ├── vapor.css         # Retrowave purple
+│       ├── copper.css        # Burnished metal warm
+│       ├── lavender.css      # Soft purple dreamy
+│       ├── arctic.css        # Frozen blue crystals
+│       ├── ember.css         # Smoldering red
+│       ├── moss.css          # Deep earth emerald
+│       ├── dusk.css          # Twilight sunset haze
+│       ├── pearl.css         # Light ivory elegance
+│       ├── cyberpunk.css     # Neon matrix digital
+│       ├── sakura.css        # Cherry blossom spring
+│       ├── rust.css          # Industrial orange forged
+│       └── glacier.css       # Icy teal frozen waters
 └── js/
-    ├── firebase.js           # Firebase init, config & re-exports
+    ├── firebase.js           # Firebase init, App Check, config & re-exports
     ├── app.js                # Core app: auth, chat, DMs, admin, nav, settings
     ├── icons.js              # SVG icon library for command palette & UI
     ├── goatcoin.js           # GoatCoin economy, blackjack, leaderboard
@@ -152,12 +165,18 @@ public/
 - Keyboard shortcut hints (1-8 for all users, 1-9 if you're an admin)
 - Arrow keys + Enter navigation
 
-### Settings
-- **16 themes**: OG, Dark, Light, Aurora, Synthwave, Crimson, Midnight, Slate, Forest, Ocean, Rose, Solar, Void, Neon, Blush, Ice
-- **Layouts**: Left sidebar, Right sidebar, Top bar, Bottom bar
-- **Font size**: XS through XL
-- **Display toggles**: Compact mode, timestamps on hover, message animations, parallax speed, background blur, focus mode, high contrast, reduce motion, nav glow, typing indicators, and more
-- **Per-channel notification control**
+### Settings (8 tabs)
+
+| Tab | What's in it |
+|---|---|
+| **Themes** | 29 color themes, click to apply with animated transition |
+| **Alerts** | Chat/DM/mention toggles, per-channel notification control |
+| **Display** | Layout (left/right/top/bottom nav), sidebar width, font size, blur, compact mode, parallax, message animations, and more |
+| **Sound** | Message/DM/mention sounds, master volume slider, UI feedback sounds |
+| **Chat** | Bubble style (Cozy/Compact/Bubbles/Minimal), rank badges, timestamps, typing indicators, grouping window |
+| **Keybinds** | Full keyboard shortcut reference |
+| **Advanced** | Custom accent color override (12 swatches), parallax speed, reduce motion, high contrast, focus mode, danger-zone reset |
+| **Credits** | Team and tech stack |
 
 ---
 
@@ -166,28 +185,34 @@ public/
 Only visible to `universal`+ ranks. Goat-rank users get additional DB cleanup tools.
 
 ### Tabs
-1. **Pending** &mdash; Approve or deny account requests
-2. **Members** &mdash; View all users, change ranks, ban (with live search)
-3. **Banned** &mdash; Unban users or permanently delete accounts (Goat only)
-4. **DB Cleanup** (Goat only) &mdash; Bulk data operations:
+1. **Pending** — Approve or deny account requests
+2. **Members** — View all users, change ranks, ban (with live search)
+3. **Banned** — Unban users or permanently delete accounts (Goat only)
+4. **DB Cleanup** (Goat only) — Categorized operations with live DB stats:
 
+#### Users & Economy
 | Action | What it does |
 |---|---|
-| Wipe All GoatCoin | Resets every user's balance and stats to 0 |
+| Scan User States | Find users with unexpected status values |
+| Wipe All GoatCoin | Resets every user's balance and all stats to 0 |
 | Reset Weekly Stats | Clears weekly counters without touching balances |
-| Delete User GC | Removes a specific user's GoatCoin document |
-| Wipe Channel | Deletes all messages in a channel |
+| Delete GC by UID | Removes a specific user's GoatCoin document |
+| Reset Visit Counter | Sets the global visit count to 0 in RTDB and Firestore |
+
+#### Messages & Games
+| Action | What it does |
+|---|---|
 | Wipe All DMs | Deletes all DM threads and messages across the platform |
-| Clear Offline Presence | Removes stale Firestore presence docs |
+| Wipe Channel Messages | Deletes all messages in a specific channel |
 | Purge Stale BJ Games | Deletes stuck or expired blackjack games |
 | Clear BJ Challenges | Deletes all pending/cancelled challenges |
-| Reset Visit Counter | Sets visits to 0 in both RTDB and Firestore |
+| Clear Offline Presence | Removes stale Firestore presence docs |
 
 ---
 
 ## Nebula Historians (index.html)
 
-The public-facing disguise &mdash; a convincing academic history website.
+The public-facing disguise — a convincing academic history website.
 
 - Light parchment/ink theme
 - 9 pages: Overview, 6 articles, References, Key Figures, About NHS
@@ -217,17 +242,26 @@ One-time migration from Firestore to RTDB for presence and visit data. Only need
 | `Escape` | Close palette / modal / game vault |
 | `1` - `8` | Jump to section (Home, Chat, DMs, Games, GoatCoin, Shop, Profile, Settings) |
 | `9` | Jump to Admin (admins only) |
+| `↑` in chat input | Edit your last message |
 
 ---
 
 ## Changelog
 
 ### March 2026
+- **Settings overhaul**: Split into 8 tabs — Themes, Alerts, Display, Sound, Chat, Keybinds, Advanced, Credits
+- **New customization**: Custom accent color override (12 swatches), bubble style selector, master volume slider
+- **Advanced tab**: Danger-zone reset button, focus mode, high-contrast, parallax controls
+- **Admin cleanup redesign**: Two-column category grid (Users & Economy / Messages & Games), live DB stats tiles, activity log
+- **New cleanup ops**: Clear BJ Challenges, Clear Offline Presence, separate channel wipe dropdown
+- **Full-width settings & admin**: Pages now use the full horizontal space instead of a capped width
+- **Theme cards fixed**: Selected checkmark no longer shows garbled umlaut characters; empty space below previews eliminated
+- **Comment rewrites**: All JS files have cleaner, clearer inline comments
 - Command palette icons replaced with custom SVGs (moved to `icons.js`)
 - Keyboard shortcut numbering now role-aware (1-8 for regular users, 1-9 for admins)
 - Fixed tooltip overlap bug when switching tabs
 - Added `icons.js` module for centralized icon management
-- README rewritten
+- README updated
 
 ### March 2025
 - RTDB presence system for real-time online/offline status
@@ -241,4 +275,4 @@ One-time migration from Firestore to RTDB for presence and visit data. Only need
 
 ---
 
-*Nebula V2 &mdash; Beyond The Stars*
+*Nebula V2 — Beyond The Stars*

@@ -1,6 +1,7 @@
-// =======================================
-//  games.js -- Game vault logic
-// =======================================
+// games.js — Game vault
+//
+// Loads the game list from a GitHub CDN, renders the grid with lazy-loaded
+// thumbnails, handles search/sort/favorites, and opens games in the iframe.
 
 const zonesurls = [
   "https://cdn.jsdelivr.net/gh/gn-math/assets@main/zones.json",
@@ -14,7 +15,7 @@ let zones = [];
 let popularityData = {};
 let showFavsOnly = false;
 
-// Favorites use cookies, not localStorage
+// Favorites are stored in a cookie so they survive across sessions.
 function getFavs() {
   const c = document.cookie.split(';').find(x=>x.trim().startsWith('neb_favs='));
   if(!c) return [];
