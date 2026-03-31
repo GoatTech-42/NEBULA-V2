@@ -1,9 +1,8 @@
-// ===================================================
-//  goatcoin.js -- GoatCoin currency, 1v1 blackjack,
-//  leaderboard, weekly badge awards
-//  NOTE: Blackjack is STRICTLY 2-player (you vs one opponent).
-//        Games stored in RTDB for speed/cost.
-// ===================================================
+// ==================================================
+//  goatcoin.js -- GoatCoin economy: earn coins,
+//  1v1 blackjack, leaderboard, and weekly badges.
+//  BJ games use RTDB for fast, cheap updates.
+// ==================================================
 import {
   db, auth,
   doc, getDoc, setDoc, updateDoc, collection, query, where,
@@ -12,18 +11,18 @@ import {
 import { getDatabase, ref as rtRef, set as rtSet, get as rtGet, onValue, push as rtPush, remove as rtRemove, update as rtUpdate, onDisconnect } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 import { toast, avatarColor, avatarInitial, escHtml, avatarHtml } from './app.js';
 
-// -- Constants --
+// --- Constants ---
 const COIN_PER_MINUTE = 1;
 const COIN_TICK_MS    = 60_000;
 
-// -- Module state --
+// --- Module State ---
 let _gcUser    = null;
 let _gcData    = null;
 let _gcUnsub   = null;
 let _gcTimer   = null;
 let _activity  = 'site';
 
-// Multiplayer BJ (1v1 only)
+// Blackjack game state (1v1)
 let _mpGame        = null;
 let _mpGameId      = null;
 let _mpGameUnsub   = null; // RTDB listener off-fn

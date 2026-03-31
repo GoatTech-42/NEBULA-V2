@@ -1,10 +1,8 @@
-// ═══════════════════════════════════════════════════
-//  shop.js — GoatCoin Shop
-//  Buy cosmetic items: profile icons, name colours,
-//  special badges, chat flair, etc.
-//  Purchases stored in RTDB (user's owned items) and
-//  applied to their Firestore user document.
-// ═══════════════════════════════════════════════════
+// ==================================================
+//  shop.js -- GoatCoin Shop
+//  Cosmetic items: profile icons, name flair, badges.
+//  Ownership stored in RTDB; applied to Firestore.
+// ==================================================
 import {
   db, auth,
   doc, getDoc, updateDoc, collection, getDocs, serverTimestamp
@@ -13,13 +11,13 @@ import { getDatabase, ref as rtRef, set as rtSet, get as rtGet, update as rtUpda
 import { toast, avatarColor, escHtml, avatarHtml, SVG_ICONS, RANKS, rankOf } from './app.js';
 import { getGoatCoinData } from './goatcoin.js';
 
-// GC coin SVG (simple coin icon)
+// Coin icon used in price tags
 const GC_COIN_SVG = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v2m0 8v2m-4-7h2.5a1.5 1.5 0 010 3H8m0 0h2.5a1.5 1.5 0 010 3H8"/></svg>`;
 
-// Lock SVG for locked items
+// Lock icon for requirement-gated items
 const LOCK_SVG = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>`;
 
-// Helper to get a shop item's SVG preview icon
+// Returns a preview SVG for a shop item
 function _shopItemSvg(item, size = 32) {
   const s = size;
   if (item.iconKey && SVG_ICONS[item.iconKey]) {
@@ -41,7 +39,7 @@ function _shopItemSvg(item, size = 32) {
   return fallbacks[item.id] || `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg>`;
 }
 
-// ── Module state ──
+// --- Module State ---
 let _shopUser   = null;
 let _shopData   = null; // Firestore user doc data
 let _rtdb       = null;

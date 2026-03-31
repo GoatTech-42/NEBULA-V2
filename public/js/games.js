@@ -1,6 +1,7 @@
-// =======================================
-//  games.js -- Game vault logic
-// =======================================
+// ==========================================
+//  games.js -- Game vault: search, sort,
+//  infinite scroll, favorites, and CDN fetch
+// ==========================================
 
 const zonesurls = [
   "https://cdn.jsdelivr.net/gh/gn-math/assets@main/zones.json",
@@ -14,7 +15,7 @@ let zones = [];
 let popularityData = {};
 let showFavsOnly = false;
 
-// Favorites use cookies, not localStorage
+// Favorites stored in cookies (persists across sessions)
 function getFavs() {
   const c = document.cookie.split(';').find(x=>x.trim().startsWith('neb_favs='));
   if(!c) return [];
@@ -79,7 +80,7 @@ function handleSearch() {
   renderGrid(filtered);
 }
 
-// Lazy load observer - reused across renders
+// Lazy load observer for game thumbnails
 let _lazyObserver = null;
 function getLazyObserver() {
   if(_lazyObserver) return _lazyObserver;
