@@ -99,7 +99,7 @@ function closeModal(cb) {
 }
 
 // ---- Theme ----
-const THEME_FILES = { 'og':'og.css','dark':'dark.css','light':'light.css','synthwave':'synthwave.css','aurora':'aurora.css','crimson':'crimson.css','midnight':'midnight.css','slate':'slate.css','forest':'forest.css','ocean':'ocean.css','rose':'rose.css','solar':'solar.css','void':'void.css','neon':'neon.css','blush':'blush.css','ice':'ice.css' };
+const THEME_FILES = { 'og':'og.css','dark':'dark.css','light':'light.css','synthwave':'synthwave.css','aurora':'aurora.css','crimson':'crimson.css','midnight':'midnight.css','slate':'slate.css','forest':'forest.css','ocean':'ocean.css','rose':'rose.css','solar':'solar.css','void':'void.css','neon':'neon.css','blush':'blush.css','ice':'ice.css','candy':'candy.css','vapor':'vapor.css','copper':'copper.css','lavender':'lavender.css','arctic':'arctic.css','ember':'ember.css','moss':'moss.css','dusk':'dusk.css','pearl':'pearl.css','cyberpunk':'cyberpunk.css','sakura':'sakura.css','rust':'rust.css','glacier':'glacier.css' };
 let _themeTransitioning = false;
 
 function loadTheme() {
@@ -2786,17 +2786,24 @@ window.openGameVault = function(url, name) {
   const frame = document.getElementById('game-frame');
   document.getElementById('game-name').textContent = name;
   setActivity('game');
+  // Reset frame first
+  frame.removeAttribute('srcdoc');
   frame.src = 'about:blank';
+  // Fetch the game HTML, clean it, and inject via srcdoc
   fetch(url + '?t=' + Date.now())
     .then(r => r.text())
     .then(html => {
       html = cleanHTML(html);
-      const doc = frame.contentDocument || frame.contentWindow?.document;
-      if(doc) { doc.open(); doc.write(html); doc.close(); }
+      // Use srcdoc so the HTML is parsed and executed properly
+      frame.srcdoc = html;
       frame._gameUrl = url;
       frame._gameName = name;
     })
-    .catch(() => { frame.src = url; });
+    .catch(() => {
+      // Fallback: load URL directly
+      frame.removeAttribute('srcdoc');
+      frame.src = url;
+    });
   if(currentUser && currentUserData) {
     updateDoc(doc(db,'users',currentUser.uid), { gamesPlayed: increment(1) }).catch(()=>{});
   }
@@ -2807,6 +2814,7 @@ window.closeGameVault = function() {
   setActivity('site');
   const frame = document.getElementById('game-frame');
   if(frame._blobURL) { URL.revokeObjectURL(frame._blobURL); frame._blobURL = null; }
+  frame.removeAttribute('srcdoc');
   frame.src='about:blank';
 };
 window.fullscreenGame = function() {
