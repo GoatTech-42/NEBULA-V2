@@ -1,9 +1,9 @@
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-//  goatcoin.js â€” GoatCoin currency, 1v1 blackjack,
+// ===================================================
+//  goatcoin.js -- GoatCoin currency, 1v1 blackjack,
 //  leaderboard, weekly badge awards
 //  NOTE: Blackjack is STRICTLY 2-player (you vs one opponent).
 //        Games stored in RTDB for speed/cost.
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ===================================================
 import {
   db, auth,
   doc, getDoc, setDoc, updateDoc, collection, query, where,
@@ -12,11 +12,11 @@ import {
 import { getDatabase, ref as rtRef, set as rtSet, get as rtGet, onValue, push as rtPush, remove as rtRemove, update as rtUpdate, onDisconnect } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 import { toast, avatarColor, avatarInitial, escHtml, avatarHtml } from './app.js';
 
-// â”€â”€ Constants â”€â”€
+// -- Constants --
 const COIN_PER_MINUTE = 1;
 const COIN_TICK_MS    = 60_000;
 
-// â”€â”€ Module state â”€â”€
+// -- Module state --
 let _gcUser    = null;
 let _gcData    = null;
 let _gcUnsub   = null;
@@ -43,9 +43,9 @@ const GOATCOIN_ICON_SVG = '<svg class="gc-title-icon" viewBox="0 0 24 24" fill="
 const BJ_DECK_ICON_SVG = '<svg class="bj-lobby-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="12" height="15" rx="2"/><path d="M8 9h4"/><path d="M10 7v4"/><path d="M9 15l2-2 2 2"/><path d="M9 13h4"/><path d="M10 16h2"/><rect x="9" y="3" width="11" height="15" rx="2" opacity=".6"/></svg>';
 const BJ_COIN_ICON_SVG = '<svg class="bj-inline-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="currentColor" opacity=".14"/><circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1.8"/><path d="M10 14h3.2c1 0 1.7-.5 1.7-1.3 0-.8-.6-1.2-1.6-1.3l-1.7-.2c-.9-.1-1.3-.4-1.3-.9 0-.6.5-1 1.4-1h3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M12 8.2v7.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>';
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --------------------------------------------------
 //  WEEK KEY
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --------------------------------------------------
 function _weekKey() {
   const now = new Date();
   const sunday = new Date(now);
@@ -57,9 +57,9 @@ function _weekKey() {
   return `${y}-W-${m}${d}`;
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --------------------------------------------------
 //  INIT
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --------------------------------------------------
 export function initGoatCoin(user, userData, rtdb) {
   _gcUser = user;
   _rtdb = rtdb || null;
@@ -105,9 +105,9 @@ export function setActivity(mode) {
   _activity = mode;
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --------------------------------------------------
 //  COINS
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --------------------------------------------------
 function _subscribeCoins() {
   if(_gcUnsub) _gcUnsub();
   const ref = doc(db, 'goatcoin', _gcUser.uid);
@@ -235,9 +235,9 @@ function _refreshTabIfOpen() {
   }
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --------------------------------------------------
 //  TAB RENDER
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --------------------------------------------------
 export function renderGoatCoinTab() { _renderTab(); }
 
 function _renderTab() {
@@ -349,7 +349,7 @@ function _renderBJLobby() {
         ${BJ_DECK_ICON_SVG}
         <div>
           <div class="bj-lobby-title">1v1 Blackjack</div>
-          <div class="bj-lobby-sub">Challenge one opponent. Closest to 21 wins each round â€” no dealer advantage. Most round wins takes the pot.</div>
+          <div class="bj-lobby-sub">Challenge one opponent. Closest to 21 wins each round -- no dealer advantage. Most round wins takes the pot.</div>
         </div>
       </div>
 
@@ -523,7 +523,7 @@ async function _sendChallenge() {
   const maxLoss = stake * Math.ceil(bestOf/2);
 
   if(maxLoss > myCoins) {
-    if(err) err.textContent=`You don't have enough GC â€” need ${maxLoss.toLocaleString()} to cover worst-case losses (you have ${myCoins.toLocaleString()})`;
+    if(err) err.textContent=`You don't have enough GC -- need ${maxLoss.toLocaleString()} to cover worst-case losses (you have ${myCoins.toLocaleString()})`;
     return;
   }
   const oppGC = await getDoc(doc(db,'goatcoin',_selectedOpp.uid));
@@ -583,7 +583,7 @@ function _showWaitingState(opp, stake, bestOf) {
       <div class="bj-waiting-opps">
         <div class="bj-waiting-opp" style="background:${opp.color||avatarColor(opp.uid)}">${avatarHtml(opp.icon||'',opp.username,'55%')}</div>
       </div>
-      <div class="bj-waiting-text">Waiting for <strong>${escHtml(opp.username)}</strong> to acceptâ€¦</div>
+      <div class="bj-waiting-text">Waiting for <strong>${escHtml(opp.username)}</strong> to accept...</div>
       <div class="bj-waiting-meta">${stake} GC per round Â· Best of ${bestOf}</div>
       <button class="btn btn-ghost btn-sm" id="bj-cancel-challenge">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -698,7 +698,7 @@ async function _acceptChallenge(cid) {
   const maxLoss = (c.stake||0) * Math.ceil((c.bestOf||1)/2);
   const myCoins = _gcData ? Math.floor(_gcData.coins||0) : 0;
   if(!_gcData || myCoins < maxLoss) {
-    toast(`Not enough GC â€” need ${maxLoss.toLocaleString()} to cover worst-case losses`, 'error');
+    toast(`Not enough GC -- need ${maxLoss.toLocaleString()} to cover worst-case losses`, 'error');
     return;
   }
   const senderGC = await getDoc(doc(db,'goatcoin',c.fromUid));
@@ -746,9 +746,9 @@ async function _declineChallenge(cid) {
   await deleteDoc(doc(db,'bj_challenges',cid)).catch(()=>{});
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-//  GAME LOGIC â€” RTDB-backed
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --------------------------------------------------
+//  GAME LOGIC -- RTDB-backed
+// --------------------------------------------------
 
 async function _getGame(gameId, useRTDB) {
   if(useRTDB && _rtdb) {
@@ -958,9 +958,9 @@ export async function bjNextRound() {
   });
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --------------------------------------------------
 //  BJ TABLE UI
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --------------------------------------------------
 function _getBJContainer() {
   let ov = document.getElementById('bj-fullscreen-overlay');
   if(!ov) {
@@ -1042,7 +1042,7 @@ function _renderBJTable() {
         <div class="bj-sides-row bj-sides-row-full">
           <div class="bj-side bj-my-side ${myTurn?'bj-active-side':''}">
             <div class="bj-side-label">
-              You <span class="bj-total ${myTotal>21?'bust':''}">${myH.length?myTotal:'â€”'}</span>
+              You <span class="bj-total ${myTotal>21?'bust':''}">${myH.length?myTotal:'--'}</span>
               ${myTurn?'<span class="bj-your-turn-badge">your move</span>':''}
             </div>
             <div class="bj-hand">${myH.map(c=>_renderCard(c)).join('')}</div>
@@ -1050,8 +1050,8 @@ function _renderBJTable() {
           <div class="bj-side bj-opp-side">
             <div class="bj-side-label">
               ${escHtml(oppName)}
-              ${done?`<span class="bj-total ${oppTotal>21?'bust':''}">${oppH.length?oppTotal:'â€”'}</span>`:'<span class="bj-total">?</span>'}
-              ${phase===`${oppRole}turn`?'<span class="bj-their-turn-badge">thinkingâ€¦</span>':''}
+              ${done?`<span class="bj-total ${oppTotal>21?'bust':''}">${oppH.length?oppTotal:'--'}</span>`:'<span class="bj-total">?</span>'}
+              ${phase===`${oppRole}turn`?'<span class="bj-their-turn-badge">thinking...</span>':''}
             </div>
             <div class="bj-hand">${done?oppH.map(c=>_renderCard(c)).join(''):oppH.map(()=>_renderCard(null,true)).join('')}</div>
           </div>
@@ -1064,13 +1064,13 @@ function _renderBJTable() {
             <button class="btn bj-btn" id="bj-mp-stand">Stand</button>
             ${myH.length===2&&Math.floor(_gcData?.coins||0)>=(g.stake||0)*2?'<button class="btn bj-btn bj-double" id="bj-mp-double">Double Down</button>':''}
           `:''}
-          ${phase==='roundDone'?(_myRole==='p1'?'<button class="btn bj-btn" id="bj-mp-next">Next Round</button>':`<div class="bj-wait-msg">${escHtml(g.p1name)} is dealing next roundâ€¦</div>`):''}
+          ${phase==='roundDone'?(_myRole==='p1'?'<button class="btn bj-btn" id="bj-mp-next">Next Round</button>':`<div class="bj-wait-msg">${escHtml(g.p1name)} is dealing next round...</div>`):''}
           ${phase==='gameDone'&&g.winner?'<button class="btn btn-ghost bj-btn" id="bj-mp-leave">Back to Lobby</button>':''}
-          ${phase==='gameDone'&&!g.winner?(_myRole==='p1'?'<button class="btn bj-btn" id="bj-mp-next">Tiebreaker Round</button>':`<div class="bj-wait-msg">${escHtml(g.p1name)} is starting the tiebreakerâ€¦</div>`):''}
-          ${phase==='p1turn'&&_myRole==='p2'?`<div class="bj-wait-msg">${escHtml(g.p1name)} is taking their turnâ€¦</div>`:''}
-          ${phase==='p2turn'&&_myRole==='p1'?`<div class="bj-wait-msg">${escHtml(g.p2name)} is taking their turnâ€¦</div>`:''}
-          ${phase==='dealer'?'<div class="bj-wait-msg">Resolving roundâ€¦</div>':''}
-          ${phase==='dealing'?'<div class="bj-wait-msg">Dealing cardsâ€¦</div>':''}
+          ${phase==='gameDone'&&!g.winner?(_myRole==='p1'?'<button class="btn bj-btn" id="bj-mp-next">Tiebreaker Round</button>':`<div class="bj-wait-msg">${escHtml(g.p1name)} is starting the tiebreaker...</div>`):''}
+          ${phase==='p1turn'&&_myRole==='p2'?`<div class="bj-wait-msg">${escHtml(g.p1name)} is taking their turn...</div>`:''}
+          ${phase==='p2turn'&&_myRole==='p1'?`<div class="bj-wait-msg">${escHtml(g.p2name)} is taking their turn...</div>`:''}
+          ${phase==='dealer'?'<div class="bj-wait-msg">Resolving round...</div>':''}
+          ${phase==='dealing'?'<div class="bj-wait-msg">Dealing cards...</div>':''}
         </div>
       </div>
     </div>
@@ -1085,10 +1085,10 @@ function _renderBJTable() {
   document.getElementById('bj-fs-close')?.addEventListener('click', _leaveGame);
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --------------------------------------------------
 //  CARD UTILS
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-const SUITS=['â™ ','â™¥','â™¦','â™£'], VALUES=['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
+// --------------------------------------------------
+const SUITS=['♠','♥','♦','♣'], VALUES=['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
 function _newDeck() {
   const deck=[];
   for(const s of SUITS) for(const v of VALUES) deck.push({s,v});
@@ -1115,17 +1115,17 @@ function _handTotal(hand) {
 }
 function _renderCard(card,hidden=false) {
   if(hidden||!card) return '<div class="bj-card bj-hidden"><span>?</span></div>';
-  const red=card.s==='â™¥'||card.s==='â™¦';
+  const red=card.s==='♥'||card.s==='♦';
   return `<div class="bj-card${red?' red':''}"><span class="bj-cv">${card.v}</span><span class="bj-cs">${card.s}</span></div>`;
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --------------------------------------------------
 //  LEADERBOARD
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --------------------------------------------------
 async function _renderLeaderboard() {
   const el=document.getElementById('gc-leaderboard-content');
   if(!el) return;
-  el.innerHTML='<div style="color:var(--text-faint);font-size:.78rem;padding:.5rem 0">Loadingâ€¦</div>';
+  el.innerHTML='<div style="color:var(--text-faint);font-size:.78rem;padding:.5rem 0">Loading...</div>';
   try {
     const [gcSnap,usersSnap]=await Promise.all([
       getDocs(collection(db,'goatcoin')),
@@ -1168,7 +1168,7 @@ async function _renderLeaderboard() {
           ${sorted.slice(0,20).map((r,i)=>{
             const isMe = r.uid===_gcUser?.uid;
             const medal = medals[i] || `<span class="lb-rank-num">#${i+1}</span>`;
-            const val = tabDef?.fmt(r[activeTab]||0) || 'â€”';
+            const val = tabDef?.fmt(r[activeTab]||0) || '--';
             return `<div class="lb-row${isMe?' lb-me':''}">
               <span class="lb-rank">${medal}</span>
               <div class="lb-ava" style="background:${r.color}">${avatarHtml(r.icon,r.username,'60%')}</div>
@@ -1196,9 +1196,9 @@ function _fmtMins(mins) {
   return m ? `${h}h ${m}m` : `${h}h`;
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --------------------------------------------------
 //  EXPORTS
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --------------------------------------------------
 export function getGoatCoins()    { return _gcData?Math.floor(_gcData.coins||0):0; }
 export function getGoatCoinData() { return _gcData; }
 
