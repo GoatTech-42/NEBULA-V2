@@ -1,10 +1,10 @@
-/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
-   NEBULA V2 Ã¢â‚¬â€ layout.css
+/* =================================================================================================================================================================================================================================================================================
+   NEBULA V2 ======== layout.css
    Structure, spacing, layout + polish.
    Colors injected by theme files.
-Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */
+================================================================================================================================================================================================================================================================================= */
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ Reset & Base Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ================ Reset & Base ================ */
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 html, body { height: 100%; overflow: hidden; }
 body {
@@ -16,7 +16,7 @@ body {
   color: var(--text);
 }
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ Layout Tokens Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ================ Layout Tokens ================ */
 :root {
   --sidebar-w: 220px;
   --thread-w: 224px;
@@ -30,7 +30,7 @@ body {
   --t: .14s ease; --tm: .22s ease; --ts: .36s cubic-bezier(.16,1,.3,1);
 }
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ Utilities Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ================ Utilities ================ */
 .hidden { display: none !important; }
 .flex { display: flex; }
 .flex-col { display: flex; flex-direction: column; }
@@ -40,7 +40,7 @@ body {
 .overflow-hidden { overflow: hidden; }
 .truncate { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ Background / Parallax Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ================ Background / Parallax ================ */
 #parallax-root {
   position: fixed; inset: 0; z-index: 0;
   pointer-events: none; overflow: hidden;
@@ -51,15 +51,15 @@ body {
   animation: nebFadeIn 2.5s ease forwards;
   transition: transform .07s linear;
 }
-/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
-   NEBULA V2 Ã¢â‚¬â€ REDESIGNED PAGES ADDITIONS
+/* ==================================================================================================================================================================================================================================================================================================================================================================================================================================================
+   NEBULA V2 ======== REDESIGNED PAGES ADDITIONS
    Drop this at the very bottom of layout.css
    Covers: Profile, GoatCoin, Admin (full overhaul)
-Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */
+================================================================================================================================================================================================================================================================================================================================================================================================================================================== */
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
-   PROFILE PAGE Ã¢â‚¬â€ Full Redesign
-Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ========================================================================================================================================================================================================================================================================================================================================
+   PROFILE PAGE ======== Full Redesign
+======================================================================================================================================================================================================================================================================================================================================== */
 #section-profile {
   overflow-y: auto;
   overflow-x: hidden;
@@ -82,7 +82,7 @@ body {
   animation: fadeUp .4s cubic-bezier(.16,1,.3,1);
 }
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ Hero Banner Card Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ================ Hero Banner Card ================ */
 .prof-banner-card {
   border-radius: 16px;
   overflow: hidden;
@@ -191,7 +191,7 @@ body {
 }
 .prof-banner-badges .badge-chip { font-size: .55rem; padding: .14rem .45rem; }
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ Profile Stats Row Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ================ Profile Stats Row ================ */
 .prof-stats-strip {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -221,7 +221,7 @@ body {
   font-weight: 700;
 }
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ Profile Edit Panels Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ================ Profile Edit Panels ================ */
 .prof-panels-grid {
   display: flex;
   flex-direction: column;
@@ -326,7 +326,7 @@ body {
 .color-swatch:hover { transform: scale(1.22); box-shadow: 0 2px 8px rgba(0,0,0,.3); }
 .color-swatch.selected { border-color: #fff; box-shadow: 0 0 0 2.5px var(--accent); transform: scale(1.1); }
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ GoatCoin Section Redesign Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ================ GoatCoin Section Redesign ================ */
 #section-goatcoin {
   overflow-y: auto;
   overflow-x: hidden;
@@ -562,7 +562,7 @@ body {
 .lb-name-new { flex: 1; font-size: .74rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .lb-val-new { font-size: .75rem; font-weight: 800; color: var(--accent); font-variant-numeric: tabular-nums; }
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ ADMIN PAGE Ã¢â‚¬â€ Full Redesign Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ================ ADMIN PAGE ======== Full Redesign ================ */
 #section-admin {
   overflow-y: auto;
   overflow-x: hidden;
@@ -695,7 +695,7 @@ body {
 .adm-panel-new { display: none; }
 .adm-panel-new.active { display: flex; flex-direction: column; gap: 8px; animation: sectionFadeScale .2s ease; }
 
-/* User row Ã¢â‚¬â€ redesigned */
+/* User row ======== redesigned */
 .adm-row-new {
   display: flex;
   align-items: center;
@@ -886,7 +886,7 @@ body {
 .cleanup-log-error-new { color: #f87171; }
 .cleanup-log-info-new { color: #94a3b8; }
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ Responsive Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ================ Responsive ================ */
 @media (max-width: 680px) {
   .prof-redesign-wrap { padding: 1rem .9rem 4rem; }
   .prof-stats-strip { grid-template-columns: repeat(2, 1fr); }
@@ -910,7 +910,7 @@ body {
 #neb-3 { width: 55vmax; height: 55vmax; left: 15vmax; bottom: -15vmax; animation-delay: .6s; }
 #neb-stars { position: absolute; inset: 0; pointer-events: none; }
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ Skeleton Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ================ Skeleton ================ */
 .skeleton-screen {
   position: fixed; inset: 0; z-index: 8000;
   display: flex; background: var(--bg);
@@ -924,7 +924,7 @@ body {
 .skel-hero { width: 320px; height: 200px; border-radius: var(--surface-radius); }
 .skel-pulse { animation: skelPulse 1.6s ease-in-out infinite; }
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ Auth Screen Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ================ Auth Screen ================ */
 /* auth-screen: see split layout section below */
 .field-group { margin-bottom: .9rem; text-align: left; }
 .field-label {
@@ -950,7 +950,7 @@ select.field-input { cursor: pointer; }
 }
 .auth-foot { margin-top: 1.5rem; font-size: .54rem; letter-spacing: 2.5px; text-transform: uppercase; }
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ Pending Screen Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ================ Pending Screen ================ */
 #pending-screen {
   position: fixed; inset: 0; z-index: 9998;
   display: flex; align-items: center; justify-content: center;
@@ -965,11 +965,11 @@ select.field-input { cursor: pointer; }
 .pending-inner h2 { font-size: 1.4rem; font-weight: 900; margin-bottom: .55rem; }
 .pending-inner p { font-size: .82rem; margin-bottom: 1.4rem; line-height: 1.7; color: var(--text-muted); }
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ App Shell Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ================ App Shell ================ */
 #app { display: flex; height: 100vh; overflow: hidden; position: relative; z-index: 1; }
 #app.hidden { display: none !important; }
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ Sidebar Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ================ Sidebar ================ */
 #sidebar {
   width: var(--sidebar-w); flex-shrink: 0;
   display: flex; flex-direction: column;
@@ -1038,7 +1038,7 @@ select.field-input { cursor: pointer; }
 }
 .sp-signout:hover { color: var(--danger); }
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ Main Content Area Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ================ Main Content Area ================ */
 #main { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
 .section { flex: 1; overflow-y: auto; display: none; flex-direction: column; }
 .section.active { display: flex; animation: sectionIn .32s cubic-bezier(.16,1,.3,1); }
@@ -1048,7 +1048,7 @@ select.field-input { cursor: pointer; }
 .pg-title { font-family: var(--font-display); font-size: 1.6rem; font-weight: 900; margin-bottom: .3rem; }
 .pg-sub { font-size: .73rem; margin-bottom: 1.5rem; color: var(--text-muted); }
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ Home Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ================ Home ================ */
 #section-home { align-items: center; justify-content: center; overflow: hidden; }
 .home-hero { text-align: center; padding: 2rem; max-width: 900px; width: 100%; animation: fadeUp .6s cubic-bezier(.16,1,.3,1); display: flex; flex-direction: column; align-items: center; }
 .home-title {
@@ -1093,7 +1093,7 @@ select.field-input { cursor: pointer; }
 .stat-value { font-family: var(--font-display); font-size: 1.35rem; font-weight: 900; }
 .stat-label { font-size: .57rem; letter-spacing: 1.5px; text-transform: uppercase; margin-top: .15rem; }
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ Rank Badges Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ================ Rank Badges ================ */
 .rbadge {
   display: inline-flex; align-items: center;
   padding: .04rem .32rem; border-radius: var(--r);
@@ -1107,7 +1107,7 @@ select.field-input { cursor: pointer; }
 .rbadge.universal { background: linear-gradient(90deg,rgba(244,63,94,.18),rgba(168,85,247,.18),rgba(56,189,248,.18)); color: #e2e8f0; border: 1px solid rgba(168,85,247,.3); }
 .rbadge.goat { background: linear-gradient(90deg,rgba(245,158,11,.25),rgba(244,63,94,.25)); color: #fde68a; border: 1px solid rgba(245,158,11,.5); }
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ Chat Layout Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ================ Chat Layout ================ */
 #section-chat, #section-dms { overflow: hidden; padding: 0; }
 #section-chat.active, #section-dms.active { display: flex; flex-direction: column; animation: none; }
 .chat-layout { flex: 1; display: flex; overflow: hidden; min-height: 0; }
@@ -1144,7 +1144,7 @@ select.field-input { cursor: pointer; }
 .ctb-name { font-weight: 700; font-size: .93rem; }
 .ctb-right { display: flex; align-items: center; gap: .45rem; }
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ Messages Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ================ Messages ================ */
 .messages-wrap { flex: 1; overflow-y: scroll; overflow-x: hidden; display: flex; flex-direction: column; position: relative; min-height: 0; }
 .messages-wrap::-webkit-scrollbar { width: 5px; }
 .messages-wrap::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: var(--r); }
@@ -1158,7 +1158,7 @@ select.field-input { cursor: pointer; }
 .msg:hover { background: var(--msg-hover); }
 .msg:hover .msg-actions { opacity: 1; pointer-events: all; }
 
-/* Compact mode Ã¢â‚¬â€ always show sender */
+/* Compact mode ======== always show sender */
 body.compact-mode .msg { padding-top: .13rem; padding-bottom: .13rem; }
 body.compact-mode .msg.first-in-group { padding-top: .55rem; margin-top: .12rem; }
 body.compact-mode .msg-ava-wrap { width: 38px; }
@@ -1198,14 +1198,14 @@ body.compact-mode .msg:not(.first-in-group) .msg-ava-spacer { display: none; }
 .ecancel { background: transparent; color: var(--text-muted); border: 1px solid var(--border2); border-radius: var(--r); padding: .28rem .65rem; font-size: .68rem; font-weight: 700; cursor: pointer; font-family: var(--font-body); transition: all var(--t); }
 .ecancel:hover { color: var(--danger); border-color: var(--danger); }
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ Typing Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ================ Typing ================ */
 .typing-bar { height: 22px; flex-shrink: 0; padding: 0 1.1rem; display: flex; align-items: center; gap: .4rem; font-size: .65rem; color: var(--text-muted); }
 .typing-dots { display: flex; gap: 3px; align-items: center; }
 .typing-dots span { width: 4px; height: 4px; border-radius: 50%; animation: typingBounce 1.2s ease-in-out infinite; }
 .typing-dots span:nth-child(2) { animation-delay: .2s; }
 .typing-dots span:nth-child(3) { animation-delay: .4s; }
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ Chat Input Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ================ Chat Input ================ */
 .chat-input-area { padding: .65rem 1rem; border-top: 1px solid var(--border2); flex-shrink: 0; }
 .chat-input-wrap { display: flex; gap: .52rem; align-items: center; border: 1.5px solid var(--border2); border-radius: 10px; padding: .55rem .9rem; transition: border-color var(--tm), box-shadow var(--tm); background: var(--input-bg); }
 .chat-input-wrap:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-dim); }
@@ -1220,12 +1220,12 @@ body.compact-mode .msg:not(.first-in-group) .msg-ava-spacer { display: none; }
 .send-btn:active { transform: scale(.95); }
 .send-btn:disabled { opacity: .3; cursor: not-allowed; transform: none; box-shadow: none; }
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ Scroll to Bottom Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ================ Scroll to Bottom ================ */
 .scroll-to-bottom { position: absolute; bottom: 14px; right: 14px; width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--border); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all var(--tm); z-index: 20; opacity: 0; pointer-events: none; transform: translateY(8px) scale(.88); color: var(--accent); }
 .scroll-to-bottom.show { opacity: 1; pointer-events: all; transform: translateY(0) scale(1); }
 .scroll-to-bottom:hover { transform: translateY(-1px) scale(1.06) !important; border-color: var(--accent); }
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ Members Sidebar Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ================ Members Sidebar ================ */
 .members-sidebar { width: var(--members-w); flex-shrink: 0; border-left: 1px solid var(--border2); display: flex; flex-direction: column; overflow: hidden; }
 .ms-header { padding: .88rem 1rem .65rem; border-bottom: 1px solid var(--border2); font-size: .57rem; font-weight: 800; letter-spacing: 1.8px; text-transform: uppercase; flex-shrink: 0; color: var(--text-faint); }
 .ms-list { flex: 1; overflow-y: auto; padding: .4rem .5rem; }
@@ -1235,7 +1235,7 @@ body.compact-mode .msg:not(.first-in-group) .msg-ava-spacer { display: none; }
 .ms-name { font-size: .74rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; }
 .ms-section-label { font-size: .52rem; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; padding: .55rem .55rem .2rem; color: var(--text-faint); }
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ Game Vault Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ================ Game Vault ================ */
 #section-games { overflow: hidden; padding: 0; }
 #section-games.active { display: flex; flex-direction: column; animation: none; }
 .vault-scroll { flex: 1; overflow-y: auto; padding: 24px 28px 60px; display: flex; flex-direction: column; align-items: center; }
@@ -1276,7 +1276,7 @@ body.compact-mode .msg:not(.first-in-group) .msg-ava-spacer { display: none; }
 .vault-empty { grid-column: 1/-1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .8rem; padding: 4rem; color: var(--text-faint); }
 .vault-loading { width: 100%; max-width: 1100px; text-align: center; padding: 4rem; color: var(--text-faint); font-size: .82rem; }
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ Game Viewer Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ================ Game Viewer ================ */
 #game-vault { position: fixed; inset: 0; background: #000; z-index: 10000; display: none; flex-direction: column; }
 .ghdr { height: 50px; flex-shrink: 0; display: flex; justify-content: space-between; align-items: center; padding: 0 1.15rem; border-bottom: 1px solid rgba(255,255,255,.08); }
 .ghdr-left { display: flex; align-items: center; gap: .65rem; overflow: hidden; min-width: 0; }
@@ -1286,7 +1286,7 @@ body.compact-mode .msg:not(.first-in-group) .msg-ava-spacer { display: none; }
 .ghdr-right { display: flex; gap: .5rem; flex-shrink: 0; }
 #game-frame { border: none; width: 100%; flex-grow: 1; display: block; min-height: 0; }
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ Profile Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ================ Profile ================ */
 #section-profile { overflow-y: auto !important; overflow-x: hidden; padding: 0; scrollbar-width: none; }
 #section-profile::-webkit-scrollbar { display: none; }
 #section-profile.active { display: flex; flex-direction: column; animation: sectionIn .28s cubic-bezier(.16,1,.3,1); }
@@ -1330,7 +1330,7 @@ body.compact-mode .msg:not(.first-in-group) .msg-ava-spacer { display: none; }
   .profile-right { padding: 1.2rem 1.5rem; }
 }
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ Admin Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ================ Admin ================ */
 .admin-tabs { display: flex; gap: 5px; margin-bottom: 1.35rem; flex-wrap: wrap; }
 .adm-tab { padding: .44rem .88rem; border: 1px solid var(--border2); border-radius: var(--r); background: var(--input-bg); cursor: pointer; font-size: .7rem; font-weight: 700; font-family: var(--font-body); transition: all var(--t); color: var(--text-muted); }
 .adm-tab:hover { background: var(--nav-hover); color: var(--text); }
@@ -1367,7 +1367,7 @@ body.compact-mode .msg:not(.first-in-group) .msg-ava-spacer { display: none; }
 .notif-channel-list { display: flex; flex-direction: column; gap: 6px; margin-top: .75rem; }
 .notif-channel-row { display: flex; align-items: center; justify-content: space-between; padding: .5rem .85rem; border-radius: var(--r); background: var(--input-bg); border: 1px solid var(--border2); font-size: .78rem; font-weight: 600; }
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ Buttons Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ================ Buttons ================ */
 .btn { display: inline-flex; align-items: center; justify-content: center; gap: .4rem; padding: .7rem 1.5rem; border: none; border-radius: var(--btn-radius); background: var(--accent); font-weight: 700; cursor: pointer; font-family: var(--font-body); font-size: .82rem; letter-spacing: .6px; text-transform: uppercase; transition: all var(--tm); white-space: nowrap; position: relative; z-index: 1; color: var(--btn-text); overflow: hidden; }
 .btn:hover { transform: translateY(-2px); box-shadow: 0 5px 18px var(--accent-glow); }
 .btn:active { transform: translateY(0); box-shadow: none; }
@@ -1379,7 +1379,7 @@ body.compact-mode .msg:not(.first-in-group) .msg-ava-spacer { display: none; }
 .btn-danger:hover { background: var(--danger); color: #fff; box-shadow: 0 4px 14px rgba(239,68,68,.35); }
 .btn-sm { padding: .36rem .78rem; font-size: .68rem; }
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ Toasts Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ================ Toasts ================ */
 #notif-stack { position: fixed; bottom: 22px; right: 18px; z-index: 20000; display: flex; flex-direction: column; gap: 8px; align-items: flex-end; pointer-events: none; }
 .notif { border-radius: 10px; padding: .65rem 1rem .65rem .85rem; min-width: 200px; max-width: 260px; display: flex; align-items: center; gap: .65rem; animation: notifIn .22s cubic-bezier(.16,1,.3,1); pointer-events: all; border-left: 3px solid var(--accent); background: var(--card-bg); border-top: 1px solid var(--card-border); border-right: 1px solid var(--card-border); border-bottom: 1px solid var(--card-border); backdrop-filter: blur(20px); }
 .notif.success { border-left-color: var(--success); }
@@ -1391,7 +1391,7 @@ body.compact-mode .msg:not(.first-in-group) .msg-ava-spacer { display: none; }
 .notif.warning .notif-dot { background: var(--warn); }
 .nmsg { font-size: .76rem; line-height: 1.4; flex: 1; color: var(--text-muted); }
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ Modals Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ================ Modals ================ */
 #modal-overlay { position: fixed; inset: 0; z-index: 7000; background: rgba(0,0,0,.75); backdrop-filter: blur(14px); animation: fadeIn .14s ease; }
 #modal-overlay.closing { animation: fadeOut .2s ease forwards; }
 .modal { position: fixed; inset: 0; z-index: 7001; display: flex; align-items: center; justify-content: center; padding: 20px; pointer-events: none; overflow: hidden; }
@@ -1409,12 +1409,12 @@ body.compact-mode .msg:not(.first-in-group) .msg-ava-spacer { display: none; }
 .rank-btn.universal { color: #e2e8f0; border-color: rgba(168,85,247,.25); }
 .rank-btn.earthbound { color: #6ee7b7; border-color: rgba(110,231,183,.2); }
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ Emoji Picker Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ================ Emoji Picker ================ */
 .epicker { position: fixed; z-index: 8000; border: 1px solid var(--border); border-radius: var(--rl); padding: .55rem; display: flex; gap: .22rem; flex-wrap: wrap; width: 220px; animation: slideDown .13s ease; background: var(--bg2); backdrop-filter: blur(20px); box-shadow: 0 12px 40px rgba(0,0,0,.45); }
 .eopt { font-size: 1.08rem; cursor: pointer; padding: .22rem; border-radius: var(--r); transition: all var(--t); }
 .eopt:hover { background: var(--nav-hover); transform: scale(1.2); }
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ Admin Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ================ Admin ================ */
 .admin-tabs { display: flex; gap: 5px; margin-bottom: 1.35rem; flex-wrap: wrap; }
 .adm-tab { padding: .44rem .88rem; border: 1px solid var(--border2); border-radius: var(--r); background: var(--input-bg); cursor: pointer; font-size: .7rem; font-weight: 700; font-family: var(--font-body); transition: all var(--t); color: var(--text-muted); }
 .adm-tab:hover { background: var(--nav-hover); color: var(--text); }
@@ -1433,7 +1433,7 @@ body.compact-mode .msg:not(.first-in-group) .msg-ava-spacer { display: none; }
 .ta-green { border: 1px solid rgba(16,185,129,.2); color: #10b981; }
 .ta-green:hover { background: rgba(16,185,129,.1); border-color: rgba(16,185,129,.38); }
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ Notif settings Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ================ Notif settings ================ */
 .notif-section-card { border-radius: var(--surface-radius); padding: 1.2rem 1.4rem; margin-bottom: .85rem; transition: border-color var(--tm); border: 1px solid var(--card-border); background: var(--card-bg); }
 .nsc-header { display: flex; align-items: center; gap: .88rem; }
 .nsc-icon { color: var(--accent); flex-shrink: 0; }
@@ -1446,7 +1446,7 @@ body.compact-mode .msg:not(.first-in-group) .msg-ava-spacer { display: none; }
 .toggle-switch input:checked + .toggle-track { background: var(--accent-dim); border-color: var(--accent); }
 .toggle-switch input:checked + .toggle-track::after { left: calc(100% - 19px); background: var(--accent); box-shadow: 0 0 6px var(--accent-glow); }
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ DMs Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ================ DMs ================ */
 .dm-user-search { display: flex; gap: .5rem; padding: .5rem .75rem; border-bottom: 1px solid var(--border2); flex-shrink: 0; max-height: 48px; box-sizing: border-box; }
 .dm-user-search input { flex: 1; background: var(--input-bg); border: 1.5px solid var(--border2); border-radius: var(--r); color: var(--text); font-family: var(--font-body); font-size: .78rem; padding: .38rem .7rem; outline: none; transition: border-color var(--tm); height: 32px; box-sizing: border-box; min-width: 0; }
 .dm-user-search input:focus { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-dim); }
@@ -1454,7 +1454,7 @@ body.compact-mode .msg:not(.first-in-group) .msg-ava-spacer { display: none; }
 .dm-search-result-item { display: flex; align-items: center; gap: .5rem; padding: .58rem .9rem; cursor: pointer; transition: background var(--t); font-size: .8rem; }
 .dm-search-result-item:hover { background: var(--nav-hover); }
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ Mobile Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ================ Mobile ================ */
 #mobile-drawer-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.6); z-index: 4000; backdrop-filter: blur(4px); animation: fadeIn .14s ease; }
 #mobile-drawer { position: fixed; left: 0; top: 0; bottom: 0; width: min(280px, 80vw); border-right: 1px solid var(--border2); z-index: 4001; display: flex; flex-direction: column; overflow: hidden; animation: drawerIn .22s cubic-bezier(.16,1,.3,1); background: var(--bg2); }
 .mobile-drawer-header { display: flex; align-items: center; justify-content: space-between; padding: .9rem 1rem; border-bottom: 1px solid var(--border2); font-size: .7rem; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-faint); }
@@ -1463,10 +1463,10 @@ body.compact-mode .msg:not(.first-in-group) .msg-ava-spacer { display: none; }
 .mobile-menu-btn { background: none; border: none; cursor: pointer; padding: .3rem; border-radius: var(--r); display: none; align-items: center; color: var(--text-muted); transition: color var(--t); }
 .mobile-menu-btn:hover { color: var(--accent); }
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ Announce badge Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ================ Announce badge ================ */
 .ctb-announce { background: rgba(255,200,80,.08); border: 1px solid rgba(255,200,80,.2); color: #ffcb50; font-size: .6rem; font-weight: 700; padding: .16rem .52rem; border-radius: var(--pill-radius); display: inline-flex; align-items: center; gap: .3rem; }
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ Animations Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ================ Animations ================ */
 @keyframes fadeUp { from { opacity: 0; transform: translateY(16px) } to { opacity: 1; transform: translateY(0) } }
 @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
 @keyframes fadeOut { from { opacity: 1 } to { opacity: 0 } }
@@ -1484,7 +1484,7 @@ body.compact-mode .msg:not(.first-in-group) .msg-ava-spacer { display: none; }
 @keyframes msgIn { from { opacity: 0; transform: translateY(6px) } to { opacity: 1; transform: translateY(0) } }
 @keyframes modalIn { from { opacity: 0; transform: translateY(-14px) scale(.96) } to { opacity: 1; transform: translateY(0) scale(1) } }
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ Responsive Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ================ Responsive ================ */
 @media (max-width: 900px) { :root { --members-w: 0px; } .members-sidebar { display: none; } }
 @media (max-width: 680px) {
   :root { --sidebar-w: 56px; }
@@ -1513,9 +1513,9 @@ body.compact-mode .msg:not(.first-in-group) .msg-ava-spacer { display: none; }
 }
 @media (prefers-reduced-motion: reduce) { *, .neb-layer { animation: none !important; transition: none !important; } .neb-layer { opacity: .65; } }
 
-/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+/* ======================================================================================================================================================================================================================================================================================================
    BODY CLASS MODIFIERS
-Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */
+====================================================================================================================================================================================================================================================================================================== */
 body.compact-mode .msg { padding-top: .13rem; padding-bottom: .13rem; }
 body.compact-mode .msg.first-in-group { padding-top: .55rem; margin-top: .12rem; }
 body.compact-mode .msg-ava-wrap { width: 38px; }
@@ -1559,9 +1559,9 @@ body.layout-bottombar.bar-labels .snav-label { display: flex; }
 .setting-dep { transition: opacity .22s ease; }
 .setting-note { font-size: .68rem; color: var(--warn); font-weight: 600; margin-top: .6rem; padding: .4rem .6rem; background: rgba(255,200,80,.08); border-radius: var(--r); border: 1px solid rgba(255,200,80,.18); }
 
-/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+/* ======================================================================================================================================================================================================================================================================================================
    LAYOUT VARIANTS
-Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */
+====================================================================================================================================================================================================================================================================================================== */
 body.layout-sidebar-right #app { flex-direction: row-reverse; }
 body.layout-sidebar-right #sidebar { border-right: none; border-left: 1px solid var(--border2); }
 body.layout-sidebar-right .snav-item.active::before { left: auto; right: 0; border-radius: 3px 0 0 3px; }
@@ -1591,9 +1591,9 @@ body.layout-bottombar .sidebar-profile { border-top: none; border-left: 1px soli
 body.layout-bottombar .sp-rank { display: none; }
 body.layout-bottombar #main { flex: 1; overflow: hidden; min-height: 0; }
 
-/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+/* ======================================================================================================================================================================================================================================================================================================
    SETTINGS UI
-Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */
+====================================================================================================================================================================================================================================================================================================== */
 .settings-section-label { font-size: .58rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1.8px; color: var(--text-faint); margin-bottom: .55rem; }
 .size-opts { display: flex; gap: 6px; flex-wrap: wrap; }
 .size-opt, .blur-opt, .sidebar-w-opt, .parallax-speed-opt, .group-time-opt {
@@ -1619,9 +1619,9 @@ body.layout-bottombar #main { flex: 1; overflow: hidden; min-height: 0; }
 .layout-opt span { font-size: .68rem; font-weight: 700; letter-spacing: .3px; }
 .layout-svg { width: 60px; height: 44px; border-radius: 5px; display: block; }
 
-/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
-   SCROLLBARS Ã¢â‚¬â€ all panels
-Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */
+/* ======================================================================================================================================================================================================================================================================================================
+   SCROLLBARS ======== all panels
+====================================================================================================================================================================================================================================================================================================== */
 .ts-list::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: var(--r); }
 .ms-list::-webkit-scrollbar { width: 3px; }
 .ms-list::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: var(--r); }
@@ -1631,15 +1631,15 @@ body.layout-bottombar #main { flex: 1; overflow: hidden; min-height: 0; }
 .dm-messages-wrap::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: var(--r); }
 /* profile scrollbar handled above */
 
-/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
-   RANK BADGES Ã¢â‚¬â€ goat icon
-Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */
+/* ======================================================================================================================================================================================================================================================================================================
+   RANK BADGES ======== goat icon
+====================================================================================================================================================================================================================================================================================================== */
 .rbadge.goat { display:inline-flex; align-items:center; gap:3px; }
 .rbadge.goat::before { content:''; display:inline-block; width:10px; height:10px; background:currentColor; -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 9V7a2 2 0 0 0-2-2h-1a2 2 0 0 0-2 2v1'/%3E%3Cpath d='M4 9V7a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v1'/%3E%3Cpath d='M8 9h8'/%3E%3Cellipse cx='12' cy='13' rx='5' ry='4'/%3E%3Cpath d='M9 17v2'/%3E%3Cpath d='M15 17v2'/%3E%3C/svg%3E") no-repeat center/contain; mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 9V7a2 2 0 0 0-2-2h-1a2 2 0 0 0-2 2v1'/%3E%3Cpath d='M4 9V7a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v1'/%3E%3Cpath d='M8 9h8'/%3E%3Cellipse cx='12' cy='13' rx='5' ry='4'/%3E%3Cpath d='M9 17v2'/%3E%3Cpath d='M15 17v2'/%3E%3C/svg%3E") no-repeat center/contain; flex-shrink:0; }
 
-/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+/* ======================================================================================================================================================================================================================================================================================================
    UNREAD BADGES
-Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */
+====================================================================================================================================================================================================================================================================================================== */
 .titem-badge {
   min-width: 18px; height: 18px; border-radius: 9px;
   background: var(--danger); color: #fff;
@@ -1651,9 +1651,9 @@ body.layout-bottombar #main { flex: 1; overflow: hidden; min-height: 0; }
 .snav-badge { background: var(--accent); }
 #bj-nav-badge { background: var(--danger) !important; }
 
-/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+/* ======================================================================================================================================================================================================================================================================================================
    THREAD DELETE BUTTON
-Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */
+====================================================================================================================================================================================================================================================================================================== */
 .titem-del {
   opacity: 0; background: none; border: none; cursor: pointer;
   color: var(--text-faint); padding: 2px 4px; border-radius: 4px;
@@ -1662,18 +1662,18 @@ body.layout-bottombar #main { flex: 1; overflow: hidden; min-height: 0; }
 .titem:hover .titem-del { opacity: 1; }
 .titem-del:hover { color: var(--danger); background: var(--danger-dim); }
 
-/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+/* ======================================================================================================================================================================================================================================================================================================
    AVATAR SVG DISPLAY
-Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */
+====================================================================================================================================================================================================================================================================================================== */
 .msg-ava, .sp-ava, .ms-ava, .adm-ava, .titem-ava, .bj-sr-ava, .bj-mp-ava, .bj-waiting-opp, .lb-ava {
   display: flex; align-items: center; justify-content: center; overflow: hidden;
 }
 .msg-ava svg, .sp-ava svg, .ms-ava svg, .adm-ava svg, .titem-ava svg, .bj-mp-ava svg { pointer-events: none; display: block; }
 .titem-ava { width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; font-weight: 800; font-size: .58rem; color: #fff; }
 
-/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+/* ======================================================================================================================================================================================================================================================================================================
    AVATAR ICON PICKER
-Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */
+====================================================================================================================================================================================================================================================================================================== */
 .ava-icon-grid { display: flex; flex-wrap: wrap; gap: 6px; margin-top: .6rem; }
 .ava-icon-opt {
   width: 40px; height: 40px; border-radius: var(--r);
@@ -1688,9 +1688,9 @@ body.layout-bottombar #main { flex: 1; overflow: hidden; min-height: 0; }
 .ava-icon-goat.selected { background: linear-gradient(135deg,rgba(245,158,11,.3),rgba(244,63,94,.3)) !important; border-color: #fde68a !important; box-shadow: 0 0 0 2px rgba(253,230,138,.3); }
 .prof-panel-sub { font-size: .65rem; color: var(--text-faint); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-top: .5rem; }
 
-/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+/* ======================================================================================================================================================================================================================================================================================================
    PROFILE PAGE (new panel style)
-Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */
+====================================================================================================================================================================================================================================================================================================== */
 .prof-page { width: 100%; max-width: 640px; margin: 0 auto; padding: 1.6rem 1.4rem 4rem; display: flex; flex-direction: column; gap: 1rem; animation: fadeUp .45s cubic-bezier(.16,1,.3,1); }
 .prof-hero-card { border-radius: var(--surface-radius); overflow: hidden; border: 1px solid var(--card-border); background: var(--card-bg); margin-bottom: 0; }
 .prof-hero-banner { height: 72px; }
@@ -1718,9 +1718,9 @@ body.layout-bottombar #main { flex: 1; overflow: hidden; min-height: 0; }
 .pst-val { font-size: 1rem; font-weight: 800; color: var(--accent); }
 .pst-key { font-size: .58rem; color: var(--text-faint); margin-top: 3px; font-weight: 600; text-transform: uppercase; letter-spacing: .8px; }
 
-/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+/* ======================================================================================================================================================================================================================================================================================================
    PROFILE MODAL
-Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */
+====================================================================================================================================================================================================================================================================================================== */
 .modal-box { max-height: min(90vh, 780px); overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; scrollbar-width: none; }
 .modal-box::-webkit-scrollbar { display: none; }
 .prof-modal { display: flex; flex-direction: column; min-width: 0; max-width: 480px; width: 100%; }
@@ -1737,9 +1737,9 @@ body.layout-bottombar #main { flex: 1; overflow: hidden; min-height: 0; }
 .prof-modal-admin { border-top: 1px solid var(--border2); padding-top: 1rem; margin-top: 1rem; }
 .prof-section-label { font-size: .58rem; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; color: var(--text-faint); margin-bottom: .35rem; }
 
-/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+/* ======================================================================================================================================================================================================================================================================================================
    BADGE CHIPS
-Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */
+====================================================================================================================================================================================================================================================================================================== */
 .badge-chip {
   display: inline-flex; align-items: center; gap: 5px;
   padding: .22rem .6rem; border-radius: 20px;
@@ -1762,9 +1762,9 @@ body.layout-bottombar #main { flex: 1; overflow: hidden; min-height: 0; }
 .prof-admin-custom-row { display: flex; gap: 8px; align-items: center; margin-top: .4rem; }
 .badge-color-picker { width: 36px; height: 36px; border: none; padding: 0; border-radius: var(--r); cursor: pointer; background: none; flex-shrink: 0; }
 
-/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+/* ======================================================================================================================================================================================================================================================================================================
    ADMIN DASHBOARD (new card style)
-Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */
+====================================================================================================================================================================================================================================================================================================== */
 .admin-tabs { border-bottom: 1px solid var(--border2); padding-bottom: .8rem; }
 .adm-tab { border: 1.5px solid transparent; background: transparent; }
 .adm-tab.active { border-color: var(--accent); background: var(--nav-active-bg); }
@@ -1787,9 +1787,9 @@ body.layout-bottombar #main { flex: 1; overflow: hidden; min-height: 0; }
 .ta-btn.ta-ghost { border-color: var(--border2); color: var(--text-muted); background: transparent; }
 .ta-btn.ta-ghost:hover { border-color: var(--border); color: var(--text); }
 
-/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
-   ADMIN Ã¢â‚¬â€ FULL OVERHAUL
-Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */
+/* ======================================================================================================================================================================================================================================================================================================
+   ADMIN ======== FULL OVERHAUL
+====================================================================================================================================================================================================================================================================================================== */
 .admin-full { max-width: 900px; }
 .admin-header-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.4rem; }
 .admin-stats-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
@@ -1816,7 +1816,7 @@ body.layout-bottombar #main { flex: 1; overflow: hidden; min-height: 0; }
 .adm-empty { display: flex; flex-direction: column; align-items: center; gap: .7rem; padding: 3rem 2rem; color: var(--text-faint); font-size: .8rem; text-align: center; }
 .adm-empty svg { opacity: .35; }
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ DB Cleanup Panel Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ================ DB Cleanup Panel ================ */
 .cleanup-panel { display: flex; flex-direction: column; gap: 1.2rem; max-width: 820px; }
 .cleanup-warning { display: flex; align-items: flex-start; gap: .7rem; padding: .9rem 1.1rem; background: rgba(255,200,80,.07); border: 1px solid rgba(255,200,80,.2); border-radius: var(--surface-radius); font-size: .78rem; color: var(--warn); line-height: 1.55; }
 .cleanup-warning svg { flex-shrink: 0; margin-top: 1px; }
@@ -1835,25 +1835,25 @@ body.layout-bottombar #main { flex: 1; overflow: hidden; min-height: 0; }
 .cleanup-log-error { color: var(--danger); }
 .cleanup-log-info { color: var(--text-muted); }
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ Members Ã¢â‚¬â€ all members shown equally (no presence) Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ================ Members ======== all members shown equally (no presence) ================ */
 .ms-item { transition: background var(--t), opacity var(--t); }
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ BJ Table Ã¢â‚¬â€œ no dealer row Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ================ BJ Table ======== no dealer row ================ */
 .bj-sides-row-full { width: 100%; max-width: 600px; margin: 0 auto; }
 .bj-dealer-reveal { display: flex; align-items: center; gap: .5rem; padding: .65rem 1rem; background: var(--card-bg); border-radius: var(--r); border: 1px solid var(--border2); font-size: .75rem; font-weight: 700; color: var(--text-muted); flex-wrap: wrap; margin: .6rem 0; }
 .bj-dealer-cards { display: flex; gap: 4px; flex-wrap: wrap; }
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ lb-name-col Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ================ lb-name-col ================ */
 .lb-name-col { display: flex; align-items: center; gap: .35rem; flex: 1; min-width: 0; }
 .lb-name { font-size: .78rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+/* ======================================================================================================================================================================================================================================================================================================
    GOATCOIN PAGE
-Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */
-/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
-   GOATCOIN SECTION Ã¢â‚¬â€ full screen
-Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */
-/* GoatCoin section Ã¢â‚¬â€ scrollable like any other section */
+====================================================================================================================================================================================================================================================================================================== */
+/* ======================================================================================================================================================================================================================================================================================================
+   GOATCOIN SECTION ======== full screen
+====================================================================================================================================================================================================================================================================================================== */
+/* GoatCoin section ======== scrollable like any other section */
 #section-goatcoin { overflow-y: auto; padding: 0; scrollbar-width: thin; }
 #section-goatcoin::-webkit-scrollbar { width: 4px; }
 #section-goatcoin::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: var(--r); }
@@ -1883,9 +1883,9 @@ body.layout-bottombar #main { flex: 1; overflow: hidden; min-height: 0; }
 @media (max-width: 860px) { .gc-main-layout { grid-template-columns: 1fr; } }
 @media (max-width: 680px) { .gc-stats-row { grid-template-columns: repeat(2, 1fr); } }
 
-/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+/* ======================================================================================================================================================================================================================================================================================================
    LEADERBOARD
-Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */
+====================================================================================================================================================================================================================================================================================================== */
 .lb-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 1rem; }
 .lb-tab { padding: .3rem .75rem; border-radius: var(--r); border: 1.5px solid var(--border2); background: var(--card-bg); cursor: pointer; font-size: .7rem; font-weight: 700; color: var(--text-muted); font-family: var(--font-body); transition: all var(--tm); }
 .lb-tab:hover { border-color: var(--accent); }
@@ -1899,9 +1899,9 @@ body.layout-bottombar #main { flex: 1; overflow: hidden; min-height: 0; }
 .lb-name { flex: 1; font-size: .78rem; font-weight: 700; }
 .lb-val { font-size: .8rem; font-weight: 800; color: var(--accent); }
 
-/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+/* ======================================================================================================================================================================================================================================================================================================
    BLACKJACK LOBBY
-Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */
+====================================================================================================================================================================================================================================================================================================== */
 .bj-lobby { max-width: 100%; margin: 0; padding-top: .25rem; }
 .bj-lobby-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: var(--surface-radius); padding: 1.6rem; margin-bottom: 1rem; }
 .bj-lobby-intro { display: flex; align-items: flex-start; gap: 1rem; margin-bottom: 1.4rem; padding-bottom: 1.2rem; border-bottom: 1px solid var(--border2); color: var(--accent); }
@@ -1988,9 +1988,9 @@ body.layout-bottombar #main { flex: 1; overflow: hidden; min-height: 0; }
 .bj-bet-inp { width: 140px; padding: .4rem .75rem; border-radius: var(--r); border: 1.5px solid var(--border2); background: var(--input-bg); color: var(--text); font-family: var(--font-body); font-size: .8rem; outline: none; transition: border-color var(--tm); display: block; margin-bottom: .9rem; }
 .bj-bet-inp:focus { border-color: var(--accent); }
 
-/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+/* ======================================================================================================================================================================================================================================================================================================
    BJ FULLSCREEN OVERLAY
-Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */
+====================================================================================================================================================================================================================================================================================================== */
 .bj-fullscreen-overlay {
   position: fixed; inset: 0; z-index: 6000;
   background: var(--bg); display: flex; flex-direction: column;
@@ -2028,9 +2028,9 @@ body.layout-bottombar #main { flex: 1; overflow: hidden; min-height: 0; }
   .bj-fullscreen-overlay .bj-sides-row { grid-template-columns: 1fr; }
 }
 
-/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+/* ======================================================================================================================================================================================================================================================================================================
    ADBLOCK BANNER
-Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */
+====================================================================================================================================================================================================================================================================================================== */
 .adblock-banner { position: fixed; bottom: 1.2rem; left: 50%; transform: translateX(-50%); z-index: 9000; min-width: 320px; max-width: 520px; animation: slideUp .3s cubic-bezier(.16,1,.3,1); }
 .adblock-banner-hide { animation: slideDown2 .3s ease forwards; }
 .adblock-banner-inner { display: flex; align-items: flex-start; gap: .75rem; background: var(--card-bg); border: 1px solid var(--warn); border-radius: var(--surface-radius); padding: .9rem 1rem; box-shadow: 0 8px 32px rgba(0,0,0,.4); }
@@ -2040,16 +2040,16 @@ body.layout-bottombar #main { flex: 1; overflow: hidden; min-height: 0; }
 .adblock-dismiss { background: none; border: none; cursor: pointer; color: var(--text-faint); padding: 0; flex-shrink: 0; transition: color var(--t); }
 .adblock-dismiss:hover { color: var(--text); }
 
-/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+/* ======================================================================================================================================================================================================================================================================================================
    THEME TRANSITION OVERLAY
-Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */
+====================================================================================================================================================================================================================================================================================================== */
 #theme-transition-overlay { position: fixed; inset: 0; z-index: 99999; pointer-events: none; background: var(--bg, #071827); clip-path: circle(0% at 50% 50%); }
 #theme-transition-overlay.tto-in { animation: ttoRevealIn 0.38s cubic-bezier(.7,0,.3,1) forwards; }
 #theme-transition-overlay.tto-out { clip-path: circle(150% at 50% 50%); animation: ttoRevealOut 0.42s cubic-bezier(.7,0,.3,1) forwards; }
 
-/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+/* ======================================================================================================================================================================================================================================================================================================
    ADDITIONAL ANIMATIONS
-Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */
+====================================================================================================================================================================================================================================================================================================== */
 @keyframes pendingPulse { 0%,100% { opacity: 1; transform: scale(1) } 50% { opacity: .65; transform: scale(.96) } }
 @keyframes ttoRevealIn  { from { clip-path: circle(0% at 50% 50%) } to { clip-path: circle(150% at 50% 50%) } }
 @keyframes ttoRevealOut { from { clip-path: circle(150% at 50% 50%) } to { clip-path: circle(0% at 50% 50%) } }
@@ -2059,9 +2059,9 @@ body.layout-bottombar #main { flex: 1; overflow: hidden; min-height: 0; }
 @keyframes slideUp   { from { opacity:0; transform:translateX(-50%) translateY(20px) } to { opacity:1; transform:translateX(-50%) translateY(0) } }
 @keyframes slideDown2 { from { opacity:1; transform:translateX(-50%) translateY(0) } to { opacity:0; transform:translateX(-50%) translateY(20px) } }
 
-/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+/* ======================================================================================================================================================================================================================================================================================================
    RESPONSIVE ADDITIONS
-Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */
+====================================================================================================================================================================================================================================================================================================== */
 @media (max-width: 768px) {
   .prof-modal { min-width: unset; width: 100%; }
   .modal-box { max-height: 92dvh; border-radius: var(--r) var(--r) 0 0; overflow-x: hidden; scrollbar-width: none; }
@@ -2078,18 +2078,18 @@ body.layout-bottombar #main { flex: 1; overflow: hidden; min-height: 0; }
   .theme-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
-/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+/* ======================================================================================================================================================================================================================================================================================================
    DM MESSAGE ACTIONS (edit / delete)
-Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */
+====================================================================================================================================================================================================================================================================================================== */
 .dm-msg { display: flex; gap: .75rem; padding: .26rem 1.1rem; position: relative; transition: background var(--t); }
 .dm-msg:hover { background: var(--msg-hover); }
 .dm-msg:hover .msg-actions { opacity: 1; pointer-events: all; }
 .dm-msg-new { animation: msgIn .22s cubic-bezier(.16,1,.3,1); }
 .dm-msg.first-in-group { padding-top: .85rem; margin-top: .25rem; }
 
-/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
-   AVATAR ICON GRID Ã¢â‚¬â€ wider variety
-Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */
+/* ======================================================================================================================================================================================================================================================================================================
+   AVATAR ICON GRID ======== wider variety
+====================================================================================================================================================================================================================================================================================================== */
 .ava-icon-grid { display: flex; flex-wrap: wrap; gap: 6px; margin-top: .6rem; }
 .ava-icon-opt {
   width: 38px; height: 38px; border-radius: var(--r);
@@ -2102,7 +2102,7 @@ body.layout-bottombar #main { flex: 1; overflow: hidden; min-height: 0; }
 .ava-icon-opt:hover { border-color: var(--accent); color: var(--accent); background: var(--nav-active-bg); transform: scale(1.08); }
 .ava-icon-opt.selected { border-color: var(--accent); color: var(--accent); background: var(--nav-active-bg); box-shadow: 0 0 0 2px var(--accent-dim); }
 
-/* Goat icon Ã¢â‚¬â€ golden gradient */
+/* Goat icon ======== golden gradient */
 .ava-icon-goat {
   background: linear-gradient(135deg, rgba(245,158,11,.18), rgba(244,63,94,.12)) !important;
   border-color: rgba(253,230,138,.5) !important;
@@ -2130,7 +2130,7 @@ body.layout-bottombar #main { flex: 1; overflow: hidden; min-height: 0; }
   box-shadow: 0 0 0 2px rgba(253,230,138,.4), 0 0 14px rgba(253,230,138,.2);
 }
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ Goat rank badge icon Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ================ Goat rank badge icon ================ */
 .rbadge.goat {
   background: linear-gradient(90deg, rgba(245,158,11,.22), rgba(244,63,94,.18));
   color: #fde68a;
@@ -2144,9 +2144,9 @@ body.layout-bottombar #main { flex: 1; overflow: hidden; min-height: 0; }
   mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 9V7a2 2 0 0 0-2-2h-1a2 2 0 0 0-2 2v1'/%3E%3Cpath d='M4 9V7a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v1'/%3E%3Cpath d='M8 9h8'/%3E%3Cellipse cx='12' cy='13' rx='5' ry='4'/%3E%3Cpath d='M9 17v2'/%3E%3Cpath d='M15 17v2'/%3E%3C/svg%3E") no-repeat center/contain;
 }
 
-/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+/* ======================================================================================================================================================================================================================================================================================================
    GENERAL POLISH
-Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */
+====================================================================================================================================================================================================================================================================================================== */
 
 /* Smoother message hover transition */
 .msg { transition: background .1s ease; }
@@ -2211,7 +2211,7 @@ body.layout-bottombar #main { flex: 1; overflow: hidden; min-height: 0; }
 /* Smooth section transitions */
 .section.active { animation: sectionIn .28s cubic-bezier(.16,1,.3,1); }
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ BJ mystery challenge sender Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ================ BJ mystery challenge sender ================ */
 .bj-mystery-ava {
   width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
@@ -2223,9 +2223,9 @@ body.layout-bottombar #main { flex: 1; overflow: hidden; min-height: 0; }
   color: var(--text-faint); font-style: italic;
 }
 
-/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
-   SETTINGS PAGE Ã¢â‚¬â€ polished overhaul
-Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */
+/* ======================================================================================================================================================================================================================================================================================================
+   SETTINGS PAGE ======== polished overhaul
+====================================================================================================================================================================================================================================================================================================== */
 
 /* Section scroll */
 #section-settings { overflow-y: auto; }
@@ -2236,7 +2236,7 @@ body.layout-bottombar #main { flex: 1; overflow: hidden; min-height: 0; }
 #section-settings .pg-title { font-size: 1.55rem; margin-bottom: .15rem; }
 #section-settings .pg-sub  { margin-bottom: 1.4rem; }
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ Tab bar Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ================ Tab bar ================ */
 .settings-tabs {
   display: flex; gap: 4px;
   padding: 4px; margin-bottom: 2rem;
@@ -2263,7 +2263,7 @@ body.layout-bottombar #main { flex: 1; overflow: hidden; min-height: 0; }
 .settings-panel { display: none; }
 .settings-panel.active { display: block; animation: fadeUpSm .22s cubic-bezier(.16,1,.3,1); }
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ Theme grid Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ================ Theme grid ================ */
 .settings-section-label {
   font-size: .56rem; font-weight: 800; text-transform: uppercase;
   letter-spacing: 2.2px; color: var(--text-faint);
@@ -2294,7 +2294,7 @@ body.layout-bottombar #main { flex: 1; overflow: hidden; min-height: 0; }
   transform: translateY(-2px);
 }
 .theme-card.selected::after {
-  content: 'Ã¢Å“â€œ';
+  content: '\2713';
   position: absolute; top: 8px; right: 8px;
   width: 20px; height: 20px; border-radius: 50%;
   background: var(--accent); color: var(--bg);
@@ -2311,7 +2311,7 @@ body.layout-bottombar #main { flex: 1; overflow: hidden; min-height: 0; }
 .theme-name { font-size: .78rem; font-weight: 800; }
 .theme-desc { font-size: .6rem; color: var(--text-faint); line-height: 1.4; }
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ Display / Alerts setting cards Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ================ Display / Alerts setting cards ================ */
 .notif-section-card {
   border-radius: var(--surface-radius);
   padding: 1.1rem 1.3rem;
@@ -2338,7 +2338,7 @@ body.layout-bottombar #main { flex: 1; overflow: hidden; min-height: 0; }
 }
 .notif-channel-row:hover { border-color: var(--border); }
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ Display panel: picker groups Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ================ Display panel: picker groups ================ */
 .display-group {
   background: var(--card-bg); border: 1px solid var(--card-border);
   border-radius: var(--surface-radius); padding: 1.2rem 1.4rem;
@@ -2402,9 +2402,9 @@ body.layout-bottombar #main { flex: 1; overflow: hidden; min-height: 0; }
   .stab { flex: 1; justify-content: center; padding: .42rem .6rem; font-size: .7rem; }
 }
 
-/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+/* ======================================================================================================================================================================================================================================================================================================
    AUTH SPLIT LAYOUT
-Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */
+====================================================================================================================================================================================================================================================================================================== */
 #auth-screen {
   position: fixed; inset: 0; z-index: 9999;
   display: flex; align-items: stretch; overflow-y: auto;
@@ -2414,7 +2414,7 @@ body.layout-bottombar #main { flex: 1; overflow: hidden; min-height: 0; }
   animation: fadeIn .5s ease;
 }
 
-/* Brand panel Ã¢â‚¬â€ left */
+/* Brand panel ======== left */
 .auth-brand {
   flex: 0 0 42%; display: flex; align-items: center; justify-content: center;
   padding: 3rem 3.5rem; position: relative; overflow: hidden;
@@ -2447,7 +2447,7 @@ body.layout-bottombar #main { flex: 1; overflow: hidden; min-height: 0; }
 .auth-brand-dots span:first-child { opacity: 1; }
 .auth-brand-dots span:nth-child(2) { opacity: .6; }
 
-/* Form panel Ã¢â‚¬â€ right */
+/* Form panel ======== right */
 .auth-form-panel {
   flex: 1; display: flex; align-items: center; justify-content: center;
   padding: 2.5rem 2rem; background: var(--bg); overflow-y: auto;
@@ -2511,12 +2511,12 @@ body.layout-bottombar #main { flex: 1; overflow: hidden; min-height: 0; }
   .auth-form-panel { flex: 1; padding: 1.5rem 1.2rem 2.5rem; }
   .auth-fields-row { grid-template-columns: 1fr; }
 }
-/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+/* ======================================================================================================================================================================================================================================================================================================
    LAYOUT.CSS ADDITIONS
    Paste these at the bottom of layout.css
-Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */
+====================================================================================================================================================================================================================================================================================================== */
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ Leaderboard polished Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ================ Leaderboard polished ================ */
 .lb-rank { display:flex; align-items:center; justify-content:center; min-width:26px; }
 .lb-rank-num { font-size:.7rem; font-weight:800; color:var(--text-faint); }
 .lb-name-col { display:flex; flex-direction:column; gap:1px; flex:1; min-width:0; }
@@ -2527,45 +2527,45 @@ body.layout-bottombar #main { flex: 1; overflow: hidden; min-height: 0; }
 .lb-tab.active { border-color:var(--accent); color:var(--accent); background:var(--nav-active-bg); }
 .lb-tab svg { flex-shrink:0; }
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ Members Ã¢â‚¬â€ clean style (no presence) Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ================ Members ======== clean style (no presence) ================ */
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ Wipe thread button polish Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ================ Wipe thread button polish ================ */
 .wipe-thread-btn { display:flex; align-items:center; gap:.3rem; font-size:.62rem; padding:.28rem .62rem; }
 .wipe-thread-btn svg { flex-shrink:0; }
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ Admin info block Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ================ Admin info block ================ */
 .adm-info { display:flex; flex-direction:column; gap:1px; flex:1; min-width:0; }
 .adm-meta { font-size:.62rem; color:var(--text-faint); }
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ Leaderboard row name column Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ================ Leaderboard row name column ================ */
 .lb-name-col .rbadge { margin-top:1px; }
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ DM typing bar Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ================ DM typing bar ================ */
 #dm-typing-bar { height:22px; flex-shrink:0; padding:0 1.1rem; display:flex; align-items:center; gap:.4rem; font-size:.65rem; color:var(--text-muted); }
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ Auth pass eye icon Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ================ Auth pass eye icon ================ */
 .auth-pass-toggle svg { width:15px; height:15px; }
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ Battery SVG in stats Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ================ Battery SVG in stats ================ */
 #battery-wrap svg { flex-shrink:0; color:var(--text-muted); }
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ General polish: smoother lb rows Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ================ General polish: smoother lb rows ================ */
 .lb-row { transition:border-color var(--t), background var(--t); }
 .lb-row:hover { border-color:var(--border); }
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ Admin row: overflow fix for long emails Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ================ Admin row: overflow fix for long emails ================ */
 .adm-row { overflow:hidden; }
 .adm-email { max-width:160px; font-size:.62rem; color:var(--text-faint); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex-shrink:0; }
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ GoatCoin tab panel: make lb-col always fill Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ================ GoatCoin tab panel: make lb-col always fill ================ */
 .gc-lb-col { display:flex; flex-direction:column; }
 #gc-leaderboard-content { flex:1; }
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ Presence: smooth opacity on render Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ================ Presence: smooth opacity on render ================ */
 .ms-item { transition:background var(--t), opacity var(--t); }
-/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
-   PRESENCE ONLINE INDICATOR Ã¢â‚¬â€ IMPROVED
-Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */
+/* ======================================================================================================================================================================================================================================================================================================
+   PRESENCE ONLINE INDICATOR ======== IMPROVED
+====================================================================================================================================================================================================================================================================================================== */
 .ms-ava-online { position: relative; }
 .ms-ava-online::after {
   content: '';
@@ -2584,9 +2584,9 @@ body.layout-bottombar #main { flex: 1; overflow: hidden; min-height: 0; }
 /* Make members sidebar slightly wider to accommodate badges */
 @media (min-width: 900px) { :root { --members-w: 208px; } }
 
-/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
-   ADMIN Ã¢â‚¬â€ POLISH ADDITIONS
-Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */
+/* ======================================================================================================================================================================================================================================================================================================
+   ADMIN ======== POLISH ADDITIONS
+====================================================================================================================================================================================================================================================================================================== */
 /* Section admin scrollable */
 #section-admin { overflow-y: auto; padding: 0; }
 #section-admin.active { display: flex; flex-direction: column; }
@@ -2608,15 +2608,15 @@ body.layout-bottombar #main { flex: 1; overflow: hidden; min-height: 0; }
   .cleanup-actions { grid-template-columns: 1fr; }
   .cleanup-action-card { border-right: none; }
 }
-/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
-   LAYOUT.CSS ADDITIONS Ã¢â‚¬â€ paste at bottom
+/* ======================================================================================================================================================================================================================================================================================================
+   LAYOUT.CSS ADDITIONS ======== paste at bottom
    - Goat Console polish
    - Better goat rank badge
    - SVG reaction chips
    - Presence fix
-Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */
+====================================================================================================================================================================================================================================================================================================== */
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ GOAT CONSOLE (Admin Panel) Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ================ GOAT CONSOLE (Admin Panel) ================ */
 #section-admin {
   background: var(--bg);
 }
@@ -2645,7 +2645,7 @@ body.layout-bottombar #main { flex: 1; overflow: hidden; min-height: 0; }
 .cleanup-log-error { color: #f87171; }
 .cleanup-log-info { color: #94a3b8; }
 
-/* Admin stat pills Ã¢â‚¬â€ better */
+/* Admin stat pills ======== better */
 .admin-stat-pill {
   border-radius: var(--pill-radius);
   padding: .32rem .9rem;
@@ -2666,7 +2666,7 @@ body.layout-bottombar #main { flex: 1; overflow: hidden; min-height: 0; }
   font-variant-numeric: tabular-nums;
 }
 
-/* Admin tabs Ã¢â‚¬â€ cleaner */
+/* Admin tabs ======== cleaner */
 .adm-tab {
   font-size: .73rem;
   font-weight: 700;
@@ -2677,7 +2677,7 @@ body.layout-bottombar #main { flex: 1; overflow: hidden; min-height: 0; }
   padding: .44rem .95rem;
 }
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ GOAT RANK BADGE Ã¢â‚¬â€ polished Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ================ GOAT RANK BADGE ======== polished ================ */
 .rbadge.goat {
   background: linear-gradient(90deg, rgba(245,158,11,.2), rgba(244,63,94,.15));
   color: #fde68a;
@@ -2698,7 +2698,7 @@ body.layout-bottombar #main { flex: 1; overflow: hidden; min-height: 0; }
   display: inline-block;
 }
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ SVG REACTION CHIPS Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ================ SVG REACTION CHIPS ================ */
 .rchip {
   display: inline-flex;
   align-items: center;
@@ -2756,12 +2756,12 @@ body.layout-bottombar #main { flex: 1; overflow: hidden; min-height: 0; }
   transform: scale(1.12);
 }
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ ONLINE PRESENCE Ã¢â‚¬â€ removed to save quota Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ================ ONLINE PRESENCE ======== removed to save quota ================ */
 .ms-item {
   position: relative;
 }
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ MEMBERS SIDEBAR Ã¢â‚¬â€ clean, no presence Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ================ MEMBERS SIDEBAR ======== clean, no presence ================ */
 .ms-section-label {
   font-size: .53rem;
   font-weight: 800;
@@ -2781,7 +2781,7 @@ body.layout-bottombar #main { flex: 1; overflow: hidden; min-height: 0; }
   margin-left: .2rem;
 }
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ BJ 1v1 Ã¢â‚¬â€ cleaner single-opponent layout Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ================ BJ 1v1 ======== cleaner single-opponent layout ================ */
 .bj-sides-row-full {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -2806,14 +2806,14 @@ body.layout-bottombar #main { flex: 1; overflow: hidden; min-height: 0; }
   box-shadow: 0 0 0 1px var(--accent-dim);
 }
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ GOAT CONSOLE SECTION Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ================ GOAT CONSOLE SECTION ================ */
 #section-admin .pg-title {
   display: flex;
   align-items: center;
   gap: .5rem;
 }
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ BJ LOBBY IMPROVEMENTS Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ================ BJ LOBBY IMPROVEMENTS ================ */
 .bj-lobby-title {
   font-size: 1.05rem;
   font-weight: 800;
@@ -2826,13 +2826,13 @@ body.layout-bottombar #main { flex: 1; overflow: hidden; min-height: 0; }
   line-height: 1.65;
 }
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ GOAT RANK ICON Ã¢â‚¬â€ sidebar Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ================ GOAT RANK ICON ======== sidebar ================ */
 .sp-rank[style*="goat"], .rbadge.goat {
   text-shadow: 0 0 8px rgba(253,230,138,.25);
 }
-/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
-   BJ TABLE Ã¢â‚¬â€ PLAYER-ONLY LAYOUT
-Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */
+/* ======================================================================================================================================================================================================================================================================================================
+   BJ TABLE ======== PLAYER-ONLY LAYOUT
+====================================================================================================================================================================================================================================================================================================== */
 .bj-sides-row-full {
   display: flex; gap: 1rem; width: 100%;
   margin: 0 auto 1rem;
@@ -2849,9 +2849,9 @@ body.layout-bottombar #main { flex: 1; overflow: hidden; min-height: 0; }
 }
 .bj-dealer-cards { display: flex; gap: 4px; flex-wrap: wrap; }
 
-/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+/* ======================================================================================================================================================================================================================================================================================================
    MISC BADGE/MESSAGE FIXES
-Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */
+====================================================================================================================================================================================================================================================================================================== */
 /* Prevent badge row from breaking message header layout */
 .msg-badge-row {
   display: inline-flex; flex-wrap: nowrap; gap: 2px;
@@ -2864,14 +2864,14 @@ body.layout-bottombar #main { flex: 1; overflow: hidden; min-height: 0; }
 }
 .msg-badge-row .badge-svg { width: 8px; height: 8px; }
 
-/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
-   VISITS COUNTER Ã¢â‚¬â€ RTDB TRANSITION
-Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */
+/* ======================================================================================================================================================================================================================================================================================================
+   VISITS COUNTER ======== RTDB TRANSITION
+====================================================================================================================================================================================================================================================================================================== */
 #visits-count { transition: all .35s ease; }
 
-/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+/* ======================================================================================================================================================================================================================================================================================================
    ADMIN FULL-PAGE LAYOUT (full-screen like GC)
-Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */
+====================================================================================================================================================================================================================================================================================================== */
 #section-admin { overflow-y: auto; padding: 0; scrollbar-width: thin; }
 #section-admin::-webkit-scrollbar { width: 4px; }
 #section-admin::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: var(--r); }
@@ -2914,9 +2914,9 @@ body.layout-bottombar #main { flex: 1; overflow: hidden; min-height: 0; }
 .adm-panel { display: none; }
 .adm-panel.active { display: block; animation: sectionIn .2s ease; }
 
-/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+/* ======================================================================================================================================================================================================================================================================================================
    GOATCOIN EXTRA STATS
-Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */
+====================================================================================================================================================================================================================================================================================================== */
 .gc-stats-row { grid-template-columns: repeat(4, 1fr); }
 @media (max-width: 860px) { .gc-stats-row { grid-template-columns: repeat(2, 1fr); } }
 .gc-total-badge {
@@ -2928,9 +2928,9 @@ body.layout-bottombar #main { flex: 1; overflow: hidden; min-height: 0; }
 .gc-total-label { color: var(--text-faint); }
 .gc-total-val { font-weight: 800; color: var(--text); }
 
-/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+/* ======================================================================================================================================================================================================================================================================================================
    SHOP PAGE
-Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */
+====================================================================================================================================================================================================================================================================================================== */
 #section-shop { overflow-y: auto; padding: 0; scrollbar-width: thin; }
 #section-shop::-webkit-scrollbar { width: 4px; }
 #section-shop::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: var(--r); }
@@ -3014,9 +3014,9 @@ body.layout-bottombar #main { flex: 1; overflow: hidden; min-height: 0; }
 .shop-unequip-btn:hover { border-color: var(--danger); color: var(--danger); }
 .btn-disabled { opacity: .45; cursor: not-allowed; }
 
-/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+/* ======================================================================================================================================================================================================================================================================================================
    BADGE + RANK ICON POLISH
-Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */
+====================================================================================================================================================================================================================================================================================================== */
 .badge-icon { display: inline-flex; align-items: center; justify-content: center; width: 12px; height: 12px; flex-shrink: 0; }
 .badge-svg { width: 100%; height: 100%; }
 .badge-chip { display: inline-flex; align-items: center; gap: 3px; }
@@ -3039,9 +3039,9 @@ body.layout-bottombar #main { flex: 1; overflow: hidden; min-height: 0; }
 .lb-medal.silver { background:rgba(148,163,184,.15);color:#94a3b8;border:1px solid rgba(148,163,184,.25); }
 .lb-medal.bronze { background:rgba(180,83,9,.18);color:#c2874c;border:1px solid rgba(180,83,9,.28); }
 
-/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+/* ======================================================================================================================================================================================================================================================================================================
    CREDITS PAGE
-Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */
+====================================================================================================================================================================================================================================================================================================== */
 .credits-page { max-width: 640px; margin: 0 auto; padding: 1rem 0 4rem; animation: fadeUp .4s cubic-bezier(.16,1,.3,1); }
 .credits-header { text-align: center; margin-bottom: 2rem; }
 .credits-header h2 { font-family: var(--font-display); font-size: 1.6rem; font-weight: 900; margin-bottom: .3rem; }
@@ -3077,9 +3077,9 @@ body.layout-bottombar #main { flex: 1; overflow: hidden; min-height: 0; }
 .credits-divider { height: 1px; background: var(--border2); margin: 1.5rem 0; }
 .credits-footer { text-align: center; font-size: .6rem; color: var(--text-faint); letter-spacing: 1.5px; text-transform: uppercase; margin-top: 2rem; }
 
-/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+/* ======================================================================================================================================================================================================================================================================================================
    HOME SHORTCUTS / SESSION TIMER
-Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */
+====================================================================================================================================================================================================================================================================================================== */
 .home-shortcuts {
   margin-top: 1.2rem;
   font-size: .58rem;
@@ -3103,9 +3103,9 @@ body.layout-bottombar #main { flex: 1; overflow: hidden; min-height: 0; }
   box-shadow: 0 1px 0 var(--border2);
 }
 
-/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+/* ======================================================================================================================================================================================================================================================================================================
    COMMAND PALETTE (Ctrl+K)
-Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */
+====================================================================================================================================================================================================================================================================================================== */
 #cmd-palette {
   position: fixed; inset: 0; z-index: 9500;
   display: flex; align-items: flex-start; justify-content: center;
@@ -3178,17 +3178,17 @@ body.layout-bottombar #main { flex: 1; overflow: hidden; min-height: 0; }
   font-size: .8rem; color: var(--text-faint);
 }
 
-/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+/* ======================================================================================================================================================================================================================================================================================================
    DM SCROLL-TO-BOTTOM BUTTON
-Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */
+====================================================================================================================================================================================================================================================================================================== */
 .dm-scroll-btn {
   position: absolute; bottom: 80px; right: 14px;
 }
 #section-dms .chat-area { position: relative; }
 
-/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+/* ======================================================================================================================================================================================================================================================================================================
    IMPROVED HOME TITLE GRADIENT
-Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */
+====================================================================================================================================================================================================================================================================================================== */
 .home-title {
   background: linear-gradient(135deg, var(--text) 0%, var(--accent) 50%, var(--text) 100%);
   background-size: 200% 200%;
@@ -3202,9 +3202,9 @@ body.layout-bottombar #main { flex: 1; overflow: hidden; min-height: 0; }
   50% { background-position: 100% 50%; }
 }
 
-/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+/* ======================================================================================================================================================================================================================================================================================================
    BETTER HOVER MICRO-INTERACTIONS
-Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */
+====================================================================================================================================================================================================================================================================================================== */
 .home-card {
   position: relative; overflow: hidden;
 }
@@ -3249,9 +3249,9 @@ body.layout-bottombar #main { flex: 1; overflow: hidden; min-height: 0; }
 }
 .msg:hover::before { opacity: .4; }
 
-/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+/* ======================================================================================================================================================================================================================================================================================================
    IMPROVED FOCUS STATES
-Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */
+====================================================================================================================================================================================================================================================================================================== */
 .btn:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
@@ -3264,9 +3264,9 @@ body.layout-bottombar #main { flex: 1; overflow: hidden; min-height: 0; }
   outline-offset: -2px;
 }
 
-/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+/* ======================================================================================================================================================================================================================================================================================================
    SMOOTHER SKELETON LOADING
-Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */
+====================================================================================================================================================================================================================================================================================================== */
 .skel-pulse {
   background: linear-gradient(90deg, var(--card-bg) 25%, var(--border2) 50%, var(--card-bg) 75%);
   background-size: 200% 100%;
@@ -3277,25 +3277,25 @@ body.layout-bottombar #main { flex: 1; overflow: hidden; min-height: 0; }
   to { background-position: -200% 0; }
 }
 
-/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+/* ======================================================================================================================================================================================================================================================================================================
    CONNECTION STATUS INDICATOR
-Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */
+====================================================================================================================================================================================================================================================================================================== */
 .logo-pulse {
   background: var(--success, #4ade80);
   box-shadow: 0 0 6px var(--success, #4ade80);
 }
 
-/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+/* ======================================================================================================================================================================================================================================================================================================
    GLASSMORPHISM POLISH ON CARDS
-Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */
+====================================================================================================================================================================================================================================================================================================== */
 .home-card {
   backdrop-filter: blur(calc(var(--ui-blur, 20px) * 0.5));
   -webkit-backdrop-filter: blur(calc(var(--ui-blur, 20px) * 0.5));
 }
 
-/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+/* ======================================================================================================================================================================================================================================================================================================
    IMPROVED EMPTY STATE ILLUSTRATIONS
-Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */
+====================================================================================================================================================================================================================================================================================================== */
 .chat-no-select {
   transition: opacity .3s ease;
 }
@@ -3307,9 +3307,9 @@ body.layout-bottombar #main { flex: 1; overflow: hidden; min-height: 0; }
   50% { transform: translateY(-8px); }
 }
 
-/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+/* ======================================================================================================================================================================================================================================================================================================
    BETTER MOBILE TOUCH TARGETS
-Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */
+====================================================================================================================================================================================================================================================================================================== */
 @media (max-width: 680px) {
   .snav-item { min-height: 44px; }
   .titem { min-height: 42px; }
@@ -3318,9 +3318,9 @@ body.layout-bottombar #main { flex: 1; overflow: hidden; min-height: 0; }
   .cmd-box { max-width: calc(100vw - 24px); margin: 0 12px; }
 }
 
-/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+/* ======================================================================================================================================================================================================================================================================================================
    SMOOTH PAGE TRANSITIONS
-Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */
+====================================================================================================================================================================================================================================================================================================== */
 .section.active {
   animation: sectionFadeScale .28s cubic-bezier(.16,1,.3,1);
 }
@@ -3328,9 +3328,9 @@ body.layout-bottombar #main { flex: 1; overflow: hidden; min-height: 0; }
   from { opacity: 0; transform: scale(.995) translateY(4px); }
   to { opacity: 1; transform: scale(1) translateY(0); }
 }
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+/* =========================================================================================================================================================
    GOATCOIN HERO REDESIGN
-â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+========================================================================================================================================================= */
 .gc-hero-banner {
   position: relative;
   border-radius: var(--surface-radius);
@@ -3437,9 +3437,9 @@ body.layout-bottombar #main { flex: 1; overflow: hidden; min-height: 0; }
   .gc-hero-bal-amount { font-size: 1.2rem; }
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+/* =========================================================================================================================================================
    MEMBERS SIDEBAR - MS-RANK
-â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+========================================================================================================================================================= */
 .ms-rank {
   font-size: .55rem;
   font-weight: 700;
@@ -3452,9 +3452,9 @@ body.layout-bottombar #main { flex: 1; overflow: hidden; min-height: 0; }
   min-width: 0; flex: 1;
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+/* =========================================================================================================================================================
    ADMIN PANEL EMPTY STATE
-â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+========================================================================================================================================================= */
 .adm-empty {
   text-align: center; padding: 2rem 1rem;
   color: var(--text-faint); font-size: .82rem;
@@ -3465,12 +3465,12 @@ body.layout-bottombar #main { flex: 1; overflow: hidden; min-height: 0; }
 .adm-name { font-size: .82rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .adm-email { font-size: .68rem; color: var(--text-faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .admin-stat-pill.has-count { border-color: var(--accent); color: var(--accent); }
-/* ════════════════════════════════════════════════════════════════
-   NEBULA V2 — REDESIGN ADDITIONS (Admin, Settings, Members, GoatCoin)
+/* ================================================================
+   NEBULA V2 = REDESIGN ADDITIONS (Admin, Settings, Members, GoatCoin)
    Appended by genspark_ai_developer
-════════════════════════════════════════════════════════════════ */
+================================================================ */
 
-/* ── Members Sidebar Redesign ── */
+/* -- Members Sidebar Redesign -- */
 .ms-header {
   padding: .7rem .85rem .55rem;
   border-bottom: 1px solid var(--border2);
@@ -3544,7 +3544,7 @@ body.layout-bottombar #main { flex: 1; overflow: hidden; min-height: 0; }
 }
 .ms-error { padding: .75rem; font-size: .72rem; color: var(--danger); }
 
-/* ── Admin Page Full Redesign ── */
+/* -- Admin Page Full Redesign -- */
 .admin-page {
   display: flex;
   flex-direction: column;
@@ -3809,7 +3809,7 @@ body.layout-bottombar #main { flex: 1; overflow: hidden; min-height: 0; }
 .adm-btn-rank { color: var(--accent); border-color: rgba(var(--accent-rgb, 79,201,234),.25); }
 .adm-btn-rank:hover { background: rgba(79,201,234,.1); border-color: var(--accent); color: var(--accent); }
 
-/* ── DB Cleanup Redesign ── */
+/* -- DB Cleanup Redesign -- */
 .cleanup-wrap {
   display: grid;
   /* allow left column to shrink properly and give more room to the log */
@@ -3971,7 +3971,7 @@ body.layout-bottombar #main { flex: 1; overflow: hidden; min-height: 0; }
 .cleanup-log-error span:last-child { color: #f87171; }
 .cleanup-log-warn span:last-child { color: #fbbf24; }
 
-/* ── Settings Page Redesign ── */
+/* -- Settings Page Redesign -- */
 #section-settings {
   overflow-y: auto;
   overflow-x: hidden;
@@ -4087,7 +4087,7 @@ body.layout-bottombar #main { flex: 1; overflow: hidden; min-height: 0; }
 .setting-hidden { display: none !important; }
 .setting-grayed { opacity: .45; pointer-events: none; }
 
-/* GoatCoin redesign — body section below header */
+/* GoatCoin redesign = body section below header */
 .gc-body-section {
   display: grid;
   grid-template-columns: 1fr 280px;
@@ -4211,7 +4211,7 @@ body.layout-bottombar #main { flex: 1; overflow: hidden; min-height: 0; }
 }
 
 /* ======================================================================
-   NEBULA V2 — ANIMATION & VISUAL POLISH OVERHAUL
+   NEBULA V2 = ANIMATION & VISUAL POLISH OVERHAUL
    Comprehensive bugfix: smoother animations, GPU acceleration,
    duplicate rule resolution, better micro-interactions.
 ====================================================================== */
@@ -4589,12 +4589,12 @@ body, #sidebar, #main, .chat-topbar, .thread-sidebar, .members-sidebar {
   transition: background-color .3s var(--ease-in-out-smooth), border-color .3s var(--ease-in-out-smooth), color .3s var(--ease-in-out-smooth);
 }
 
-/* ═══════════════════════════════════════════════
-   COMPREHENSIVE REBASE — Settings, Admin,
+/* ===============================================
+   COMPREHENSIVE REBASE = Settings, Admin,
    Notifications, DB Cleanup, Uniformity
-═══════════════════════════════════════════════ */
+=============================================== */
 
-/* ── Settings Page Rebase ── */
+/* -- Settings Page Rebase -- */
 .settings-redesign-wrap {
   max-width: 860px;
   margin: 0 auto;
@@ -4715,7 +4715,7 @@ body, #sidebar, #main, .chat-topbar, .thread-sidebar, .members-sidebar {
 .settings-row-desc { font-size: .67rem; color: var(--text-muted); line-height: 1.5; }
 .settings-row-control { flex-shrink: 0; }
 
-/* ── Notifications/Toasts Rebase ── */
+/* -- Notifications/Toasts Rebase -- */
 #notif-stack {
   position: fixed;
   bottom: 22px;
@@ -4766,7 +4766,7 @@ body, #sidebar, #main, .chat-topbar, .thread-sidebar, .members-sidebar {
 .notif.warning .notif-dot { background: var(--warn); box-shadow: 0 0 8px rgba(255,224,122,.4); }
 .nmsg { font-size: .76rem; line-height: 1.5; flex: 1; color: var(--text); font-weight: 500; }
 
-/* ── Admin Page Rebase ── */
+/* -- Admin Page Rebase -- */
 .admin-page {
   max-width: 960px;
   margin: 0 auto;
@@ -4956,7 +4956,7 @@ body, #sidebar, #main, .chat-topbar, .thread-sidebar, .members-sidebar {
 .adm-row-banned { opacity: .75; }
 .adm-row-banned-label { color: var(--danger); font-weight: 700; font-size: .6rem; text-transform: uppercase; letter-spacing: .5px; }
 
-/* ── DB Cleanup Rebase ── */
+/* -- DB Cleanup Rebase -- */
 .cleanup-wrap {
   display: flex;
   flex-direction: column;
@@ -5128,7 +5128,7 @@ body, #sidebar, #main, .chat-topbar, .thread-sidebar, .members-sidebar {
 .cleanup-log-warn { color: var(--warn); }
 .cleanup-log-info { color: var(--text-muted); }
 
-/* ── Theme Transition Overlay ── */
+/* -- Theme Transition Overlay -- */
 #theme-transition-overlay {
   position: fixed;
   inset: 0;
@@ -5146,7 +5146,7 @@ body, #sidebar, #main, .chat-topbar, .thread-sidebar, .members-sidebar {
 @keyframes ttoIn { from { opacity: 0 } to { opacity: 1 } }
 @keyframes ttoOut { from { opacity: 1 } to { opacity: 0 } }
 
-/* ── Home Shortcuts ── */
+/* -- Home Shortcuts -- */
 .home-shortcuts {
   font-size: .56rem;
   color: var(--text-faint);
@@ -5165,7 +5165,7 @@ body, #sidebar, #main, .chat-topbar, .thread-sidebar, .members-sidebar {
   color: var(--text-muted);
 }
 
-/* ── Auth Split Layout ── */
+/* -- Auth Split Layout -- */
 .auth-split { display: flex; height: 100vh; width: 100%; }
 .auth-brand { flex: 1; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
 .auth-brand-inner { text-align: center; z-index: 1; padding: 2rem; }
@@ -5187,7 +5187,7 @@ body, #sidebar, #main, .chat-topbar, .thread-sidebar, .members-sidebar {
 .auth-pass-toggle:hover { color: var(--text); }
 .auth-fields-row { display: grid; grid-template-columns: 1fr 1fr; gap: .9rem; }
 
-/* ── Members sidebar header redesign ── */
+/* -- Members sidebar header redesign -- */
 .ms-header-title { font-size: .57rem; font-weight: 800; letter-spacing: 1.8px; text-transform: uppercase; color: var(--text-faint); }
 .ms-channel-info { display: flex; align-items: center; gap: .3rem; font-size: .6rem; color: var(--text-faint); margin-top: .15rem; }
 .ms-channel-hash { color: var(--accent); opacity: .6; }
@@ -5203,7 +5203,7 @@ body, #sidebar, #main, .chat-topbar, .thread-sidebar, .members-sidebar {
 .ms-loading-dot:nth-child(3) { animation-delay: .4s; }
 .ms-error { color: var(--danger); font-size: .72rem; text-align: center; padding: 1rem 0; }
 
-/* ── Command Palette ── */
+/* -- Command Palette -- */
 .cmd-box { border-radius: 14px; border: 1px solid var(--border); overflow: hidden; width: 100%; max-width: 480px; margin: 0 auto; margin-top: 18vh; animation: slideDown .18s ease; background: var(--bg2); box-shadow: 0 20px 60px rgba(0,0,0,.6); }
 .cmd-search-wrap { display: flex; align-items: center; gap: .65rem; padding: .85rem 1rem; border-bottom: 1px solid var(--border2); }
 .cmd-search-wrap svg { flex-shrink: 0; color: var(--text-faint); }
@@ -5224,7 +5224,7 @@ body, #sidebar, #main, .chat-topbar, .thread-sidebar, .members-sidebar {
 #cmd-palette { position: fixed; inset: 0; z-index: 9000; padding: 0 20px; }
 .cmd-overlay { position: absolute; inset: 0; background: rgba(0,0,0,.6); backdrop-filter: blur(8px); }
 
-/* ── Credits Page ── */
+/* -- Credits Page -- */
 .credits-page { max-width: 600px; margin: 0 auto; padding: 2.5rem 1.5rem 5rem; animation: fadeUp .4s cubic-bezier(.16,1,.3,1); }
 .credits-header { text-align: center; margin-bottom: 2rem; }
 .credits-header h2 { font-size: 1.6rem; font-weight: 900; margin-bottom: .35rem; }
@@ -5241,7 +5241,7 @@ body, #sidebar, #main, .chat-topbar, .thread-sidebar, .members-sidebar {
 .credits-card-link:hover { opacity: .7; }
 .credits-footer { text-align: center; font-size: .52rem; letter-spacing: 3px; text-transform: uppercase; color: var(--text-faint); margin-top: 2.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border2); }
 
-/* ── Responsive fixes for rebase ── */
+/* -- Responsive fixes for rebase -- */
 @media (max-width: 680px) {
   .settings-redesign-wrap { padding: 1.2rem 1rem 4rem; }
   .settings-page-sub { padding-left: 0; }
@@ -5258,7 +5258,317 @@ body, #sidebar, #main, .chat-topbar, .thread-sidebar, .members-sidebar {
   .stab { padding: .4rem .7rem; font-size: .68rem; }
 }
 
-/* ── Badge pop animation ── */
+/* -- Badge pop animation -- */
 @keyframes badgePop { 0% { transform: scale(0); } 65% { transform: scale(1.15); } 100% { transform: scale(1); } }
 @keyframes sectionFadeScale { from { opacity: 0; transform: scale(.995); } to { opacity: 1; transform: scale(1); } }
 @keyframes cardFlip { from { opacity: 0; transform: rotateY(-90deg) scale(.8); } to { opacity: 1; transform: rotateY(0) scale(1); } }
+
+
+/* =============================================================
+   PATCH: Full-width settings & admin, theme-card fixes,
+   new settings tabs, cleanup redesign
+   ============================================================= */
+
+/* -- Full-width: Settings page -- */
+.settings-redesign-wrap {
+  max-width: none !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 2rem 2.4rem 5rem !important;
+  box-sizing: border-box !important;
+}
+
+/* -- Full-width: Admin page -- */
+.admin-page {
+  max-width: none !important;
+  width: 100% !important;
+  margin: 0 !important;
+}
+.admin-header {
+  padding: 1.6rem 2.4rem 1.2rem !important;
+}
+.admin-nav {
+  padding: 0 2.4rem !important;
+}
+.admin-body {
+  padding: 1.6rem 2.4rem 4rem !important;
+}
+#section-admin {
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+}
+#section-admin::-webkit-scrollbar { width: 4px; }
+#section-admin::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 4px; }
+
+/* -- Theme card: fix empty space below preview (equal-height info rows) -- */
+.theme-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(176px, 1fr)) !important;
+  gap: 13px !important;
+  align-items: stretch !important;
+}
+.theme-card {
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+}
+.theme-preview {
+  flex: 0 0 110px !important;
+  height: 110px !important;
+  min-height: 110px !important;
+  position: relative;
+  overflow: hidden;
+  /* Prevents inline/block gap that causes the empty space */
+  display: block;
+  font-size: 0;
+  line-height: 0;
+}
+.theme-preview > * {
+  font-size: initial;
+  line-height: initial;
+}
+.theme-info {
+  flex: 1 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  padding: .7rem 1rem !important;
+  background: var(--card-bg) !important;
+  border-top: 1px solid var(--border2) !important;
+  min-height: 52px !important;
+}
+.theme-name { font-size: .78rem !important; font-weight: 800 !important; margin-bottom: 2px !important; line-height: 1.2 !important; }
+.theme-desc { font-size: .6rem !important; color: var(--text-faint) !important; line-height: 1.4 !important; }
+
+/* -- Theme selected dot: clean checkmark -- */
+.theme-card.selected::after {
+  content: '\2713' !important;
+  position: absolute !important;
+  top: 8px !important;
+  right: 8px !important;
+  width: 22px !important;
+  height: 22px !important;
+  border-radius: 50% !important;
+  background: var(--accent) !important;
+  color: var(--bg) !important;
+  font-size: .75rem !important;
+  font-weight: 900 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-shadow: 0 2px 10px rgba(0,0,0,.5) !important;
+  line-height: 1 !important;
+  z-index: 2 !important;
+}
+
+/* -- New settings tab styles for Sound/Chat/Advanced tabs -- */
+.sp-sound-grid,
+.sp-chat-grid,
+.sp-advanced-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+@media (max-width: 860px) {
+  .sp-sound-grid, .sp-chat-grid, .sp-advanced-grid { grid-template-columns: 1fr; }
+}
+
+/* Color accent picker swatch */
+.accent-swatch-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: .6rem;
+}
+.accent-swatch {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: transform var(--tm), border-color var(--tm), box-shadow var(--tm);
+  flex-shrink: 0;
+}
+.accent-swatch:hover { transform: scale(1.2); }
+.accent-swatch.active {
+  border-color: var(--text) !important;
+  box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent);
+  transform: scale(1.15);
+}
+
+/* Chat bubble style selector */
+.bubble-style-opts {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: .5rem;
+}
+.bubble-style-opt {
+  padding: .38rem .9rem;
+  border-radius: var(--r);
+  border: 1.5px solid var(--border2);
+  background: transparent;
+  cursor: pointer;
+  font-size: .7rem;
+  font-weight: 700;
+  font-family: var(--font-body);
+  color: var(--text-muted);
+  transition: all var(--tm);
+}
+.bubble-style-opt:hover { border-color: var(--accent); color: var(--text); background: var(--nav-active-bg); }
+.bubble-style-opt.active { border-color: var(--accent); color: var(--accent); background: var(--nav-active-bg); }
+
+/* Sound level slider */
+.sound-slider-row {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  margin-top: .55rem;
+}
+.sound-slider {
+  flex: 1;
+  appearance: none;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--border2);
+  outline: none;
+  cursor: pointer;
+}
+.sound-slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+  box-shadow: 0 0 6px var(--accent-glow);
+  transition: transform var(--tm);
+}
+.sound-slider::-webkit-slider-thumb:hover { transform: scale(1.2); }
+.sound-slider-val {
+  font-size: .68rem;
+  font-weight: 800;
+  color: var(--accent);
+  min-width: 26px;
+  text-align: right;
+}
+
+/* Keybind display */
+.keybind-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: .65rem 1rem;
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  background: var(--card-bg);
+  margin-bottom: .45rem;
+  transition: border-color var(--tm);
+}
+.keybind-row:hover { border-color: var(--border); }
+.keybind-label { font-size: .78rem; font-weight: 700; }
+.keybind-key { display: flex; gap: 4px; align-items: center; }
+.keybind-key kbd {
+  display: inline-block;
+  background: var(--input-bg);
+  border: 1.5px solid var(--border2);
+  border-radius: 5px;
+  padding: .1rem .4rem;
+  font-family: var(--font-mono, monospace);
+  font-size: .62rem;
+  font-weight: 700;
+  color: var(--accent);
+  line-height: 1.5;
+}
+
+/* Cleanup v2 redesign — categorized grid */
+.cleanup-cat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+@media (max-width: 800px) { .cleanup-cat-grid { grid-template-columns: 1fr; } }
+.cleanup-cat {
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+}
+.cleanup-cat-header {
+  font-size: .58rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  gap: .45rem;
+  padding: 0 .1rem;
+  margin-bottom: .2rem;
+}
+.cleanup-cat-header::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border2);
+}
+.cleanup-stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: .65rem;
+  margin-bottom: 1.2rem;
+}
+@media (max-width: 700px) { .cleanup-stats-row { grid-template-columns: repeat(2, 1fr); } }
+.cleanup-stat-tile {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  padding: .75rem .9rem;
+  text-align: center;
+  transition: border-color var(--tm);
+}
+.cleanup-stat-tile:hover { border-color: var(--border); }
+.cleanup-stat-num {
+  font-size: 1.3rem;
+  font-weight: 900;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+.cleanup-stat-label {
+  font-size: .52rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: var(--text-faint);
+  margin-top: .18rem;
+}
+.cleanup-stat-warn .cleanup-stat-num { color: var(--warn); }
+.cleanup-stat-danger .cleanup-stat-num { color: var(--danger); }
+
+/* Cleanup log -- full height in two-col layout */
+.cleanup-wrap-v2 {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 1.2rem;
+  align-items: start;
+}
+@media (max-width: 900px) { .cleanup-wrap-v2 { grid-template-columns: 1fr; } }
+.cleanup-left-col { display: flex; flex-direction: column; gap: 1rem; }
+.cleanup-log-v2 {
+  position: sticky;
+  top: 0;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  overflow: hidden;
+  max-height: calc(100vh - 240px);
+  display: flex;
+  flex-direction: column;
+}
+
+/* -- Accent color override (when user picks custom accent) -- */
+:root.has-accent-override {
+  --accent: var(--accent-override) !important;
+  --accent-glow: color-mix(in srgb, var(--accent-override) 35%, transparent) !important;
+}

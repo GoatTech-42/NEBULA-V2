@@ -1,7 +1,7 @@
-// ===================================================
-//  profile.js -- Profiles, badges, adblocker notice
-//  REDESIGNED: New profile page layout
-// ===================================================
+// profile.js — User profiles, badge system, and adblocker notice
+//
+// Renders the profile page, handles avatar/username edits, and
+// auto-awards weekly and permanent badges based on activity.
 import {
   db, auth,
   doc, getDoc, updateDoc, collection, getDocs, serverTimestamp
@@ -9,7 +9,7 @@ import {
 import { toast, avatarColor, avatarInitial, escHtml, canModerate, RANK_COLORS, avatarHtml, renderRankBadge } from './app.js';
 import { getGoatCoinData } from './goatcoin.js';
 
-// -- Badge definitions --
+// Badge definitions — label, description, and accent color for each badge type.
 export const BADGE_DEFS = {
   champion:    { label:'Champion',   desc:'Most GoatCoins earned this week',   color:'#fbbf24' },
   sweat:       { label:'Sweat',      desc:'Most games played this week',        color:'#f97316' },

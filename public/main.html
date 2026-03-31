@@ -469,7 +469,7 @@
     <!-- ══════ SETTINGS ══════ -->
     <section id="section-settings" class="section">
       <div class="settings-redesign-wrap">
-        <!-- Page Header -->
+        <!-- Page header -->
         <div class="settings-page-hdr">
           <div class="settings-page-title">
             <div class="settings-page-title-icon">
@@ -480,7 +480,7 @@
           <div class="settings-page-sub">Personalize your Nebula experience</div>
         </div>
 
-        <!-- Tab Navigation -->
+        <!-- Tab navigation -->
         <div class="settings-nav-pills">
           <button class="stab active" data-tab="themes">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 011.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>
@@ -493,6 +493,22 @@
           <button class="stab" data-tab="display">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
             Display
+          </button>
+          <button class="stab" data-tab="sound">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 010 7.07"/><path d="M19.07 4.93a10 10 0 010 14.14"/></svg>
+            Sound
+          </button>
+          <button class="stab" data-tab="chat">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+            Chat
+          </button>
+          <button class="stab" data-tab="keybinds">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M8 14h8"/></svg>
+            Keybinds
+          </button>
+          <button class="stab" data-tab="advanced">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+            Advanced
           </button>
           <button class="stab" data-tab="credits">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
@@ -810,11 +826,101 @@
           </div>
 
           <div class="settings-group">
-            <div class="settings-group-title">Messages</div>
+            <div class="settings-group-title">Density</div>
             <div class="settings-row">
               <div class="settings-row-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></div>
-              <div class="settings-row-text"><div class="settings-row-label">Compact Mode</div><div class="settings-row-desc">Denser layout — tighter message spacing</div></div>
+              <div class="settings-row-text"><div class="settings-row-label">Compact Mode</div><div class="settings-row-desc">Denser layout with tighter message spacing</div></div>
               <div class="settings-row-control"><label class="toggle-switch"><input type="checkbox" class="notif-toggle" data-key="compact"><div class="toggle-track"></div></label></div>
+            </div>
+            <div class="settings-row">
+              <div class="settings-row-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+              <div class="settings-row-text"><div class="settings-row-label">Show Rank in Sidebar</div><div class="settings-row-desc">Display your rank label in the sidebar profile strip</div></div>
+              <div class="settings-row-control"><label class="toggle-switch"><input type="checkbox" class="notif-toggle" data-key="show-rank" checked><div class="toggle-track"></div></label></div>
+            </div>
+          </div>
+
+          <div class="settings-group">
+            <div class="settings-group-title">Appearance</div>
+            <div class="notif-section-card" style="margin-bottom:.65rem">
+              <div class="nsc-header" style="margin-bottom:.75rem"><div class="nsc-text"><div class="nsc-title">Font Size</div><div class="nsc-sub">Base text size across the app</div></div></div>
+              <div class="size-opts"><button class="size-opt" data-size="13">XS</button><button class="size-opt" data-size="14">S</button><button class="size-opt" data-size="15">M</button><button class="size-opt" data-size="16">L</button><button class="size-opt" data-size="18">XL</button></div>
+            </div>
+            <div class="notif-section-card" style="margin-bottom:.65rem">
+              <div class="nsc-header" style="margin-bottom:.75rem"><div class="nsc-text"><div class="nsc-title">Background Blur</div><div class="nsc-sub">Frosted glass intensity on UI surfaces</div></div></div>
+              <div class="size-opts"><button class="blur-opt" data-blur="0">Off</button><button class="blur-opt" data-blur="8">Low</button><button class="blur-opt" data-blur="20">Med</button><button class="blur-opt" data-blur="40">High</button></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SOUND PANEL -->
+        <div class="settings-panel" id="sp-sound">
+          <div class="settings-group">
+            <div class="settings-group-title">Notification Sounds</div>
+            <div class="settings-row">
+              <div class="settings-row-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 010 7.07"/></svg></div>
+              <div class="settings-row-text"><div class="settings-row-label">Message Sounds</div><div class="settings-row-desc">Play a sound when a new message arrives</div></div>
+              <div class="settings-row-control"><label class="toggle-switch"><input type="checkbox" class="notif-toggle" data-key="sound-msg" checked><div class="toggle-track"></div></label></div>
+            </div>
+            <div class="settings-row">
+              <div class="settings-row-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
+              <div class="settings-row-text"><div class="settings-row-label">DM Sounds</div><div class="settings-row-desc">Separate sound for incoming direct messages</div></div>
+              <div class="settings-row-control"><label class="toggle-switch"><input type="checkbox" class="notif-toggle" data-key="sound-dm" checked><div class="toggle-track"></div></label></div>
+            </div>
+            <div class="settings-row">
+              <div class="settings-row-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg></div>
+              <div class="settings-row-text"><div class="settings-row-label">Mention Ping</div><div class="settings-row-desc">Distinct ping when someone @mentions you</div></div>
+              <div class="settings-row-control"><label class="toggle-switch"><input type="checkbox" class="notif-toggle" data-key="sound-mention" checked><div class="toggle-track"></div></label></div>
+            </div>
+            <div class="settings-row">
+              <div class="settings-row-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/></svg></div>
+              <div class="settings-row-text"><div class="settings-row-label">Join/Leave Sounds</div><div class="settings-row-desc">Sound when users join or leave a channel</div></div>
+              <div class="settings-row-control"><label class="toggle-switch"><input type="checkbox" class="notif-toggle" data-key="sound-join"><div class="toggle-track"></div></label></div>
+            </div>
+          </div>
+          <div class="settings-group">
+            <div class="settings-group-title">Volume</div>
+            <div class="notif-section-card">
+              <div class="nsc-header" style="margin-bottom:.9rem"><div class="nsc-text"><div class="nsc-title">Master Volume</div><div class="nsc-sub">Controls all Nebula notification sounds</div></div></div>
+              <div class="sound-slider-row">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text-faint);flex-shrink:0"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/></svg>
+                <input type="range" class="sound-slider" id="master-vol" min="0" max="100" value="70" data-key="sound-vol">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text-faint);flex-shrink:0"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 010 7.07"/><path d="M19.07 4.93a10 10 0 010 14.14"/></svg>
+                <span class="sound-slider-val" id="master-vol-val">70%</span>
+              </div>
+            </div>
+          </div>
+          <div class="settings-group">
+            <div class="settings-group-title">UI Feedback</div>
+            <div class="settings-row">
+              <div class="settings-row-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+              <div class="settings-row-text"><div class="settings-row-label">Send Confirmation</div><div class="settings-row-desc">Subtle click when your message is sent</div></div>
+              <div class="settings-row-control"><label class="toggle-switch"><input type="checkbox" class="notif-toggle" data-key="sound-send" checked><div class="toggle-track"></div></label></div>
+            </div>
+            <div class="settings-row">
+              <div class="settings-row-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+              <div class="settings-row-text"><div class="settings-row-label">GoatCoin Earn Sound</div><div class="settings-row-desc">Chime when you earn GoatCoins</div></div>
+              <div class="settings-row-control"><label class="toggle-switch"><input type="checkbox" class="notif-toggle" data-key="sound-gc" checked><div class="toggle-track"></div></label></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CHAT PANEL -->
+        <div class="settings-panel" id="sp-chat">
+          <div class="settings-group">
+            <div class="settings-group-title">Message Style</div>
+            <div class="notif-section-card" style="margin-bottom:.65rem">
+              <div class="nsc-header" style="margin-bottom:.85rem"><div class="nsc-text"><div class="nsc-title">Bubble Style</div><div class="nsc-sub">How chat messages are displayed</div></div></div>
+              <div class="bubble-style-opts">
+                <button class="bubble-style-opt active" data-bubble="cozy">Cozy</button>
+                <button class="bubble-style-opt" data-bubble="compact">Compact</button>
+                <button class="bubble-style-opt" data-bubble="bubbles">Bubbles</button>
+                <button class="bubble-style-opt" data-bubble="minimal">Minimal</button>
+              </div>
+            </div>
+            <div class="settings-row">
+              <div class="settings-row-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+              <div class="settings-row-text"><div class="settings-row-label">Show Rank Badges</div><div class="settings-row-desc">Show rank labels next to names in chat</div></div>
+              <div class="settings-row-control"><label class="toggle-switch"><input type="checkbox" class="notif-toggle" data-key="chat-ranks" checked><div class="toggle-track"></div></label></div>
             </div>
             <div class="settings-row">
               <div class="settings-row-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
@@ -827,48 +933,102 @@
               <div class="settings-row-control"><label class="toggle-switch"><input type="checkbox" class="notif-toggle" data-key="msg-anim" checked><div class="toggle-track"></div></label></div>
             </div>
             <div class="settings-row">
-              <div class="settings-row-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
-              <div class="settings-row-text"><div class="settings-row-label">Show Rank Badges</div><div class="settings-row-desc">Display rank badges next to names in chat</div></div>
-              <div class="settings-row-control"><label class="toggle-switch"><input type="checkbox" class="notif-toggle" data-key="chat-ranks" checked><div class="toggle-track"></div></label></div>
-            </div>
-            <div class="settings-row">
               <div class="settings-row-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div>
               <div class="settings-row-text"><div class="settings-row-label">Typing Indicators</div><div class="settings-row-desc">Show when someone is typing</div></div>
               <div class="settings-row-control"><label class="toggle-switch"><input type="checkbox" class="notif-toggle" data-key="typing-indicators" checked><div class="toggle-track"></div></label></div>
             </div>
-            <div class="notif-section-card" style="margin-bottom:.65rem">
-              <div class="nsc-header" style="margin-bottom:.75rem"><div class="nsc-text"><div class="nsc-title">Message Grouping</div><div class="nsc-sub">Group consecutive messages from the same sender</div></div></div>
+            <div class="settings-row">
+              <div class="settings-row-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div>
+              <div class="settings-row-text"><div class="settings-row-label">Hide Typing Bar</div><div class="settings-row-desc">Remove the "someone is typing..." indicator entirely</div></div>
+              <div class="settings-row-control"><label class="toggle-switch"><input type="checkbox" class="notif-toggle" data-key="hide-typing"><div class="toggle-track"></div></label></div>
+            </div>
+          </div>
+          <div class="settings-group">
+            <div class="settings-group-title">Input</div>
+            <div class="settings-row">
+              <div class="settings-row-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 10 4 15 9 20"/><path d="M20 4v7a4 4 0 01-4 4H4"/></svg></div>
+              <div class="settings-row-text"><div class="settings-row-label">Enter to Send</div><div class="settings-row-desc">Press Enter to send — Shift+Enter for a new line</div></div>
+              <div class="settings-row-control"><label class="toggle-switch"><input type="checkbox" class="notif-toggle" data-key="enter-send" checked><div class="toggle-track"></div></label></div>
+            </div>
+            <div class="settings-row">
+              <div class="settings-row-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+              <div class="settings-row-text"><div class="settings-row-label">Character Counter</div><div class="settings-row-desc">Show remaining characters while typing</div></div>
+              <div class="settings-row-control"><label class="toggle-switch"><input type="checkbox" class="notif-toggle" data-key="char-counter" checked><div class="toggle-track"></div></label></div>
+            </div>
+            <div class="settings-row">
+              <div class="settings-row-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg></div>
+              <div class="settings-row-text"><div class="settings-row-label">Disable Link Formatting</div><div class="settings-row-desc">Turn off clickable link rendering in messages</div></div>
+              <div class="settings-row-control"><label class="toggle-switch"><input type="checkbox" class="notif-toggle" data-key="link-previews" checked><div class="toggle-track"></div></label></div>
+            </div>
+          </div>
+          <div class="settings-group">
+            <div class="settings-group-title">Grouping</div>
+            <div class="notif-section-card">
+              <div class="nsc-header" style="margin-bottom:.75rem"><div class="nsc-text"><div class="nsc-title">Message Grouping Window</div><div class="nsc-sub">Group consecutive messages from the same sender within this time window</div></div></div>
               <div class="size-opts"><button class="group-time-opt" data-mins="2">2 min</button><button class="group-time-opt" data-mins="5">5 min</button><button class="group-time-opt" data-mins="10">10 min</button><button class="group-time-opt" data-mins="20">20 min</button></div>
             </div>
           </div>
+        </div>
 
+        <!-- KEYBINDS PANEL -->
+        <div class="settings-panel" id="sp-keybinds">
           <div class="settings-group">
-            <div class="settings-group-title">Appearance</div>
+            <div class="settings-group-title">Navigation</div>
+            <div class="keybind-row"><span class="keybind-label">Open Command Palette</span><div class="keybind-key"><kbd>Ctrl</kbd><kbd>K</kbd></div></div>
+            <div class="keybind-row"><span class="keybind-label">Close / Dismiss</span><div class="keybind-key"><kbd>Esc</kbd></div></div>
+            <div class="keybind-row"><span class="keybind-label">Go to Home</span><div class="keybind-key"><kbd>1</kbd></div></div>
+            <div class="keybind-row"><span class="keybind-label">Go to Chat</span><div class="keybind-key"><kbd>2</kbd></div></div>
+            <div class="keybind-row"><span class="keybind-label">Go to DMs</span><div class="keybind-key"><kbd>3</kbd></div></div>
+            <div class="keybind-row"><span class="keybind-label">Go to Games</span><div class="keybind-key"><kbd>4</kbd></div></div>
+            <div class="keybind-row"><span class="keybind-label">Go to GoatCoin</span><div class="keybind-key"><kbd>5</kbd></div></div>
+            <div class="keybind-row"><span class="keybind-label">Go to Shop</span><div class="keybind-key"><kbd>6</kbd></div></div>
+            <div class="keybind-row"><span class="keybind-label">Go to Profile</span><div class="keybind-key"><kbd>7</kbd></div></div>
+            <div class="keybind-row"><span class="keybind-label">Go to Settings</span><div class="keybind-key"><kbd>8</kbd></div></div>
+            <div class="keybind-row"><span class="keybind-label">Go to Admin (admins only)</span><div class="keybind-key"><kbd>9</kbd></div></div>
+          </div>
+          <div class="settings-group">
+            <div class="settings-group-title">Chat</div>
+            <div class="keybind-row"><span class="keybind-label">Send Message</span><div class="keybind-key"><kbd>Enter</kbd></div></div>
+            <div class="keybind-row"><span class="keybind-label">New Line</span><div class="keybind-key"><kbd>Shift</kbd><kbd>Enter</kbd></div></div>
+            <div class="keybind-row"><span class="keybind-label">Edit Last Message</span><div class="keybind-key"><kbd>&uarr;</kbd></div></div>
+          </div>
+          <div class="settings-group">
+            <div class="settings-group-title">Secret</div>
+            <div class="keybind-row"><span class="keybind-label">Konami Code (hidden portal)</span><div class="keybind-key"><kbd>&uarr;</kbd><kbd>&uarr;</kbd><kbd>&darr;</kbd><kbd>&darr;</kbd><kbd>&larr;</kbd><kbd>&rarr;</kbd><kbd>B</kbd><kbd>A</kbd></div></div>
+          </div>
+        </div>
+
+        <!-- ADVANCED PANEL -->
+        <div class="settings-panel" id="sp-advanced">
+          <div class="settings-group">
+            <div class="settings-group-title">Accent Color Override</div>
             <div class="notif-section-card" style="margin-bottom:.65rem">
-              <div class="nsc-header" style="margin-bottom:.75rem"><div class="nsc-text"><div class="nsc-title">Font Size</div><div class="nsc-sub">Base text size across the app</div></div></div>
-              <div class="size-opts"><button class="size-opt" data-size="13">XS</button><button class="size-opt" data-size="14">S</button><button class="size-opt" data-size="15">M</button><button class="size-opt" data-size="16">L</button><button class="size-opt" data-size="18">XL</button></div>
+              <div class="nsc-header" style="margin-bottom:.85rem"><div class="nsc-text"><div class="nsc-title">Custom Accent</div><div class="nsc-sub">Override the theme's accent color with your own pick — applies on top of any theme</div></div></div>
+              <div class="accent-swatch-row" id="accent-swatch-row">
+                <button class="accent-swatch active" data-accent="theme" title="Use theme default" style="background:var(--accent);border-color:var(--text)"></button>
+                <button class="accent-swatch" data-accent="#4fc9ea" title="Cyan" style="background:#4fc9ea"></button>
+                <button class="accent-swatch" data-accent="#a78bfa" title="Purple" style="background:#a78bfa"></button>
+                <button class="accent-swatch" data-accent="#34d399" title="Emerald" style="background:#34d399"></button>
+                <button class="accent-swatch" data-accent="#f472b6" title="Pink" style="background:#f472b6"></button>
+                <button class="accent-swatch" data-accent="#fbbf24" title="Amber" style="background:#fbbf24"></button>
+                <button class="accent-swatch" data-accent="#f87171" title="Red" style="background:#f87171"></button>
+                <button class="accent-swatch" data-accent="#60a5fa" title="Blue" style="background:#60a5fa"></button>
+                <button class="accent-swatch" data-accent="#00ff88" title="Neon Green" style="background:#00ff88"></button>
+                <button class="accent-swatch" data-accent="#ff6b35" title="Orange" style="background:#ff6b35"></button>
+                <button class="accent-swatch" data-accent="#e879f9" title="Fuchsia" style="background:#e879f9"></button>
+                <button class="accent-swatch" data-accent="#94a3b8" title="Slate" style="background:#94a3b8"></button>
+              </div>
             </div>
-            <div class="notif-section-card" style="margin-bottom:.65rem">
-              <div class="nsc-header" style="margin-bottom:.75rem"><div class="nsc-text"><div class="nsc-title">Background Blur</div><div class="nsc-sub">Frosted glass intensity on surfaces</div></div></div>
-              <div class="size-opts"><button class="blur-opt" data-blur="0">Off</button><button class="blur-opt" data-blur="8">Low</button><button class="blur-opt" data-blur="20">Med</button><button class="blur-opt" data-blur="40">High</button></div>
-            </div>
-            <div class="settings-row">
-              <div class="settings-row-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="21" y1="10" x2="3" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="14" x2="3" y2="14"/><line x1="21" y1="18" x2="3" y2="18"/></svg></div>
-              <div class="settings-row-text"><div class="settings-row-label">Wider Line Spacing</div><div class="settings-row-desc">More breathing room between lines of text</div></div>
-              <div class="settings-row-control"><label class="toggle-switch"><input type="checkbox" class="notif-toggle" data-key="line-spacing"><div class="toggle-track"></div></label></div>
-            </div>
-            <div class="settings-row">
-              <div class="settings-row-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg></div>
-              <div class="settings-row-text"><div class="settings-row-label">High Contrast</div><div class="settings-row-desc">Stronger borders and increased text contrast</div></div>
-              <div class="settings-row-control"><label class="toggle-switch"><input type="checkbox" class="notif-toggle" data-key="high-contrast"><div class="toggle-track"></div></label></div>
-            </div>
+          </div>
+          <div class="settings-group">
+            <div class="settings-group-title">Performance</div>
             <div class="settings-row">
               <div class="settings-row-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M2 12h2M20 12h2M12 2v2M12 20v2"/></svg></div>
-              <div class="settings-row-text"><div class="settings-row-label">Parallax Background</div><div class="settings-row-desc">Mouse-tracked nebula layers — disable to save perf</div></div>
+              <div class="settings-row-text"><div class="settings-row-label">Parallax Background</div><div class="settings-row-desc">Mouse-tracked nebula layers — disable to save performance</div></div>
               <div class="settings-row-control"><label class="toggle-switch"><input type="checkbox" class="notif-toggle" data-key="parallax" checked><div class="toggle-track"></div></label></div>
             </div>
             <div class="notif-section-card" style="margin-bottom:.65rem">
-              <div class="nsc-header" style="margin-bottom:.75rem"><div class="nsc-text"><div class="nsc-title">Parallax Speed</div><div class="nsc-sub">How fast background layers track your mouse</div></div></div>
+              <div class="nsc-header" style="margin-bottom:.75rem"><div class="nsc-text"><div class="nsc-title">Parallax Speed</div><div class="nsc-sub">How fast the background layers track your mouse</div></div></div>
               <div class="size-opts"><button class="parallax-speed-opt" data-speed="0.01">Slow</button><button class="parallax-speed-opt" data-speed="0.03">Normal</button><button class="parallax-speed-opt" data-speed="0.07">Fast</button><button class="parallax-speed-opt" data-speed="0.14">Wild</button></div>
             </div>
             <div class="settings-row">
@@ -877,47 +1037,33 @@
               <div class="settings-row-control"><label class="toggle-switch"><input type="checkbox" class="notif-toggle" data-key="theme-anim" checked><div class="toggle-track"></div></label></div>
             </div>
           </div>
-
           <div class="settings-group">
             <div class="settings-group-title">Accessibility</div>
             <div class="settings-row">
               <div class="settings-row-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg></div>
-              <div class="settings-row-text"><div class="settings-row-label">Reduce Motion</div><div class="settings-row-desc">Minimise animations and transitions throughout</div></div>
+              <div class="settings-row-text"><div class="settings-row-label">Reduce Motion</div><div class="settings-row-desc">Minimise animations and transitions throughout the app</div></div>
               <div class="settings-row-control"><label class="toggle-switch"><input type="checkbox" class="notif-toggle" data-key="reduce-motion"><div class="toggle-track"></div></label></div>
             </div>
             <div class="settings-row">
+              <div class="settings-row-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="10"/></svg></div>
+              <div class="settings-row-text"><div class="settings-row-label">High Contrast</div><div class="settings-row-desc">Stronger borders and higher text contrast</div></div>
+              <div class="settings-row-control"><label class="toggle-switch"><input type="checkbox" class="notif-toggle" data-key="high-contrast"><div class="toggle-track"></div></label></div>
+            </div>
+            <div class="settings-row">
+              <div class="settings-row-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="21" y1="10" x2="3" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="14" x2="3" y2="14"/><line x1="21" y1="18" x2="3" y2="18"/></svg></div>
+              <div class="settings-row-text"><div class="settings-row-label">Wider Line Spacing</div><div class="settings-row-desc">More breathing room between lines of text</div></div>
+              <div class="settings-row-control"><label class="toggle-switch"><input type="checkbox" class="notif-toggle" data-key="line-spacing"><div class="toggle-track"></div></label></div>
+            </div>
+            <div class="settings-row">
               <div class="settings-row-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></div>
-              <div class="settings-row-text"><div class="settings-row-label">Focus Mode</div><div class="settings-row-desc">Dim sidebar and members panel to reduce distraction</div></div>
+              <div class="settings-row-text"><div class="settings-row-label">Focus Mode</div><div class="settings-row-desc">Dim sidebars to minimize distractions</div></div>
               <div class="settings-row-control"><label class="toggle-switch"><input type="checkbox" class="notif-toggle" data-key="focus-mode"><div class="toggle-track"></div></label></div>
             </div>
-            <div class="settings-row">
-              <div class="settings-row-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div>
-              <div class="settings-row-text"><div class="settings-row-label">Hide Typing Bar</div><div class="settings-row-desc">Remove the "someone is typing…" indicator</div></div>
-              <div class="settings-row-control"><label class="toggle-switch"><input type="checkbox" class="notif-toggle" data-key="hide-typing"><div class="toggle-track"></div></label></div>
-            </div>
-            <div class="settings-row">
-              <div class="settings-row-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
-              <div class="settings-row-text"><div class="settings-row-label">Show Rank in Sidebar</div><div class="settings-row-desc">Display your rank label in the sidebar profile area</div></div>
-              <div class="settings-row-control"><label class="toggle-switch"><input type="checkbox" class="notif-toggle" data-key="show-rank" checked><div class="toggle-track"></div></label></div>
-            </div>
-            <div class="settings-row">
-              <div class="settings-row-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg></div>
-              <div class="settings-row-text"><div class="settings-row-label">Disable Link Formatting</div><div class="settings-row-desc">Turn off clickable link rendering in messages</div></div>
-              <div class="settings-row-control"><label class="toggle-switch"><input type="checkbox" class="notif-toggle" data-key="link-previews" checked><div class="toggle-track"></div></label></div>
-            </div>
           </div>
-
           <div class="settings-group">
-            <div class="settings-group-title">Input</div>
-            <div class="settings-row">
-              <div class="settings-row-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 10 4 15 9 20"/><path d="M20 4v7a4 4 0 01-4 4H4"/></svg></div>
-              <div class="settings-row-text"><div class="settings-row-label">Enter to Send</div><div class="settings-row-desc">Press Enter to send — Shift+Enter for new line</div></div>
-              <div class="settings-row-control"><label class="toggle-switch"><input type="checkbox" class="notif-toggle" data-key="enter-send" checked><div class="toggle-track"></div></label></div>
-            </div>
-            <div class="settings-row">
-              <div class="settings-row-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg></div>
-              <div class="settings-row-text"><div class="settings-row-label">Character Counter</div><div class="settings-row-desc">Show remaining characters while typing</div></div>
-              <div class="settings-row-control"><label class="toggle-switch"><input type="checkbox" class="notif-toggle" data-key="char-counter" checked><div class="toggle-track"></div></label></div>
+            <div class="settings-group-title">Danger Zone</div>
+            <div class="notif-section-card" style="border-color:rgba(248,113,113,.25)">
+              <div class="nsc-header"><div class="nsc-icon" style="color:var(--danger)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div><div class="nsc-text"><div class="nsc-title">Reset All Settings</div><div class="nsc-sub">Wipe all saved preferences and reload with defaults</div></div><button class="btn btn-ghost btn-sm" id="btn-reset-settings" style="border-color:rgba(248,113,113,.3);color:var(--danger);flex-shrink:0">Reset</button></div>
             </div>
           </div>
         </div>

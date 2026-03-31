@@ -1075,9 +1075,10 @@ window.deleteMsg = function(id) {
   };
 };
 
-// ---- Reactions ----
+// ── Emoji reactions ──
+// Each message can have up to 12 different emoji, stored as a subcollection.
 
-// Emoji Reaction System
+// Reaction definitions — label shown in the picker, emoji for the chip.
 const REACTION_DEFS = {
   thumbsup:    { label: '👍 Like',         emoji: '👍' },
   thumbsdown:  { label: '👎 Dislike',      emoji: '👎' },
@@ -1095,9 +1096,9 @@ const REACTION_DEFS = {
 
 const REACTION_KEYS = Object.keys(REACTION_DEFS);
 
-// window.addReaction  -- emoji picker
+// addReaction — opens a floating emoji picker anchored to the reaction button.
 window.addReaction = function(msgId) {
-  // Remove any existing picker
+  // Only one picker can be open at a time — close any stale one first.
   document.querySelectorAll('.epicker').forEach(p=>p.remove());
   const el = document.getElementById('msg-'+msgId);
   if(!el) return;
@@ -1129,7 +1130,7 @@ window.addReaction = function(msgId) {
   }, 10);
 };
 
-// renderReactions  -- emoji chips
+// renderReactions — rebuilds the row of emoji chips below a message.
 function renderReactions(container, reactions, msgId) {
   if(!container) return;
   container.innerHTML = '';
@@ -1343,7 +1344,8 @@ async function loadAdminPanel(tab) {
   }
 }
 
-// ── Create Channel Modal ──
+// ── Create channel modal ──
+// Universal+ can create channels with optional password and announce mode.
 function showCreateChannelModal() {
   showModal(`
     <div>
@@ -1373,7 +1375,8 @@ function showCreateChannelModal() {
   `);
 }
 
-// ── Wipe Thread (goat only) ──
+// ── Wipe thread (goat-only) ──
+// Deletes all messages in a channel. The channel itself is preserved.
 window.wipeThread = function(channelId, channelName) {
   if(currentUserData?.rank !== 'goat') return;
   showModal(`
@@ -1440,161 +1443,238 @@ window.createChannel = async function() {
 // ── DB Cleanup Panel (Goat-only) ──
 function renderDBCleanup(container) {
   container.innerHTML = `
-    <div class="cleanup-wrap">
-      <div class="cleanup-ops">
-        <div class="cleanup-section-hdr">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
-          Data Operations
-        </div>
+    <div class="cleanup-wrap-v2">
+      <div class="cleanup-left-col">
 
-        <div class="cleanup-op-card" id="cop-orphan">
-          <div class="cleanup-op-hdr">
-            <div class="cleanup-op-icon cleanup-op-icon-warn">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-            </div>
-            <div>
-              <div class="cleanup-op-title">Orphan Auth Accounts</div>
-              <div class="cleanup-op-sub">Find Firebase Auth accounts with no Firestore profile</div>
-            </div>
-            <button class="cleanup-op-btn" id="btn-scan-orphans">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-              Scan
-            </button>
+        <!-- Live stats row -->
+        <div class="cleanup-stats-row" id="cleanup-stats-row">
+          <div class="cleanup-stat-tile" id="cst-users">
+            <div class="cleanup-stat-num" id="cst-users-num">…</div>
+            <div class="cleanup-stat-label">Total Users</div>
           </div>
-          <div class="cleanup-op-note">⚠ Firebase Admin SDK not available client-side — this lists Firestore users not in any approved/pending/banned state.</div>
-        </div>
-
-        <div class="cleanup-op-card">
-          <div class="cleanup-op-hdr">
-            <div class="cleanup-op-icon cleanup-op-icon-warn">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9" stroke="currentColor"/><path d="M9.2 14.6h4.5c1.2 0 2-.7 2-1.7 0-1-.7-1.5-1.9-1.7l-2.4-.3c-1-.2-1.4-.5-1.4-1.1 0-.7.6-1.2 1.7-1.2h3.9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M12 7.5v9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-            </div>
-            <div>
-              <div class="cleanup-op-title">Wipe GoatCoin Balances</div>
-              <div class="cleanup-op-sub">Reset all users' coins & stats to zero</div>
-            </div>
-            <button class="cleanup-op-btn cleanup-op-btn-danger" onclick="window.cleanupWipeAllCoins()">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
-              Wipe
-            </button>
+          <div class="cleanup-stat-tile" id="cst-gc">
+            <div class="cleanup-stat-num" id="cst-gc-num">…</div>
+            <div class="cleanup-stat-label">GC Docs</div>
+          </div>
+          <div class="cleanup-stat-tile" id="cst-bj">
+            <div class="cleanup-stat-num" id="cst-bj-num">…</div>
+            <div class="cleanup-stat-label">BJ Games</div>
+          </div>
+          <div class="cleanup-stat-tile" id="cst-dms">
+            <div class="cleanup-stat-num" id="cst-dms-num">…</div>
+            <div class="cleanup-stat-label">DM Threads</div>
           </div>
         </div>
 
-        <div class="cleanup-op-card">
-          <div class="cleanup-op-hdr">
-            <div class="cleanup-op-icon cleanup-op-icon-info">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-            </div>
-            <div>
-              <div class="cleanup-op-title">Reset Weekly Stats</div>
-              <div class="cleanup-op-sub">Clear weekly coins/time/BJ wins — keeps balances</div>
-            </div>
-            <button class="cleanup-op-btn" onclick="window.cleanupResetWeeklyStats()">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
-              Reset
-            </button>
-          </div>
-        </div>
+        <!-- Two-column category grid -->
+        <div class="cleanup-cat-grid">
 
-        <div class="cleanup-op-card">
-          <div class="cleanup-op-hdr">
-            <div class="cleanup-op-icon cleanup-op-icon-warn">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          <!-- Left column: Users & Economy -->
+          <div class="cleanup-cat">
+            <div class="cleanup-cat-header">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+              Users &amp; Economy
             </div>
-            <div>
-              <div class="cleanup-op-title">Wipe All DMs</div>
-              <div class="cleanup-op-sub">Delete every DM thread and message permanently</div>
-            </div>
-            <button class="cleanup-op-btn cleanup-op-btn-danger" onclick="window.cleanupWipeDMs()">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
-              Wipe
-            </button>
-          </div>
-        </div>
 
-        <div class="cleanup-op-card">
-          <div class="cleanup-op-hdr">
-            <div class="cleanup-op-icon cleanup-op-icon-warn">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+            <div class="cleanup-op-card" id="cop-orphan">
+              <div class="cleanup-op-hdr">
+                <div class="cleanup-op-icon cleanup-op-icon-warn">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                </div>
+                <div style="flex:1;min-width:0">
+                  <div class="cleanup-op-title">Scan User States</div>
+                  <div class="cleanup-op-sub">Find users with unexpected status values</div>
+                </div>
+                <button class="cleanup-op-btn" id="btn-scan-orphans">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                  Scan
+                </button>
+              </div>
             </div>
-            <div class="cleanup-op-right-fill">
-              <div class="cleanup-op-title">Wipe Channel Messages</div>
-              <div class="cleanup-op-sub">Delete all messages in a specific channel</div>
-              <select id="cleanup-ch-sel" class="cleanup-select">
-                <option value="all">All channels</option>
-              </select>
-            </div>
-            <button class="cleanup-op-btn cleanup-op-btn-danger" onclick="window.cleanupWipeChannel()">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
-              Wipe
-            </button>
-          </div>
-        </div>
 
-        <div class="cleanup-op-card">
-          <div class="cleanup-op-hdr">
-            <div class="cleanup-op-icon cleanup-op-icon-info">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2"/><circle cx="8" cy="8" r="1.5" fill="currentColor"/><circle cx="16" cy="16" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg>
+            <div class="cleanup-op-card">
+              <div class="cleanup-op-hdr">
+                <div class="cleanup-op-icon cleanup-op-icon-warn">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.2 14.6h4.5c1.2 0 2-.7 2-1.7 0-1-.7-1.5-1.9-1.7l-2.4-.3c-1-.2-1.4-.5-1.4-1.1 0-.7.6-1.2 1.7-1.2h3.9" stroke-width="1.5"/><path d="M12 7.5v9" stroke-width="1.5"/></svg>
+                </div>
+                <div style="flex:1;min-width:0">
+                  <div class="cleanup-op-title">Wipe All GoatCoin</div>
+                  <div class="cleanup-op-sub">Reset every user's balance and all stats to zero</div>
+                </div>
+                <button class="cleanup-op-btn cleanup-op-btn-danger" onclick="window.cleanupWipeAllCoins()">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+                  Wipe
+                </button>
+              </div>
             </div>
-            <div>
-              <div class="cleanup-op-title">Purge Stale BJ Games</div>
-              <div class="cleanup-op-sub">Remove completed or 24h+ old blackjack sessions</div>
-            </div>
-            <button class="cleanup-op-btn" onclick="window.cleanupPurgeBJGames()">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
-              Purge
-            </button>
-          </div>
-        </div>
 
-        <div class="cleanup-op-card">
-          <div class="cleanup-op-hdr">
-            <div class="cleanup-op-icon cleanup-op-icon-info">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            <div class="cleanup-op-card">
+              <div class="cleanup-op-hdr">
+                <div class="cleanup-op-icon cleanup-op-icon-info">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                </div>
+                <div style="flex:1;min-width:0">
+                  <div class="cleanup-op-title">Reset Weekly Stats</div>
+                  <div class="cleanup-op-sub">Clear weekly counters — keeps balances intact</div>
+                </div>
+                <button class="cleanup-op-btn" onclick="window.cleanupResetWeeklyStats()">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+                  Reset
+                </button>
+              </div>
             </div>
-            <div>
-              <div class="cleanup-op-title">Reset Visit Counter</div>
-              <div class="cleanup-op-sub">Set the global visit count back to 0</div>
-            </div>
-            <button class="cleanup-op-btn" onclick="window.cleanupResetVisits()">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
-              Reset
-            </button>
-          </div>
-        </div>
 
-        <div class="cleanup-op-card">
-          <div class="cleanup-op-hdr">
-            <div class="cleanup-op-icon cleanup-op-icon-info">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+            <div class="cleanup-op-card">
+              <div class="cleanup-op-hdr">
+                <div class="cleanup-op-icon cleanup-op-icon-warn">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+                </div>
+                <div style="flex:1;min-width:0">
+                  <div class="cleanup-op-title">Delete GC by UID</div>
+                  <div class="cleanup-op-sub">Remove one user's GoatCoin document</div>
+                  <input id="cleanup-gc-uid" class="cleanup-input" placeholder="Paste user UID…" />
+                </div>
+                <button class="cleanup-op-btn cleanup-op-btn-danger" onclick="window.cleanupDeleteUserGC()">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+                  Delete
+                </button>
+              </div>
             </div>
-            <div class="cleanup-op-right-fill">
-              <div class="cleanup-op-title">Delete GoatCoin by UID</div>
-              <div class="cleanup-op-sub">Remove a specific user's GoatCoin document</div>
-              <input id="cleanup-gc-uid" class="cleanup-input" placeholder="User UID..." />
+
+            <div class="cleanup-op-card">
+              <div class="cleanup-op-hdr">
+                <div class="cleanup-op-icon cleanup-op-icon-info">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                </div>
+                <div style="flex:1;min-width:0">
+                  <div class="cleanup-op-title">Reset Visit Counter</div>
+                  <div class="cleanup-op-sub">Set the global page visit count to zero</div>
+                </div>
+                <button class="cleanup-op-btn" onclick="window.cleanupResetVisits()">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+                  Reset
+                </button>
+              </div>
             </div>
-            <button class="cleanup-op-btn cleanup-op-btn-danger" onclick="window.cleanupDeleteUserGC()">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
-              Delete
-            </button>
+          </div>
+
+          <!-- Right column: Messages & Games -->
+          <div class="cleanup-cat">
+            <div class="cleanup-cat-header">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+              Messages &amp; Games
+            </div>
+
+            <div class="cleanup-op-card">
+              <div class="cleanup-op-hdr">
+                <div class="cleanup-op-icon cleanup-op-icon-warn">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                </div>
+                <div style="flex:1;min-width:0">
+                  <div class="cleanup-op-title">Wipe All DMs</div>
+                  <div class="cleanup-op-sub">Delete every DM thread and all messages permanently</div>
+                </div>
+                <button class="cleanup-op-btn cleanup-op-btn-danger" onclick="window.cleanupWipeDMs()">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+                  Wipe
+                </button>
+              </div>
+            </div>
+
+            <div class="cleanup-op-card">
+              <div class="cleanup-op-hdr">
+                <div class="cleanup-op-icon cleanup-op-icon-warn">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+                </div>
+                <div style="flex:1;min-width:0">
+                  <div class="cleanup-op-title">Wipe Channel Messages</div>
+                  <div class="cleanup-op-sub">Delete all messages in a specific channel</div>
+                  <select id="cleanup-ch-sel" class="cleanup-select">
+                    <option value="">Select a channel…</option>
+                  </select>
+                </div>
+                <button class="cleanup-op-btn cleanup-op-btn-danger" onclick="window.cleanupWipeChannel()">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+                  Wipe
+                </button>
+              </div>
+            </div>
+
+            <div class="cleanup-op-card">
+              <div class="cleanup-op-hdr">
+                <div class="cleanup-op-icon cleanup-op-icon-info">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2"/><circle cx="8" cy="8" r="1.5" fill="currentColor"/><circle cx="16" cy="16" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg>
+                </div>
+                <div style="flex:1;min-width:0">
+                  <div class="cleanup-op-title">Purge Stale BJ Games</div>
+                  <div class="cleanup-op-sub">Remove completed or 24h+ old blackjack sessions</div>
+                </div>
+                <button class="cleanup-op-btn" onclick="window.cleanupPurgeBJGames()">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+                  Purge
+                </button>
+              </div>
+            </div>
+
+            <div class="cleanup-op-card">
+              <div class="cleanup-op-hdr">
+                <div class="cleanup-op-icon cleanup-op-icon-info">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                </div>
+                <div style="flex:1;min-width:0">
+                  <div class="cleanup-op-title">Clear BJ Challenges</div>
+                  <div class="cleanup-op-sub">Delete all pending or cancelled blackjack challenges</div>
+                </div>
+                <button class="cleanup-op-btn" onclick="window.cleanupClearBJChallenges()">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+                  Clear
+                </button>
+              </div>
+            </div>
+
+            <div class="cleanup-op-card">
+              <div class="cleanup-op-hdr">
+                <div class="cleanup-op-icon cleanup-op-icon-info">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/><path d="M8 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+                </div>
+                <div style="flex:1;min-width:0">
+                  <div class="cleanup-op-title">Clear Offline Presence</div>
+                  <div class="cleanup-op-sub">Remove stale presence documents from Firestore</div>
+                </div>
+                <button class="cleanup-op-btn" onclick="window.cleanupClearPresence()">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+                  Clear
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      <div class="cleanup-log-panel">
+      <!-- Activity log (sticky right column) -->
+      <div class="cleanup-log-v2">
         <div class="cleanup-log-hdr">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
           Activity Log
-          <button class="cleanup-log-clear" onclick="document.getElementById('cleanup-log').innerHTML=''">Clear</button>
+          <button class="cleanup-log-clear" id="btn-clear-cleanup-log">Clear</button>
         </div>
         <div class="cleanup-log" id="cleanup-log">
-          <div class="cleanup-log-entry cleanup-log-info">Ready — choose an operation above</div>
+          <div class="cleanup-log-entry cleanup-log-info">Ready — select an operation.</div>
         </div>
       </div>
     </div>
   `;
 
-  // Populate channels
+  // Clear log button
+  document.getElementById('btn-clear-cleanup-log')?.addEventListener('click', () => {
+    const log = document.getElementById('cleanup-log');
+    if(log) log.innerHTML = '<div class="cleanup-log-entry cleanup-log-info">Log cleared.</div>';
+  });
+
+  // Load live stats
+  _loadCleanupStats();
+
+  // Populate channel select
   getDocs(collection(db,'channels')).then(snap => {
     const sel = document.getElementById('cleanup-ch-sel');
     if(!sel) return;
@@ -1604,11 +1684,11 @@ function renderDBCleanup(container) {
       opt.textContent = '#' + escHtml(s.data().name || s.id);
       sel.appendChild(opt);
     });
-  }).catch(()=>{});
+  }).catch(() => {});
 
-  // Scan orphan button
+  // Scan orphan/bad-status users
   document.getElementById('btn-scan-orphans')?.addEventListener('click', async () => {
-    _cleanupLog('Scanning for unusual user states…', 'info');
+    _cleanupLog('Scanning for users with unexpected status values…', 'info');
     try {
       const snap = await getDocs(collection(db,'users'));
       const weird = [];
@@ -1619,13 +1699,34 @@ function renderDBCleanup(container) {
         }
       });
       if(!weird.length) {
-        _cleanupLog('All Firestore users have valid statuses. No orphans found.', 'success');
+        _cleanupLog('All users have valid statuses. Nothing to fix.', 'success');
       } else {
         _cleanupLog(`Found ${weird.length} user(s) with unexpected status:`, 'warn');
-        weird.forEach(u => _cleanupLog(`  • ${u.username||u.id} → status: "${u.status||'undefined'}"`, 'warn'));
+        weird.forEach(u => _cleanupLog(`  • ${u.username || u.id} — status: "${u.status || 'undefined'}"`, 'warn'));
       }
     } catch(e) { _cleanupLog('Scan failed: ' + e.message, 'error'); }
   });
+}
+
+// Load live counts into the stats tiles
+async function _loadCleanupStats() {
+  try {
+    const [users, gc, bj, dms] = await Promise.all([
+      getDocs(collection(db,'users')),
+      getDocs(collection(db,'goatcoin')),
+      getDocs(collection(db,'bj_games')),
+      getDocs(collection(db,'dms')),
+    ]);
+    const setNum = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = val; };
+    setNum('cst-users-num', users.size);
+    setNum('cst-gc-num', gc.size);
+    setNum('cst-bj-num', bj.size);
+    setNum('cst-dms-num', dms.size);
+  } catch(e) {
+    ['cst-users-num','cst-gc-num','cst-bj-num','cst-dms-num'].forEach(id => {
+      const el = document.getElementById(id); if(el) el.textContent = '?';
+    });
+  }
 }
 
 function _cleanupLog(msg, type='info') {
@@ -1696,7 +1797,7 @@ window.cleanupDeleteUserGC = async function() {
 
 window.cleanupWipeChannel = function() {
   const chId = document.getElementById('cleanup-ch-sel')?.value;
-  if(!chId) { toast('Select a channel first','warning'); return; }
+  if(!chId) { toast('Pick a channel from the dropdown first.','warning'); return; }
   showModal(`<h3>Wipe #${chId}?</h3><p class="modal-p">Deletes all messages in <strong>#${escHtml(chId)}</strong>. Cannot be undone.</p><div class="modal-actions"><button class="btn btn-ghost btn-sm" onclick="document.getElementById('modal-overlay').click()">Cancel</button><button class="btn btn-danger btn-sm" id="confirm-wipe-ch">Wipe Channel</button></div>`);
   document.getElementById('confirm-wipe-ch').onclick = async () => {
     closeModal();
@@ -1763,7 +1864,20 @@ window.cleanupResetVisits = async function() {
   } catch(e) { _cleanupLog('Failed: '+e.message,'error'); }
 };
 
-// ── Admin Setup ──
+window.cleanupClearPresence = async function() {
+  try {
+    const snap = await getDocs(collection(db,'presence'));
+    if(!snap.size) { _cleanupLog('No presence documents found.', 'info'); return; }
+    const batch = writeBatch(db);
+    snap.docs.forEach(d => batch.delete(d.ref));
+    await batch.commit();
+    _cleanupLog(`Cleared ${snap.size} presence document(s).`, 'success');
+  } catch(e) { _cleanupLog('Failed: ' + e.message, 'error'); }
+};
+
+// ── Admin panel setup ──
+// Dynamically builds the admin UI based on the current user's rank.
+// Goat rank gets an extra DB Cleanup tab.
 async function setupAdmin() {
   const d = currentUserData;
   const isGoat = d.rank === 'goat';
@@ -2587,7 +2701,76 @@ function setupSettings() {
   document.getElementById('sidebar-options-label')?.classList.toggle('setting-hidden', !isSidebarOnLoad);
   document.getElementById('nav-labels-card')?.classList.toggle('setting-grayed', noLabelsOnLoad);
 
+  // Sound volume slider
+  const volSlider = document.getElementById('master-vol');
+  const volVal = document.getElementById('master-vol-val');
+  if(volSlider) {
+    const savedVol = localStorage.getItem('neb_sound_vol') || '70';
+    volSlider.value = savedVol;
+    if(volVal) volVal.textContent = savedVol + '%';
+    volSlider.addEventListener('input', () => {
+      if(volVal) volVal.textContent = volSlider.value + '%';
+      localStorage.setItem('neb_sound_vol', volSlider.value);
+    });
+  }
+
+  // Bubble style buttons
+  const savedBubble = localStorage.getItem('neb_bubble_style') || 'cozy';
+  document.querySelectorAll('.bubble-style-opt').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.bubble === savedBubble);
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.bubble-style-opt').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      localStorage.setItem('neb_bubble_style', btn.dataset.bubble);
+      // Apply bubble class to body for future CSS use
+      document.body.dataset.bubbleStyle = btn.dataset.bubble;
+    });
+  });
+  document.body.dataset.bubbleStyle = savedBubble;
+
+  // Accent color swatches
+  const savedAccent = localStorage.getItem('neb_accent_override') || 'theme';
+  document.querySelectorAll('.accent-swatch').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.accent === savedAccent);
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.accent-swatch').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const accent = btn.dataset.accent;
+      localStorage.setItem('neb_accent_override', accent);
+      applyAccentOverride(accent);
+    });
+  });
+  applyAccentOverride(savedAccent);
+
+  // Reset all settings button
+  document.getElementById('btn-reset-settings')?.addEventListener('click', () => {
+    showModal(`
+      <h3>Reset All Settings?</h3>
+      <p class="modal-p">This clears every saved preference and reloads with defaults. Your account data is not affected.</p>
+      <div class="modal-actions">
+        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('modal-overlay').click()">Cancel</button>
+        <button class="btn btn-danger btn-sm" id="confirm-reset-prefs">Reset Everything</button>
+      </div>`);
+    document.getElementById('confirm-reset-prefs').onclick = () => {
+      // Clear all neb_ keys from localStorage
+      const keys = Object.keys(localStorage).filter(k => k.startsWith('neb_'));
+      keys.forEach(k => localStorage.removeItem(k));
+      closeModal(() => { toast('Settings reset — reloading…', 'info'); setTimeout(() => location.reload(), 800); });
+    };
+  });
+
   buildChannelNotifList();
+}
+
+// Apply a CSS variable override for the accent color
+function applyAccentOverride(accent) {
+  if(!accent || accent === 'theme') {
+    document.documentElement.style.removeProperty('--accent-override');
+    document.documentElement.classList.remove('has-accent-override');
+  } else {
+    document.documentElement.style.setProperty('--accent-override', accent);
+    document.documentElement.classList.add('has-accent-override');
+  }
 }
 
 function applyToggle(k, val) {
