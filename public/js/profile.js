@@ -1,7 +1,7 @@
-// ==================================================
-//  profile.js -- Profile page, badge rendering,
-//  auto-awards, and adblocker detection
-// ==================================================
+// ===================================================
+//  profile.js -- Profiles, badges, adblocker notice
+//  REDESIGNED: New profile page layout
+// ===================================================
 import {
   db, auth,
   doc, getDoc, updateDoc, collection, getDocs, serverTimestamp
@@ -9,7 +9,7 @@ import {
 import { toast, avatarColor, avatarInitial, escHtml, canModerate, RANK_COLORS, avatarHtml, renderRankBadge } from './app.js';
 import { getGoatCoinData } from './goatcoin.js';
 
-// --- Badge Definitions ---
+// -- Badge definitions --
 export const BADGE_DEFS = {
   champion:    { label:'Champion',   desc:'Most GoatCoins earned this week',   color:'#fbbf24' },
   sweat:       { label:'Sweat',      desc:'Most games played this week',        color:'#f97316' },
@@ -65,7 +65,7 @@ export function renderBadgeRow(badges, compact=false) {
   }).join('');
 }
 
-// --- Adblocker Detection ---
+// -- Adblocker detection --
 export function checkAdblocker() {
   const bait = document.createElement('div');
   bait.className = 'ad pub_300x250 pub_300x250m pub_728x90 text-ad textAd text_ad text_ads';
@@ -99,7 +99,7 @@ function _showAdblockerBanner() {
   });
 }
 
-// --- Profile Modal (any user) ---
+// -- Open profile modal for any uid --
 export async function openProfileModal(uid, currentUserData) {
   const modal = document.getElementById('modal-box-main');
   const ov = document.getElementById('modal-overlay');
@@ -275,7 +275,7 @@ function _closeProfileModal() {
   }, 200);
 }
 
-// --- Own Profile Page ---
+// -- REDESIGNED Own Profile Page --
 const AVATAR_COLORS = ['#ef4444','#f97316','#eab308','#22c55e','#14b8a6','#3b82f6','#8b5cf6','#ec4899','#06b6d4','#84cc16','#f43f5e','#a855f7','#10b981','#0ea5e9','#f59e0b','#64748b'];
 
 export function renderOwnProfile(user, userData, gcData) {
@@ -347,7 +347,7 @@ export function renderOwnProfile(user, userData, gcData) {
   </div>`;
 }
 
-// --- Auto-Award Badges on Login ---
+// -- Auto-award badges --
 export async function checkAutoAwards(uid, userData) {
   const rawBadges = userData.badges || [];
   const DEPRECATED = new Set(['customized', 'stylist']);
