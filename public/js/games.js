@@ -171,18 +171,8 @@ function openZone(file) {
   if(file.name.includes("SUGGEST")) { window.open("https://discord.com/invite/dKs2sUNUXd","_blank"); return; }
   if(file.url.startsWith("http")) { window.open(file.url,"_blank"); return; }
   const url = file.url.replace('{COVER_URL}',coverURL).replace('{HTML_URL}',htmlURL);
-  fetch(url+"?t="+Date.now()).then(r=>r.text()).then(html=>{
-    html = cleanHTML(html);
-    window.openGameVault(url, file.name);
-    // Write HTML into frame
-    const frame = document.getElementById('game-frame');
-    frame.onload = () => {}; // Prevent reload loop
-    // Use srcdoc instead of writing
-    const blob = new Blob([html],{type:'text/html'});
-    const blobURL = URL.createObjectURL(blob);
-    frame.src = blobURL;
-    frame._blobURL = blobURL;
-  }).catch(e=>{ if(window.toast) window.toast('Failed to load game','error'); });
+  // Show the vault immediately while loading
+  window.openGameVault(url, file.name);
 }
 
 function setupVaultEvents() {
