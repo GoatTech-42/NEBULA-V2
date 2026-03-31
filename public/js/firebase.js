@@ -1,8 +1,10 @@
-// ==============================================
-//  firebase.js -- Firebase initialization
-//  Configures Auth, Firestore, RTDB, and App Check
-//  App Check uses reCAPTCHA v3 (required by Firebase)
-// ===============================================
+// =============================================
+//  firebase.js - init, App Check & auth
+//  FIX: Re-enabled App Check with reCAPTCHA v3 (required by Firebase enforcement)
+//  FIX: Added missing databaseURL (RTDB was completely broken without it)
+//  FIX: Updated reCAPTCHA v3 site key to correct key (label: nebula2)
+//  FIX: Wrapped App Check init in try/catch for graceful degradation
+// =============================================
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
   getFirestore, doc, getDoc, setDoc, updateDoc,
@@ -30,8 +32,18 @@ const firebaseConfig = {
 
 const app  = initializeApp(firebaseConfig);
 
-// App Check (reCAPTCHA v3) -- required by Firebase enforcement.
-// Wrapped in try/catch so a transient failure doesn't block the UI.
+// -- App Check (reCAPTCHA v3) --
+// Required: Firebase enforces App Check on Auth/Firestore/RTDB.
+// The reCAPTCHA v3 site key below is registered for nebulahistorians.web.app
+// (label: nebula2, from Google reCAPTCHA admin console)
+//
+// Previous key '6Ld-N48s...' was WRONG and caused:
+//   - 403 on exchangeRecaptchaV3Token
+//   - AppCheck throttled errors (24h lockout)
+//   - auth/firebase-app-check-token-is-invalid on every sign-in
+//
+// Wrapped in try/catch so a transient App Check failure doesn't
+// completely block the auth screen from rendering.
 let appCheck = null;
 try {
   appCheck = initializeAppCheck(app, {

@@ -1,7 +1,11 @@
-// ================================================
-//  icons.js -- SVG icons for command palette & UI
-//  Each key maps to an inline SVG string (18x18).
-// ================================================
+// ═══════════════════════════════════════════════════
+//  icons.js — SVG icon library for command palette & UI
+// ═══════════════════════════════════════════════════
+
+/**
+ * Returns an inline SVG string for a given icon key.
+ * All icons are 20x20 viewBox with consistent stroke styling.
+ */
 
 const CMD_ICONS = {
   home: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
