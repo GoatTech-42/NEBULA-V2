@@ -17,6 +17,7 @@ const COIN_TICK_MS    = 60_000;
 
 // Module-level state — one active GoatCoin subscription at a time.
 let _gcUser    = null;
+let _gcUserData = null; // Firestore user doc (username, color, icon etc)
 let _gcData    = null;
 let _gcUnsub   = null;
 let _gcTimer   = null;
@@ -38,8 +39,8 @@ let _bjDocClickBound = false;
 
 let _rtdb = null;
 
-const GOATCOIN_ICON_SVG = '<svg class="gc-title-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><defs><linearGradient id="gcCoinGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#fde68a"/><stop offset="55%" stop-color="#f59e0b"/><stop offset="100%" stop-color="#d97706"/></linearGradient></defs><circle cx="12" cy="12" r="9" fill="url(#gcCoinGrad)"/><circle cx="12" cy="12" r="6.5" fill="none" stroke="rgba(255,255,255,.45)" stroke-width="1.2"/><path d="M9.2 14.6h4.5c1.2 0 2-.7 2-1.7 0-1-.7-1.5-1.9-1.7l-2.4-.3c-1-.2-1.4-.5-1.4-1.1 0-.7.6-1.2 1.7-1.2h3.9" stroke="#4a2b00" stroke-width="1.5" stroke-linecap="round"/><path d="M12 7.1v9.8" stroke="#4a2b00" stroke-width="1.5" stroke-linecap="round"/></svg>';
-const BJ_DECK_ICON_SVG = '<svg class="bj-lobby-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="12" height="15" rx="2"/><path d="M8 9h4"/><path d="M10 7v4"/><path d="M9 15l2-2 2 2"/><path d="M9 13h4"/><path d="M10 16h2"/><rect x="9" y="3" width="11" height="15" rx="2" opacity=".6"/></svg>';
+const GOATCOIN_ICON_SVG = '<svg class="gc-title-icon" viewBox="0 0 64 64" fill="none" aria-hidden="true"><defs><radialGradient id="gcCoinGrad" cx="38%" cy="30%" r="65%"><stop offset="0%" stop-color="#fef3c7"/><stop offset="40%" stop-color="#fbbf24"/><stop offset="75%" stop-color="#f59e0b"/><stop offset="100%" stop-color="#b45309"/></radialGradient><radialGradient id="gcShine" cx="30%" cy="25%" r="55%"><stop offset="0%" stop-color="rgba(255,255,255,.55)"/><stop offset="100%" stop-color="rgba(255,255,255,0)"/></radialGradient><filter id="gcShadow"><feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#92400e" flood-opacity=".45"/></filter></defs><circle cx="32" cy="32" r="28" fill="url(#gcCoinGrad)" filter="url(#gcShadow)"/><circle cx="32" cy="32" r="28" fill="url(#gcShine)"/><circle cx="32" cy="32" r="22" fill="none" stroke="rgba(255,255,255,.3)" stroke-width="1.5"/><circle cx="32" cy="32" r="25" fill="none" stroke="rgba(180,83,9,.35)" stroke-width="1"/><text x="32" y="40" text-anchor="middle" font-family="Georgia,serif" font-size="22" font-weight="900" fill="#78350f" letter-spacing="-1">GC</text></svg>';
+const BJ_DECK_ICON_SVG = '<svg class="bj-lobby-icon" viewBox="0 0 48 48" fill="none" aria-hidden="true"><defs><linearGradient id="bjCard1" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#f8fafc"/><stop offset="100%" stop-color="#e2e8f0"/></linearGradient><linearGradient id="bjCard2" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#e0e7ff"/><stop offset="100%" stop-color="#c7d2fe"/></linearGradient></defs><rect x="14" y="10" width="22" height="30" rx="3" fill="url(#bjCard2)" stroke="#818cf8" stroke-width="1"/><rect x="12" y="8" width="22" height="30" rx="3" fill="url(#bjCard1)" stroke="#94a3b8" stroke-width="1.2"/><text x="23" y="20" text-anchor="middle" font-family="Georgia,serif" font-size="9" font-weight="700" fill="#1e293b">A</text><text x="23" y="31" text-anchor="middle" font-size="12" fill="#dc2626">♥</text><text x="23" y="34" text-anchor="middle" font-size="6" fill="#64748b">21</text></svg>';
 const BJ_COIN_ICON_SVG = '<svg class="bj-inline-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="currentColor" opacity=".14"/><circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1.8"/><path d="M10 14h3.2c1 0 1.7-.5 1.7-1.3 0-.8-.6-1.2-1.6-1.3l-1.7-.2c-.9-.1-1.3-.4-1.3-.9 0-.6.5-1 1.4-1h3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M12 8.2v7.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>';
 
 // --------------------------------------------------
@@ -61,6 +62,7 @@ function _weekKey() {
 // --------------------------------------------------
 export function initGoatCoin(user, userData, rtdb) {
   _gcUser = user;
+  _gcUserData = userData || null;
   _rtdb = rtdb || null;
   window._getGCData = () => _gcData;
   _gcData = null;
@@ -539,9 +541,9 @@ async function _sendChallenge() {
 
   const ref = await addDoc(collection(db,'bj_challenges'), {
     fromUid: _gcUser.uid,
-    fromUsername: _gcData?.username||'',
-    fromColor: _gcData?.color||avatarColor(_gcUser.uid),
-    fromIcon: _gcData?.icon||'',
+    fromUsername: _gcUserData?.username||'',
+    fromColor: _gcUserData?.color||avatarColor(_gcUser.uid),
+    fromIcon: _gcUserData?.icon||'',
     toUid: _selectedOpp.uid,
     toUsername: _selectedOpp.username,
     stake, bestOf,
@@ -713,7 +715,7 @@ async function _acceptChallenge(cid) {
   const gameId = `bj_${Date.now()}_${Math.random().toString(36).slice(2,8)}`;
   const gameData = {
     p1uid: c.fromUid, p1name: c.fromUsername, p1color: c.fromColor||avatarColor(c.fromUid), p1icon: c.fromIcon||'',
-    p2uid: _gcUser.uid, p2name: _gcData?.username||'', p2color: _gcData?.color||avatarColor(_gcUser.uid), p2icon: _gcData?.icon||'',
+    p2uid: _gcUser.uid, p2name: _gcUserData?.username||'', p2color: _gcUserData?.color||avatarColor(_gcUser.uid), p2icon: _gcUserData?.icon||'',
     stake: c.stake, bestOf: c.bestOf,
     scores: {p1:0, p2:0}, currentRound: 1,
     deck: _deckToStr(deck), p1hand: '', p2hand: '', dealerHand: '',
@@ -742,7 +744,10 @@ async function _acceptChallenge(cid) {
 }
 
 async function _declineChallenge(cid) {
-  await deleteDoc(doc(db,'bj_challenges',cid)).catch(()=>{});
+  // Use updateDoc so the sender's onSnapshot fires with status:'declined'
+  await updateDoc(doc(db,'bj_challenges',cid), {status:'declined'}).catch(()=>{});
+  // Clean up after a short delay
+  setTimeout(() => deleteDoc(doc(db,'bj_challenges',cid)).catch(()=>{}), 3000);
 }
 
 // --------------------------------------------------
