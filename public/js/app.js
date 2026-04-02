@@ -345,6 +345,8 @@ async function initApp(user) {
   setupKeyboardShortcuts();
   setupCommandPalette();
   hideSkeleton();
+  // Check for global announcements (show once per user)
+  setTimeout(checkAndShowAnnouncement, 1500);
 }
 
 // ---- Sidebar ----
@@ -366,6 +368,7 @@ function buildSidebar() {
   document.getElementById('sp-signout').addEventListener('click', async () => {
     if(channelUnsub) { channelUnsub(); channelUnsub=null; }
     if(dmUnsub)      { dmUnsub();      dmUnsub=null; }
+    if(_dmListUnsub) { _dmListUnsub(); _dmListUnsub=null; }
     if(membersUnsub) { membersUnsub(); membersUnsub=null; }
     cleanupGoatCoin();
     currentUser=null; currentUserData=null; currentChannel=null; currentDM=null;
@@ -394,6 +397,7 @@ function navigate(section) {
   setActivity(section === 'chat' ? 'chat' : section === 'games' ? 'game' : 'site');
   if(section === 'goatcoin') renderGoatCoinTab();
   if(section === 'shop') renderShopTab();
+  if(section === 'ai') setTimeout(() => window._initAISection?.(), 100);
   document.getElementById('mobile-drawer-overlay')?.remove();
   document.getElementById('mobile-drawer')?.remove();
 }
@@ -1240,11 +1244,14 @@ async function loadAdminPanel(tab) {
       let html = '<div class="adm-list">';
       snap.forEach(s => {
         const d = s.data();
+        // Show real name (fullName) in approval panel only
+        const realName = d.fullName ? `<div class="adm-row-realname" title="Real name (approval only)">👤 ${escHtml(d.fullName)}</div>` : '';
         html += `
           <div class="adm-row" data-uid="${s.id}">
             <div class="adm-row-ava" style="background:${d.color||'#38bdf8'}">${avatarHtml(d.icon,d.username,'55%')}</div>
             <div class="adm-row-info">
               <div class="adm-row-name">${escHtml(d.username)}</div>
+              ${realName}
               <div class="adm-row-email">${escHtml(d.email||'')}</div>
               <div class="adm-row-meta">Pending approval</div>
             </div>
@@ -1341,6 +1348,8 @@ async function loadAdminPanel(tab) {
 
   } else if(tab === 'cleanup') {
     renderDBCleanup(c);
+  } else if(tab === 'announce') {
+    renderAnnouncementPanel(c);
   }
 }
 
@@ -1551,6 +1560,22 @@ function renderDBCleanup(container) {
                   <div class="cleanup-op-sub">Set the global page visit count to zero</div>
                 </div>
                 <button class="cleanup-op-btn" onclick="window.cleanupResetVisits()">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+                  Reset
+                </button>
+              </div>
+            </div>
+
+            <div class="cleanup-op-card">
+              <div class="cleanup-op-hdr">
+                <div class="cleanup-op-icon cleanup-op-icon-warn">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                </div>
+                <div style="flex:1;min-width:0">
+                  <div class="cleanup-op-title">Reset All Profile Pics</div>
+                  <div class="cleanup-op-sub">Remove custom icon from every user's profile (reverts to initials)</div>
+                </div>
+                <button class="cleanup-op-btn cleanup-op-btn-danger" onclick="window.cleanupResetAllProfilePics()">
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
                   Reset
                 </button>
@@ -1864,6 +1889,31 @@ window.cleanupResetVisits = async function() {
   } catch(e) { _cleanupLog('Failed: '+e.message,'error'); }
 };
 
+window.cleanupResetAllProfilePics = function() {
+  showModal(`
+    <h3>Reset All Profile Pics?</h3>
+    <p class="modal-p">This will remove the custom icon from <strong>every user's profile</strong>, reverting them to their letter initials. This is permanent.</p>
+    <div class="modal-actions">
+      <button class="btn btn-ghost btn-sm" onclick="document.getElementById('modal-overlay').click()">Cancel</button>
+      <button class="btn btn-danger btn-sm" id="confirm-reset-pics">Reset All Pics</button>
+    </div>`);
+  document.getElementById('confirm-reset-pics').onclick = async () => {
+    closeModal();
+    _cleanupLog('Resetting all profile icons…', 'info');
+    try {
+      const snap = await getDocs(collection(db,'users'));
+      const batch = writeBatch(db);
+      let count = 0;
+      snap.docs.forEach(d => {
+        if(d.data().icon) { batch.update(d.ref, {icon:''}); count++; }
+      });
+      if(!count) { _cleanupLog('No users with custom icons found.', 'info'); return; }
+      await batch.commit();
+      _cleanupLog(`Reset profile icons for ${count} user(s).`, 'success');
+    } catch(e) { _cleanupLog('Failed: '+e.message, 'error'); }
+  };
+};
+
 window.cleanupClearPresence = async function() {
   try {
     const snap = await getDocs(collection(db,'presence'));
@@ -1874,6 +1924,134 @@ window.cleanupClearPresence = async function() {
     _cleanupLog(`Cleared ${snap.size} presence document(s).`, 'success');
   } catch(e) { _cleanupLog('Failed: ' + e.message, 'error'); }
 };
+
+// ── Announcement Panel (Goat-only) ──
+// Stores an announcement in RTDB. Each user sees it once on next app open, then it's marked seen.
+// When all users have seen it, it auto-deletes from RTDB.
+function renderAnnouncementPanel(container) {
+  container.innerHTML = `
+    <div class="announce-wrap">
+      <div class="announce-form-card">
+        <div class="announce-card-hdr">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 17H2a3 3 0 000 4h20v-4z"/><path d="M14 9v8M9 9v8"/><path d="M12 4C10 4 8 6 8 9h8c0-3-2-5-4-5z"/></svg>
+          Send Update to All Users
+        </div>
+        <div class="announce-card-sub">This message will appear as a popup the next time each user opens the app. Once everyone has seen it, it auto-deletes.</div>
+        <div class="field-group" style="margin-top:1rem">
+          <label class="field-label">Heading</label>
+          <input id="ann-heading" class="field-input" type="text" placeholder="e.g. New feature dropped!" maxlength="80">
+        </div>
+        <div class="field-group">
+          <label class="field-label">Message</label>
+          <textarea id="ann-body" class="field-input" rows="4" placeholder="Write your announcement here..." maxlength="500" style="resize:vertical;min-height:80px"></textarea>
+        </div>
+        <div class="announce-actions">
+          <button class="btn btn-sm" id="btn-send-announce">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            Send Announcement
+          </button>
+          <button class="btn btn-ghost btn-sm" id="btn-cancel-announce">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            Cancel Active
+          </button>
+        </div>
+        <div class="merr" id="ann-err"></div>
+      </div>
+      <div class="announce-current-card" id="ann-current">
+        <div class="announce-current-hdr">Current Active Announcement</div>
+        <div id="ann-current-content"><div style="color:var(--text-faint);font-size:.78rem">No active announcement.</div></div>
+      </div>
+    </div>
+  `;
+
+  // Load current announcement from RTDB
+  async function loadCurrentAnnouncement() {
+    const el = document.getElementById('ann-current-content');
+    if(!el) return;
+    if(!_rtdb) { el.innerHTML='<div style="color:var(--text-faint);font-size:.78rem">RTDB not available.</div>'; return; }
+    try {
+      const snap = await rtGet(rtRef(_rtdb, 'announcements/active'));
+      const data = snap.val();
+      if(!data) { el.innerHTML='<div style="color:var(--text-faint);font-size:.78rem">No active announcement.</div>'; return; }
+      const seen = Object.keys(data.seenBy||{}).length;
+      el.innerHTML = `
+        <div class="ann-preview">
+          <div class="ann-preview-heading">${escHtml(data.heading||'')}</div>
+          <div class="ann-preview-body">${escHtml(data.body||'')}</div>
+          <div class="ann-preview-meta">Created ${new Date(data.createdAt||Date.now()).toLocaleString()} · Seen by ${seen} user(s)</div>
+        </div>`;
+    } catch(e) { el.innerHTML=`<div style="color:var(--danger);font-size:.78rem">Error: ${escHtml(e.message)}</div>`; }
+  }
+  loadCurrentAnnouncement();
+
+  document.getElementById('btn-send-announce')?.addEventListener('click', async () => {
+    const heading = document.getElementById('ann-heading')?.value.trim();
+    const body = document.getElementById('ann-body')?.value.trim();
+    const err = document.getElementById('ann-err');
+    if(!heading) { if(err) err.textContent='Enter a heading'; return; }
+    if(!body) { if(err) err.textContent='Enter a message'; return; }
+    if(!_rtdb) { if(err) err.textContent='RTDB not available'; return; }
+    try {
+      await rtSet(rtRef(_rtdb, 'announcements/active'), {
+        heading, body, seenBy: {}, createdAt: Date.now(), createdBy: currentUser.uid
+      });
+      if(err) err.textContent='';
+      toast('Announcement sent!', 'success');
+      loadCurrentAnnouncement();
+    } catch(e) { if(err) err.textContent='Failed: '+e.message; }
+  });
+
+  document.getElementById('btn-cancel-announce')?.addEventListener('click', async () => {
+    if(!_rtdb) return;
+    if(!confirm('Cancel the active announcement?')) return;
+    try {
+      await remove(rtRef(_rtdb, 'announcements/active')).catch(()=>{});
+      toast('Announcement cancelled.', 'info');
+      loadCurrentAnnouncement();
+    } catch(e) { toast('Failed: '+e.message, 'error'); }
+  });
+}
+
+// Check and show announcement popup on app load (shown once per user)
+async function checkAndShowAnnouncement() {
+  if(!_rtdb || !currentUser) return;
+  try {
+    const snap = await rtGet(rtRef(_rtdb, 'announcements/active'));
+    const data = snap.val();
+    if(!data) return;
+    const uid = currentUser.uid;
+    // Already seen?
+    if(data.seenBy && data.seenBy[uid]) return;
+    // Show popup
+    showModal(`
+      <div style="text-align:center;padding:.5rem 0">
+        <div style="font-size:1.5rem;margin-bottom:.5rem">📢</div>
+        <h3 style="margin-bottom:.6rem">${escHtml(data.heading||'Update')}</h3>
+        <p class="modal-p" style="white-space:pre-wrap">${escHtml(data.body||'')}</p>
+        <div class="modal-actions" style="justify-content:center">
+          <button class="btn btn-sm" id="ann-dismiss-btn">Got it</button>
+        </div>
+      </div>`);
+    document.getElementById('ann-dismiss-btn')?.addEventListener('click', async () => {
+      closeModal();
+      // Mark as seen
+      try {
+        await rtUpdate(rtRef(_rtdb, `announcements/active/seenBy`), {[uid]: true}).catch(()=>{});
+        // Check if all approved users have seen it — if so, delete
+        const allUsersSnap = await getDocs(query(collection(db,'users'), where('status','==','approved')));
+        const allUids = allUsersSnap.docs.map(d=>d.id);
+        const updatedSnap = await rtGet(rtRef(_rtdb, 'announcements/active'));
+        const updatedData = updatedSnap.val();
+        if(updatedData) {
+          const seenCount = Object.keys(updatedData.seenBy||{}).length;
+          if(seenCount >= allUids.length) {
+            await remove(rtRef(_rtdb, 'announcements/active')).catch(()=>{});
+          }
+        }
+      } catch(e) {}
+    });
+  } catch(e) {}
+}
 
 // ── Admin panel setup ──
 // Dynamically builds the admin UI based on the current user's rank.
@@ -1932,6 +2110,10 @@ async function setupAdmin() {
       ${isGoat ? `<button class="adm-tab" data-tab="cleanup">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/><path d="M8 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
         DB Cleanup
+      </button>
+      <button class="adm-tab" data-tab="announce">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 17H2a3 3 0 000 4h20v-4z"/><path d="M14 9v8M9 9v8"/><path d="M12 4C10 4 8 6 8 9h8c0-3-2-5-4-5z"/></svg>
+        Announce
       </button>` : ''}
     </div>
 
@@ -1939,7 +2121,7 @@ async function setupAdmin() {
       <div class="adm-panel active" id="ap-pending"></div>
       <div class="adm-panel" id="ap-members"></div>
       <div class="adm-panel" id="ap-banned"></div>
-      ${isGoat ? '<div class="adm-panel" id="ap-cleanup"></div>' : ''}
+      ${isGoat ? '<div class="adm-panel" id="ap-cleanup"></div><div class="adm-panel" id="ap-announce"></div>' : ''}
     </div>
   </div>`;
 
@@ -1985,6 +2167,8 @@ async function loadAdminCounts() {
 
 
 // ---- DMs ----
+let _dmListUnsub = null;
+
 function initDMs() {
   const searchInp = document.getElementById('dm-search-input');
   const searchWrap = document.getElementById('dm-search-wrap');
@@ -2008,32 +2192,60 @@ function initDMs() {
     });
   });
 
-  loadDMList();
+  // Use realtime listener so recipient sees new DMs without needing to start first
+  subscribeDMList();
+}
+
+function subscribeDMList() {
+  if(_dmListUnsub) { _dmListUnsub(); _dmListUnsub = null; }
+  const list = document.getElementById('dm-list');
+  if(!list) return;
+
+  _dmListUnsub = onSnapshot(
+    query(collection(db,'dms'), where('participants','array-contains',currentUser.uid), orderBy('lastTs','desc')),
+    async snap => {
+      list.innerHTML = '';
+      for(const d of snap.docs) {
+        const data = d.data();
+        const otherId = data.participants.find(x=>x!==currentUser.uid);
+        if(!otherId) continue;
+        let other = _userCache[otherId];
+        if(!other) {
+          try {
+            const otherSnap = await getDoc(doc(db,'users',otherId));
+            if(!otherSnap.exists()) continue;
+            other = otherSnap.data();
+            _userCache[otherId] = other;
+          } catch(e) { continue; }
+        }
+        // Check if this is a new DM thread the current user hasn't opened yet
+        const isNew = !currentDM || currentDM.id !== d.id;
+        const existingEl = list.querySelector(`[data-dmid="${d.id}"]`);
+        if(existingEl) continue; // already rendered
+        const item = document.createElement('div');
+        item.className = 'titem';
+        item.dataset.dmid = d.id;
+        const ava = document.createElement('div'); ava.className='titem-ava'; ava.style.background=other.color||avatarColor(other.uid||''); ava.innerHTML=avatarHtml(other.icon,other.username,'60%'); item.appendChild(ava);
+        const nm=document.createElement('span'); nm.className='titem-name'; nm.textContent=other.username; item.appendChild(nm);
+        item.addEventListener('click', ()=>openDM(other, d.id));
+        list.appendChild(item);
+        // Auto-update unread badge for new DM threads not currently open
+        if(isNew && !list.classList.contains('active-listener-set')) {
+          const isDMSectionActive = document.getElementById('section-dms')?.classList.contains('active');
+          if(!isDMSectionActive) {
+            _unreadDMs[d.id] = (_unreadDMs[d.id]||0);
+            _updateDMBadge();
+          }
+        }
+      }
+    },
+    err => console.warn('DM list listener error:', err)
+  );
 }
 
 async function loadDMList() {
-  const list = document.getElementById('dm-list');
-  if(!list) return;
-  const snap = await getDocs(query(collection(db,'dms'), where('participants','array-contains',currentUser.uid), orderBy('lastTs','desc')));
-  list.innerHTML = '';
-  for(const d of snap.docs) {
-    const data = d.data();
-    const otherId = data.participants.find(x=>x!==currentUser.uid);
-    let other = _userCache[otherId];
-    if(!other) {
-      const otherSnap = await getDoc(doc(db,'users',otherId));
-      if(!otherSnap.exists()) continue;
-      other = otherSnap.data();
-      _userCache[otherId] = other;
-    }
-    const item = document.createElement('div');
-    item.className = 'titem';
-    item.dataset.dmid = d.id;
-    const ava = document.createElement('div'); ava.className='titem-ava'; ava.style.background=other.color||avatarColor(other.uid||''); ava.innerHTML=avatarHtml(other.icon,other.username,'60%'); item.appendChild(ava);
-    const nm=document.createElement('span'); nm.className='titem-name'; nm.textContent=other.username; item.appendChild(nm);
-    item.addEventListener('click', ()=>openDM(other, d.id));
-    list.appendChild(item);
-  }
+  // Kept for backward compat — just re-subscribe
+  subscribeDMList();
 }
 
 async function openDM(otherUser, existingDmId) {
@@ -2188,12 +2400,18 @@ async function sendDM() {
   if(!text || !currentDM) return;
   if(text.length>500) { toast('Message is too long (max 500 chars).', 'warning'); return; }
   input.value = '';
-  await addDoc(collection(db,`dms/${currentDM.id}/messages`),{
-    uid:currentUser.uid, username:currentUserData.username,
-    color:currentUserData.color, icon:currentUserData.icon||'',
-    badges:currentUserData.badges||[], text, ts:serverTimestamp()
-  });
-  await updateDoc(doc(db,'dms',currentDM.id),{lastTs:serverTimestamp()});
+  try {
+    await addDoc(collection(db,`dms/${currentDM.id}/messages`),{
+      uid:currentUser.uid, username:currentUserData.username,
+      color:currentUserData.color, icon:currentUserData.icon||'',
+      badges:currentUserData.badges||[], text, ts:serverTimestamp()
+    });
+    // Update lastTs to trigger realtime list listener on recipient's side
+    await updateDoc(doc(db,'dms',currentDM.id),{lastTs:serverTimestamp()});
+  } catch(e) {
+    toast('Failed to send message.', 'error');
+    input.value = text; // restore on failure
+  }
 }
 
 // ---- Profile ----
@@ -2704,11 +2922,17 @@ function setupSettings() {
   // Sound volume slider
   const volSlider = document.getElementById('master-vol');
   const volVal = document.getElementById('master-vol-val');
+  function updateSliderFill(slider) {
+    const pct = ((slider.value - slider.min) / (slider.max - slider.min) * 100).toFixed(1) + '%';
+    slider.style.setProperty('--slider-fill', pct);
+  }
   if(volSlider) {
     const savedVol = localStorage.getItem('neb_sound_vol') || '70';
     volSlider.value = savedVol;
+    updateSliderFill(volSlider);
     if(volVal) volVal.textContent = savedVol + '%';
     volSlider.addEventListener('input', () => {
+      updateSliderFill(volSlider);
       if(volVal) volVal.textContent = volSlider.value + '%';
       localStorage.setItem('neb_sound_vol', volSlider.value);
     });
@@ -3039,6 +3263,158 @@ function boot() {
 
 document.addEventListener('DOMContentLoaded', boot);
 
+// ══════════════════════════════════════════════════
+// AI CHAT — WebSocket-backed streaming assistant
+// ══════════════════════════════════════════════════
+(function() {
+  // WebSocket URL decoded from the provided script
+  const WS_URL = 'wss://gn-math.net/ws';
+
+  let ws = null;
+  let botBubble = null;
+  let botText = '';
+  let streaming = false;
+  let aiHistory = [];
+  let aiInitialized = false;
+
+  function initAI() {
+    if(aiInitialized) return;
+    aiInitialized = true;
+    connectAI();
+  }
+
+  function connectAI() {
+    const statusEl = document.getElementById('ai-status');
+    const inputEl = document.getElementById('ai-input');
+    const sendBtn = document.getElementById('ai-send-btn');
+    if(!statusEl) return;
+
+    if(statusEl) statusEl.textContent = 'Connecting…';
+    ws = new WebSocket(WS_URL);
+
+    ws.onopen = () => {
+      if(statusEl) { statusEl.textContent = 'Connected'; statusEl.style.color = 'var(--success)'; }
+      if(inputEl) inputEl.disabled = false;
+      if(sendBtn) sendBtn.disabled = false;
+      if(inputEl) inputEl.focus();
+    };
+
+    ws.onmessage = e => {
+      let msg;
+      try { msg = JSON.parse(e.data); } catch { return; }
+      const msgs = document.getElementById('ai-messages');
+      if(!msgs) return;
+
+      if(msg.type === 'start') {
+        botText = '';
+        botBubble = addAIMessage('', 'bot');
+        streaming = true;
+      } else if(msg.type === 'chunk' && botBubble && msg.content) {
+        botText += msg.content;
+        renderAIMarkdown(botBubble, botText);
+        aiScrollToBottom();
+      } else if(msg.type === 'end') {
+        if(botBubble) renderAIMarkdown(botBubble, msg.content || botText);
+        aiHistory.push({role:'assistant', content: msg.content || botText});
+        botBubble = null;
+        streaming = false;
+        if(inputEl) inputEl.disabled = false;
+        if(sendBtn) sendBtn.disabled = false;
+        if(inputEl) inputEl.focus();
+        aiScrollToBottom();
+      } else if(msg.type === 'error') {
+        addAIMessage('⚠ ' + (msg.content || 'An error occurred'), 'bot');
+        streaming = false;
+        if(inputEl) inputEl.disabled = false;
+        if(sendBtn) sendBtn.disabled = false;
+      }
+    };
+
+    ws.onclose = () => {
+      if(statusEl) { statusEl.textContent = 'Disconnected — reconnecting…'; statusEl.style.color = 'var(--warn)'; }
+      if(inputEl) inputEl.disabled = true;
+      if(sendBtn) sendBtn.disabled = true;
+      setTimeout(connectAI, 3000);
+    };
+
+    ws.onerror = () => {
+      if(statusEl) { statusEl.textContent = 'Connection error'; statusEl.style.color = 'var(--danger)'; }
+    };
+  }
+
+  function addAIMessage(text, type) {
+    const msgs = document.getElementById('ai-messages');
+    if(!msgs) return null;
+    const div = document.createElement('div');
+    div.className = 'ai-msg ai-msg-' + type;
+    if(text) div.innerHTML = text;
+    msgs.appendChild(div);
+    aiScrollToBottom();
+    return div;
+  }
+
+  function aiScrollToBottom() {
+    const msgs = document.getElementById('ai-messages');
+    if(msgs) msgs.scrollTop = msgs.scrollHeight;
+  }
+
+  function renderAIMarkdown(el, text) {
+    if(!el) return;
+    let html = text
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/```(\w*)\n([\s\S]*?)```/g, (_, lang, code) => `<pre><code>${code}</code></pre>`)
+      .replace(/`([^`]+)`/g, '<code>$1</code>')
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.+?)\*/g, '<em>$1</em>')
+      .replace(/\n/g, '<br>');
+    el.innerHTML = html;
+  }
+
+  function sendAI() {
+    const inputEl = document.getElementById('ai-input');
+    const sendBtn = document.getElementById('ai-send-btn');
+    if(!inputEl || !ws) return;
+    const text = inputEl.value.trim();
+    if(!text || ws.readyState !== WebSocket.OPEN || streaming) return;
+
+    addAIMessage(escHtml(text), 'user');
+    aiHistory.push({role:'user', content:text});
+
+    ws.send(JSON.stringify({
+      question: text,
+      history: aiHistory.slice(-10) // keep last 10 exchanges for context
+    }));
+
+    inputEl.value = '';
+    inputEl.disabled = true;
+    if(sendBtn) sendBtn.disabled = true;
+  }
+
+  // Wire up events when the AI section is first opened
+  function setupAISection() {
+    const inputEl = document.getElementById('ai-input');
+    const sendBtn = document.getElementById('ai-send-btn');
+    if(!inputEl || !sendBtn) return;
+    if(inputEl.dataset.aiWired) return;
+    inputEl.dataset.aiWired = '1';
+
+    sendBtn.addEventListener('click', sendAI);
+    inputEl.addEventListener('keydown', e => {
+      if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendAI(); }
+    });
+    initAI();
+  }
+
+  // Hook into navigation
+  document.addEventListener('click', e => {
+    const item = e.target.closest('[data-section="ai"]');
+    if(item) setTimeout(setupAISection, 100);
+  });
+
+  // Also expose for programmatic navigation
+  window._initAISection = setupAISection;
+})();
+
 // ---- Keyboard Shortcuts ----
 function setupKeyboardShortcuts() {
   document.addEventListener('keydown', e => {
@@ -3089,7 +3465,7 @@ function setupKeyboardShortcuts() {
 
 /** Returns the ordered nav sections, including 'admin' only for moderators */
 function _getNavSections() {
-  const base = ['home','chat','dms','games','goatcoin','shop','profile','settings'];
+  const base = ['home','chat','dms','games','goatcoin','shop','profile','settings','ai'];
   if(currentUserData && canModerate(currentUserData.rank)) {
     base.push('admin');
   }
