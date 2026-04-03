@@ -5,7 +5,7 @@ import {
   createUserWithEmailAndPassword, signInWithEmailAndPassword,
   signOut, onAuthStateChanged, writeBatch
 } from './firebase.js';
-import { getDatabase, ref as rtRef, set as rtSet, get as rtGet, onValue, serverTimestamp as rtServerTimestamp, remove, update as rtUpdate } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { getDatabase, ref as rtRef, set as rtSet, get as rtGet, onValue, serverTimestamp as rtServerTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 import { updateEmail, updatePassword, EmailAuthProvider, reauthenticateWithCredential } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { initGoatCoin, setActivity, cleanupGoatCoin, getGoatCoinData, renderGoatCoinTab } from './goatcoin.js';
 import { renderBadgeRow, openProfileModal, renderOwnProfile, checkAutoAwards, BADGE_DEFS, checkAdblocker } from './profile.js';
@@ -397,7 +397,6 @@ function navigate(section) {
   setActivity(section === 'chat' ? 'chat' : section === 'games' ? 'game' : 'site');
   if(section === 'goatcoin') renderGoatCoinTab();
   if(section === 'shop') renderShopTab();
-  if(section === 'ai') setTimeout(() => window._initAISection?.(), 100);
   document.getElementById('mobile-drawer-overlay')?.remove();
   document.getElementById('mobile-drawer')?.remove();
 }
@@ -1964,14 +1963,16 @@ function renderAnnouncementPanel(container) {
     </div>
   `;
 
-  // Load current announcement from RTDB
+  // Announcement storage lives in Firestore to avoid RTDB rule conflicts.
+  const annDocRef = doc(db, 'meta', 'announcement_active');
+
+  // Load current announcement from Firestore
   async function loadCurrentAnnouncement() {
     const el = document.getElementById('ann-current-content');
     if(!el) return;
-    if(!_rtdb) { el.innerHTML='<div style="color:var(--text-faint);font-size:.78rem">RTDB not available.</div>'; return; }
     try {
-      const snap = await rtGet(rtRef(_rtdb, 'announcements/active'));
-      const data = snap.val();
+      const snap = await getDoc(annDocRef);
+      const data = snap.exists() ? snap.data() : null;
       if(!data) { el.innerHTML='<div style="color:var(--text-faint);font-size:.78rem">No active announcement.</div>'; return; }
       const seen = Object.keys(data.seenBy||{}).length;
       el.innerHTML = `
@@ -1990,9 +1991,8 @@ function renderAnnouncementPanel(container) {
     const err = document.getElementById('ann-err');
     if(!heading) { if(err) err.textContent='Enter a heading'; return; }
     if(!body) { if(err) err.textContent='Enter a message'; return; }
-    if(!_rtdb) { if(err) err.textContent='RTDB not available'; return; }
     try {
-      await rtSet(rtRef(_rtdb, 'announcements/active'), {
+      await setDoc(annDocRef, {
         heading, body, seenBy: {}, createdAt: Date.now(), createdBy: currentUser.uid
       });
       if(err) err.textContent='';
@@ -2002,10 +2002,9 @@ function renderAnnouncementPanel(container) {
   });
 
   document.getElementById('btn-cancel-announce')?.addEventListener('click', async () => {
-    if(!_rtdb) return;
     if(!confirm('Cancel the active announcement?')) return;
     try {
-      await remove(rtRef(_rtdb, 'announcements/active')).catch(()=>{});
+      await deleteDoc(annDocRef).catch(()=>{});
       toast('Announcement cancelled.', 'info');
       loadCurrentAnnouncement();
     } catch(e) { toast('Failed: '+e.message, 'error'); }
@@ -2014,10 +2013,11 @@ function renderAnnouncementPanel(container) {
 
 // Check and show announcement popup on app load (shown once per user)
 async function checkAndShowAnnouncement() {
-  if(!_rtdb || !currentUser) return;
+  if(!currentUser) return;
+  const annDocRef = doc(db, 'meta', 'announcement_active');
   try {
-    const snap = await rtGet(rtRef(_rtdb, 'announcements/active'));
-    const data = snap.val();
+    const snap = await getDoc(annDocRef);
+    const data = snap.exists() ? snap.data() : null;
     if(!data) return;
     const uid = currentUser.uid;
     // Already seen?
@@ -2036,16 +2036,16 @@ async function checkAndShowAnnouncement() {
       closeModal();
       // Mark as seen
       try {
-        await rtUpdate(rtRef(_rtdb, `announcements/active/seenBy`), {[uid]: true}).catch(()=>{});
+        await updateDoc(annDocRef, { [`seenBy.${uid}`]: true }).catch(()=>{});
         // Check if all approved users have seen it — if so, delete
         const allUsersSnap = await getDocs(query(collection(db,'users'), where('status','==','approved')));
         const allUids = allUsersSnap.docs.map(d=>d.id);
-        const updatedSnap = await rtGet(rtRef(_rtdb, 'announcements/active'));
-        const updatedData = updatedSnap.val();
+        const updatedSnap = await getDoc(annDocRef);
+        const updatedData = updatedSnap.exists() ? updatedSnap.data() : null;
         if(updatedData) {
           const seenCount = Object.keys(updatedData.seenBy||{}).length;
           if(seenCount >= allUids.length) {
-            await remove(rtRef(_rtdb, 'announcements/active')).catch(()=>{});
+            await deleteDoc(annDocRef).catch(()=>{});
           }
         }
       } catch(e) {}
@@ -3263,158 +3263,6 @@ function boot() {
 
 document.addEventListener('DOMContentLoaded', boot);
 
-// ══════════════════════════════════════════════════
-// AI CHAT — WebSocket-backed streaming assistant
-// ══════════════════════════════════════════════════
-(function() {
-  // WebSocket URL decoded from the provided script
-  const WS_URL = 'wss://gn-math.net/ws';
-
-  let ws = null;
-  let botBubble = null;
-  let botText = '';
-  let streaming = false;
-  let aiHistory = [];
-  let aiInitialized = false;
-
-  function initAI() {
-    if(aiInitialized) return;
-    aiInitialized = true;
-    connectAI();
-  }
-
-  function connectAI() {
-    const statusEl = document.getElementById('ai-status');
-    const inputEl = document.getElementById('ai-input');
-    const sendBtn = document.getElementById('ai-send-btn');
-    if(!statusEl) return;
-
-    if(statusEl) statusEl.textContent = 'Connecting…';
-    ws = new WebSocket(WS_URL);
-
-    ws.onopen = () => {
-      if(statusEl) { statusEl.textContent = 'Connected'; statusEl.style.color = 'var(--success)'; }
-      if(inputEl) inputEl.disabled = false;
-      if(sendBtn) sendBtn.disabled = false;
-      if(inputEl) inputEl.focus();
-    };
-
-    ws.onmessage = e => {
-      let msg;
-      try { msg = JSON.parse(e.data); } catch { return; }
-      const msgs = document.getElementById('ai-messages');
-      if(!msgs) return;
-
-      if(msg.type === 'start') {
-        botText = '';
-        botBubble = addAIMessage('', 'bot');
-        streaming = true;
-      } else if(msg.type === 'chunk' && botBubble && msg.content) {
-        botText += msg.content;
-        renderAIMarkdown(botBubble, botText);
-        aiScrollToBottom();
-      } else if(msg.type === 'end') {
-        if(botBubble) renderAIMarkdown(botBubble, msg.content || botText);
-        aiHistory.push({role:'assistant', content: msg.content || botText});
-        botBubble = null;
-        streaming = false;
-        if(inputEl) inputEl.disabled = false;
-        if(sendBtn) sendBtn.disabled = false;
-        if(inputEl) inputEl.focus();
-        aiScrollToBottom();
-      } else if(msg.type === 'error') {
-        addAIMessage('⚠ ' + (msg.content || 'An error occurred'), 'bot');
-        streaming = false;
-        if(inputEl) inputEl.disabled = false;
-        if(sendBtn) sendBtn.disabled = false;
-      }
-    };
-
-    ws.onclose = () => {
-      if(statusEl) { statusEl.textContent = 'Disconnected — reconnecting…'; statusEl.style.color = 'var(--warn)'; }
-      if(inputEl) inputEl.disabled = true;
-      if(sendBtn) sendBtn.disabled = true;
-      setTimeout(connectAI, 3000);
-    };
-
-    ws.onerror = () => {
-      if(statusEl) { statusEl.textContent = 'Connection error'; statusEl.style.color = 'var(--danger)'; }
-    };
-  }
-
-  function addAIMessage(text, type) {
-    const msgs = document.getElementById('ai-messages');
-    if(!msgs) return null;
-    const div = document.createElement('div');
-    div.className = 'ai-msg ai-msg-' + type;
-    if(text) div.innerHTML = text;
-    msgs.appendChild(div);
-    aiScrollToBottom();
-    return div;
-  }
-
-  function aiScrollToBottom() {
-    const msgs = document.getElementById('ai-messages');
-    if(msgs) msgs.scrollTop = msgs.scrollHeight;
-  }
-
-  function renderAIMarkdown(el, text) {
-    if(!el) return;
-    let html = text
-      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-      .replace(/```(\w*)\n([\s\S]*?)```/g, (_, lang, code) => `<pre><code>${code}</code></pre>`)
-      .replace(/`([^`]+)`/g, '<code>$1</code>')
-      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-      .replace(/\*(.+?)\*/g, '<em>$1</em>')
-      .replace(/\n/g, '<br>');
-    el.innerHTML = html;
-  }
-
-  function sendAI() {
-    const inputEl = document.getElementById('ai-input');
-    const sendBtn = document.getElementById('ai-send-btn');
-    if(!inputEl || !ws) return;
-    const text = inputEl.value.trim();
-    if(!text || ws.readyState !== WebSocket.OPEN || streaming) return;
-
-    addAIMessage(escHtml(text), 'user');
-    aiHistory.push({role:'user', content:text});
-
-    ws.send(JSON.stringify({
-      question: text,
-      history: aiHistory.slice(-10) // keep last 10 exchanges for context
-    }));
-
-    inputEl.value = '';
-    inputEl.disabled = true;
-    if(sendBtn) sendBtn.disabled = true;
-  }
-
-  // Wire up events when the AI section is first opened
-  function setupAISection() {
-    const inputEl = document.getElementById('ai-input');
-    const sendBtn = document.getElementById('ai-send-btn');
-    if(!inputEl || !sendBtn) return;
-    if(inputEl.dataset.aiWired) return;
-    inputEl.dataset.aiWired = '1';
-
-    sendBtn.addEventListener('click', sendAI);
-    inputEl.addEventListener('keydown', e => {
-      if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendAI(); }
-    });
-    initAI();
-  }
-
-  // Hook into navigation
-  document.addEventListener('click', e => {
-    const item = e.target.closest('[data-section="ai"]');
-    if(item) setTimeout(setupAISection, 100);
-  });
-
-  // Also expose for programmatic navigation
-  window._initAISection = setupAISection;
-})();
-
 // ---- Keyboard Shortcuts ----
 function setupKeyboardShortcuts() {
   document.addEventListener('keydown', e => {
@@ -3465,7 +3313,7 @@ function setupKeyboardShortcuts() {
 
 /** Returns the ordered nav sections, including 'admin' only for moderators */
 function _getNavSections() {
-  const base = ['home','chat','dms','games','goatcoin','shop','profile','settings','ai'];
+  const base = ['home','chat','dms','games','goatcoin','shop','profile','settings'];
   if(currentUserData && canModerate(currentUserData.rank)) {
     base.push('admin');
   }

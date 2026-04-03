@@ -220,12 +220,6 @@
         </span>
         <span class="snav-label">Settings</span>
       </button>
-      <button class="snav-item" data-section="ai">
-        <span class="snav-icon">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 110 20 10 10 0 010-20z"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-        </span>
-        <span class="snav-label">AI Chat</span>
-      </button>
       <button class="snav-item hidden" data-section="admin" id="nav-admin">
         <span class="snav-icon">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
@@ -281,11 +275,6 @@
             <div class="hcard-title">Settings</div>
             <div class="hcard-sub">Themes & alerts</div>
           </div>
-          <div class="home-card" data-goto="ai">
-            <div class="hcard-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 110 20 10 10 0 010-20z"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
-            <div class="hcard-title">AI Chat</div>
-            <div class="hcard-sub">Ask anything</div>
-          </div>
         </div>
         <div class="home-stats">
           <div class="stat-item">
@@ -306,7 +295,7 @@
           </div>
         </div>
         <div class="home-shortcuts">
-          <kbd>Ctrl</kbd>+<kbd>K</kbd> Search &nbsp;&middot;&nbsp; <kbd>Esc</kbd> Close &nbsp;&middot;&nbsp; <kbd>1</kbd>-<kbd>9</kbd> Navigate &nbsp;&middot;&nbsp; <kbd>0</kbd> AI Chat
+          <kbd>Ctrl</kbd>+<kbd>K</kbd> Search &nbsp;&middot;&nbsp; <kbd>Esc</kbd> Close &nbsp;&middot;&nbsp; <kbd>1</kbd>-<kbd>9</kbd> Navigate
         </div>
         <div class="home-copy">nebula v2 — beyond the stars</div>
       </div>
@@ -1148,38 +1137,6 @@
 
     <!-- ══════ SHOP ══════ -->
     <section id="section-shop" class="section"></section>
-
-    <!-- ══════ AI CHAT ══════ -->
-    <section id="section-ai" class="section">
-      <div class="ai-page">
-        <div class="ai-header">
-          <div class="ai-header-icon">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 110 20 10 10 0 010-20z"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-          </div>
-          <div>
-            <div class="ai-header-title">Nebula AI</div>
-            <div class="ai-header-sub">Powered by our AI assistant — please don't abuse it 🙏</div>
-          </div>
-        </div>
-        <div class="ai-chat-wrap">
-          <div class="ai-messages" id="ai-messages">
-            <div class="ai-notice">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-              Don't abuse AI please. If you run into problems let us know on <a href="https://discord.gg/gn-math" target="_blank" rel="noopener">our Discord</a>.
-            </div>
-            <div class="ai-status" id="ai-status">Connecting...</div>
-          </div>
-          <div class="ai-input-area">
-            <div class="ai-input-wrap">
-              <input id="ai-input" type="text" placeholder="Ask anything..." maxlength="500" disabled autocomplete="off">
-              <button id="ai-send-btn" class="ai-send-btn" disabled>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
 
     <!-- ══════ ADMIN ══════ -->
     <section id="section-admin" class="section">
