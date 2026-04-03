@@ -16,7 +16,7 @@
   <title>Nebula V2</title>
   <meta name="description" content="Nebula V2 — Beyond The Stars. Chat, game, and connect.">
   <meta name="theme-color" content="#071827">
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><polygon points='12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2' fill='%234fc9ea'/></svg>">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✦</text></svg>">
   <!-- Layout (structure only) -->
   <link rel="stylesheet" href="css/layout.css">
   <!-- Active theme injected by JS — default fallback -->
@@ -164,7 +164,7 @@
   <!-- ── Sidebar ── -->
   <nav id="sidebar">
     <div class="sidebar-logo" data-section="home" title="Home">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="currentColor" stroke="none"/></svg>
+      <span style="font-size:1.2rem">✦</span>
       <span class="logo-text">NEBULA</span>
       <span class="logo-pulse"></span>
     </div>
@@ -1158,11 +1158,15 @@
           </div>
           <div>
             <div class="ai-header-title">Nebula AI</div>
-            <div class="ai-header-sub">Powered by our AI assistant</div>
+            <div class="ai-header-sub">Powered by our AI assistant — please don't abuse it 🙏</div>
           </div>
         </div>
         <div class="ai-chat-wrap">
           <div class="ai-messages" id="ai-messages">
+            <div class="ai-notice">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              Don't abuse AI please. If you run into problems let us know on <a href="https://discord.gg/gn-math" target="_blank" rel="noopener">our Discord</a>.
+            </div>
             <div class="ai-status" id="ai-status">Connecting...</div>
           </div>
           <div class="ai-input-area">

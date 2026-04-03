@@ -5832,57 +5832,6 @@ body, #sidebar, #main, .chat-topbar, .thread-sidebar, .members-sidebar {
 .ann-preview-body { font-size: .84rem; color: var(--text-muted); line-height: 1.65; white-space: pre-wrap; margin-bottom: .6rem; }
 .ann-preview-meta { font-size: .68rem; color: var(--text-faint); font-style: italic; }
 
-/* ── Announcement Popup (user-facing) ── */
-.announce-popup {
-  text-align: center;
-  padding: .8rem .2rem .2rem;
-}
-.announce-popup-icon {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, rgba(var(--accent-rgb, 79,201,234), .15), rgba(var(--accent-rgb, 79,201,234), .05));
-  border: 1.5px solid rgba(var(--accent-rgb, 79,201,234), .3);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto .85rem;
-  color: var(--accent);
-  animation: announceIconPulse 2s ease-in-out infinite;
-}
-@keyframes announceIconPulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(var(--accent-rgb, 79,201,234), .2); }
-  50% { box-shadow: 0 0 0 10px rgba(var(--accent-rgb, 79,201,234), 0); }
-}
-.announce-popup-badge {
-  display: inline-block;
-  font-size: .62rem;
-  font-weight: 800;
-  letter-spacing: 1.2px;
-  text-transform: uppercase;
-  background: var(--accent);
-  color: var(--badge-text, #000);
-  padding: .25rem .7rem;
-  border-radius: 20px;
-  margin-bottom: .75rem;
-}
-.announce-popup-title {
-  font-size: 1.2rem;
-  font-weight: 800;
-  color: var(--text);
-  margin: 0 0 .65rem;
-  line-height: 1.35;
-}
-.announce-popup-body {
-  font-size: .88rem;
-  color: var(--text-muted);
-  line-height: 1.7;
-  white-space: pre-wrap;
-  max-width: 400px;
-  margin: 0 auto;
-  padding: 0 .5rem;
-}
-
 /* Admin real-name display in pending panel */
 .adm-row-realname {
   font-size: .72rem;

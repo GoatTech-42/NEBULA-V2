@@ -585,7 +585,7 @@ function _showWaitingState(opp, stake, bestOf) {
         <div class="bj-waiting-opp" style="background:${opp.color||avatarColor(opp.uid)}">${avatarHtml(opp.icon||'',opp.username,'55%')}</div>
       </div>
       <div class="bj-waiting-text">Waiting for <strong>${escHtml(opp.username)}</strong> to accept...</div>
-      <div class="bj-waiting-meta">${stake} GC per round &middot; Best of ${bestOf}</div>
+      <div class="bj-waiting-meta">${stake} GC per round Â· Best of ${bestOf}</div>
       <button class="btn btn-ghost btn-sm" id="bj-cancel-challenge">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         Cancel
@@ -683,7 +683,7 @@ function _renderPendingChallenges(challenges) {
         <div class="bj-sr-ava bj-mystery-ava">?</div>
         <div class="bj-chal-info">
           <span class="bj-chal-from bj-mystery-name">Someone challenges you</span>
-          <span class="bj-chal-meta">${c.stake} GC/round &middot; Best of ${c.bestOf} &middot; <span style="color:var(--warn);font-weight:700">Identity hidden until accepted</span></span>
+          <span class="bj-chal-meta">${c.stake} GC/round Â· Best of ${c.bestOf} Â· <span style="color:var(--warn);font-weight:700">Identity hidden until accepted</span></span>
         </div>
         <button class="ta-btn ta-green bj-accept-btn" data-cid="${c.id}">Accept</button>
         <button class="ta-btn ta-red bj-decline-btn" data-cid="${c.id}">Decline</button>
@@ -727,21 +727,20 @@ async function _acceptChallenge(cid) {
 
   if(_rtdb) {
     await rtSet(rtRef(_rtdb, `bj_games/${gameId}`), gameData);
-    // Deal the round (sets phase to p1turn with hands)
-    await _dealRound(gameId, true);
-    // Now update the challenge to accepted — this triggers p1's listener
-    await updateDoc(doc(db,'bj_challenges',cid), {status:'accepted', gameId});
-    // Join as p2 — the RTDB listener will see the fully dealt game
-    _joinGame(gameId, 'p2', true);
-    setTimeout(() => deleteDoc(doc(db,'bj_challenges',cid)).catch(()=>{}), 5000);
   } else {
     // Fallback to Firestore if RTDB unavailable
     const fsRef = await addDoc(collection(db,'bj_games'), {...gameData, createdAt: serverTimestamp()});
-    await _dealRound(fsRef.id, false);
     await updateDoc(doc(db,'bj_challenges',cid), {status:'accepted', gameId: fsRef.id});
+    await _dealRound(fsRef.id, false);
     _joinGame(fsRef.id, 'p2', false);
     setTimeout(() => deleteDoc(doc(db,'bj_challenges',cid)).catch(()=>{}), 5000);
+    return;
   }
+
+  await updateDoc(doc(db,'bj_challenges',cid), {status:'accepted', gameId});
+  await _dealRound(gameId, true);
+  _joinGame(gameId, 'p2', true);
+  setTimeout(() => deleteDoc(doc(db,'bj_challenges',cid)).catch(()=>{}), 5000);
 }
 
 async function _declineChallenge(cid) {
@@ -796,14 +795,8 @@ function _joinGame(gameId, role, useRtdb=true) {
   if(_mpGameUnsub) { _mpGameUnsub(); _mpGameUnsub=null; }
 
   if(useRtdb && _rtdb) {
-    let firstFire = true;
     const off = onValue(rtRef(_rtdb, `bj_games/${gameId}`), snap => {
-      if(!snap.val()) {
-        // Don't leave on first fire if game was just created — might be a timing issue
-        if(firstFire) { firstFire = false; return; }
-        _leaveGame(); return;
-      }
-      firstFire = false;
+      if(!snap.val()) { _leaveGame(); return; }
       _mpGame = snap.val();
       // Normalize hand fields
       _mpGame.p1hand = _strToHand(_mpGame.p1hand||'');
@@ -819,34 +812,24 @@ function _joinGame(gameId, role, useRtdb=true) {
     const unsub = onSnapshot(doc(db,'bj_games',gameId), snap => {
       if(!snap.exists()) { _leaveGame(); return; }
       _mpGame = snap.data();
-      // Normalize hand fields for Firestore path too
-      if(typeof _mpGame.p1hand === 'string') _mpGame.p1hand = _strToHand(_mpGame.p1hand);
-      if(typeof _mpGame.p2hand === 'string') _mpGame.p2hand = _strToHand(_mpGame.p2hand);
-      if(typeof _mpGame.dealerHand === 'string') _mpGame.dealerHand = _strToHand(_mpGame.dealerHand);
-      if(typeof _mpGame.roundResults === 'string') _mpGame.roundResults = JSON.parse(_mpGame.roundResults||'[]');
-      _mpGame.scores = _mpGame.scores || {p1:0,p2:0};
       if(_mpGame.phase==='dealer'&&_myRole==='p1') _resolveRound();
       else _renderBJTable();
     });
     _mpGameUnsub = unsub;
   }
 
-  // Navigate to goatcoin tab — only click the sidebar nav, not home cards too
-  const navBtn = document.querySelector('#sidebar [data-section="goatcoin"]') ||
-                 document.querySelector('.snav-item[data-section="goatcoin"]');
-  if(navBtn) navBtn.click();
+  // Navigate to goatcoin tab
+  document.querySelectorAll('[data-section="goatcoin"]').forEach(el=>el.click());
 }
 
 function _leaveGame() {
   if(_mpGameUnsub) { _mpGameUnsub(); _mpGameUnsub=null; }
-  const overlay = document.getElementById('bj-fullscreen-overlay');
-  if(overlay) overlay.remove();
+  document.getElementById('bj-fullscreen-overlay')?.remove();
   if(_mpGameId && _mpGame?.phase === 'gameDone') {
-    const gid = _mpGameId;
-    if(_useRTDB && _rtdb) rtRemove(rtRef(_rtdb,`bj_games/${gid}`)).catch(()=>{});
-    else deleteDoc(doc(db,'bj_games',gid)).catch(()=>{});
+    if(_useRTDB && _rtdb) rtRemove(rtRef(_rtdb,`bj_games/${_mpGameId}`)).catch(()=>{});
+    else deleteDoc(doc(db,'bj_games',_mpGameId)).catch(()=>{});
   }
-  _mpGameId=null; _mpGame=null; _myRole=null; _resolving=false;
+  _mpGameId=null; _mpGame=null; _myRole=null;
   _renderTab();
 }
 
@@ -893,12 +876,9 @@ export async function bjDouble() {
   });
 }
 
-let _resolving = false;
 async function _resolveRound() {
-  if(_resolving) return;
   const g = _mpGame;
   if(!g||g.phase!=='dealer'||_myRole!=='p1') return;
-  _resolving = true;
   const deck = _strToDeck(typeof g.deck==='string'?g.deck:'');
   const dealerHand = Array.isArray(g.dealerHand) ? [...g.dealerHand] : [];
   while(_handTotal(dealerHand)<17) dealerHand.push(deck.pop());
@@ -961,8 +941,7 @@ async function _resolveRound() {
       await updateDoc(doc(db,'goatcoin',winnerUid),{weekBJWins:increment(1),totalBJWins:increment(1)}).catch(()=>{});
     }
   }
-  _resolving = false;
-  // The RTDB listener will fire again with the updated game and render the table
+  _renderBJTable();
 }
 
 export async function bjNextRound() {
@@ -1055,7 +1034,7 @@ function _renderBJTable() {
             <span>${escHtml(myName)} (You)</span>
             <span class="bj-mp-score">${scores[_myRole]||0}</span>
           </div>
-          <div class="bj-mp-vs">vs &middot; Round ${g.currentRound||1} of ${g.bestOf||3} &middot; ${g.stake}GC/rd</div>
+          <div class="bj-mp-vs">vs Â· Round ${g.currentRound||1} of ${g.bestOf||3} Â· ${g.stake}GC/rd</div>
           <div class="bj-mp-player">
             <div class="bj-mp-ava" style="background:${oppColor}">${avatarHtml(oppIcon,oppName,'60%')}</div>
             <span>${escHtml(oppName)}</span>

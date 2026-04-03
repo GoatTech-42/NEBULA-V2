@@ -2024,22 +2024,12 @@ async function checkAndShowAnnouncement() {
     if(data.seenBy && data.seenBy[uid]) return;
     // Show popup
     showModal(`
-      <div class="announce-popup">
-        <div class="announce-popup-icon">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M22 17H2a3 3 0 000 4h20v-4z"/>
-            <path d="M14 9v8M9 9v8"/>
-            <path d="M12 4C10 4 8 6 8 9h8c0-3-2-5-4-5z"/>
-          </svg>
-        </div>
-        <div class="announce-popup-badge">New Update</div>
-        <h3 class="announce-popup-title">${escHtml(data.heading||'Update')}</h3>
-        <p class="announce-popup-body">${escHtml(data.body||'')}</p>
-        <div class="modal-actions" style="justify-content:center;padding-top:.5rem">
-          <button class="btn btn-sm" id="ann-dismiss-btn" style="min-width:120px">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-            Got it
-          </button>
+      <div style="text-align:center;padding:.5rem 0">
+        <div style="font-size:1.5rem;margin-bottom:.5rem">📢</div>
+        <h3 style="margin-bottom:.6rem">${escHtml(data.heading||'Update')}</h3>
+        <p class="modal-p" style="white-space:pre-wrap">${escHtml(data.body||'')}</p>
+        <div class="modal-actions" style="justify-content:center">
+          <button class="btn btn-sm" id="ann-dismiss-btn">Got it</button>
         </div>
       </div>`);
     document.getElementById('ann-dismiss-btn')?.addEventListener('click', async () => {
