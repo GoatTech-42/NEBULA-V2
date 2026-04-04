@@ -164,7 +164,7 @@
   <!-- ── Sidebar ── -->
   <nav id="sidebar">
     <div class="sidebar-logo" data-section="home" title="Home">
-      <span style="font-size:1.2rem">✦</span>
+      <svg class="sidebar-logo-star" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
       <span class="logo-text">NEBULA</span>
       <span class="logo-pulse"></span>
     </div>
@@ -207,6 +207,12 @@
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
         </span>
         <span class="snav-label">Shop</span>
+      </button>
+      <button class="snav-item" data-section="ai">
+        <span class="snav-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a4 4 0 0 1 4 4v1a1 1 0 0 0 1 1h1a4 4 0 0 1 0 8h-1a1 1 0 0 0-1 1v1a4 4 0 0 1-8 0v-1a1 1 0 0 0-1-1H6a4 4 0 0 1 0-8h1a1 1 0 0 0 1-1V6a4 4 0 0 1 4-4z"/><circle cx="12" cy="12" r="2"/></svg>
+        </span>
+        <span class="snav-label">AI</span>
       </button>
       <button class="snav-item" data-section="profile">
         <span class="snav-icon">
@@ -269,6 +275,11 @@
             <div class="hcard-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg></div>
             <div class="hcard-title">Shop</div>
             <div class="hcard-sub">Spend your GoatCoin</div>
+          </div>
+          <div class="home-card" data-goto="ai">
+            <div class="hcard-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a4 4 0 0 1 4 4v1a1 1 0 0 0 1 1h1a4 4 0 0 1 0 8h-1a1 1 0 0 0-1 1v1a4 4 0 0 1-8 0v-1a1 1 0 0 0-1-1H6a4 4 0 0 1 0-8h1a1 1 0 0 0 1-1V6a4 4 0 0 1 4-4z"/><circle cx="12" cy="12" r="2"/></svg></div>
+            <div class="hcard-title">AI</div>
+            <div class="hcard-sub">Chat with AI</div>
           </div>
           <div class="home-card" data-goto="settings">
             <div class="hcard-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg></div>
@@ -982,9 +993,9 @@
             <div class="keybind-row"><span class="keybind-label">Go to Games</span><div class="keybind-key"><kbd>4</kbd></div></div>
             <div class="keybind-row"><span class="keybind-label">Go to GoatCoin</span><div class="keybind-key"><kbd>5</kbd></div></div>
             <div class="keybind-row"><span class="keybind-label">Go to Shop</span><div class="keybind-key"><kbd>6</kbd></div></div>
-            <div class="keybind-row"><span class="keybind-label">Go to Profile</span><div class="keybind-key"><kbd>7</kbd></div></div>
-            <div class="keybind-row"><span class="keybind-label">Go to Settings</span><div class="keybind-key"><kbd>8</kbd></div></div>
-            <div class="keybind-row"><span class="keybind-label">Go to Admin (admins only)</span><div class="keybind-key"><kbd>9</kbd></div></div>
+            <div class="keybind-row"><span class="keybind-label">Go to AI Chat</span><div class="keybind-key"><kbd>7</kbd></div></div>
+            <div class="keybind-row"><span class="keybind-label">Go to Profile</span><div class="keybind-key"><kbd>8</kbd></div></div>
+            <div class="keybind-row"><span class="keybind-label">Go to Settings</span><div class="keybind-key"><kbd>9</kbd></div></div>
           </div>
           <div class="settings-group">
             <div class="settings-group-title">Chat</div>
@@ -1135,6 +1146,19 @@
       </div>
     </div>
 
+    <!-- ══════ AI CHAT ══════ -->
+    <section id="section-ai" class="section">
+      <div class="ai-chat-layout">
+        <div class="ai-chat-messages" id="ai-chat">
+          <div id="ai-status" class="ai-status">Connecting...</div>
+        </div>
+        <div class="ai-input-area">
+          <input type="text" id="ai-input" class="ai-input" placeholder="Ask something..." autocomplete="off" disabled>
+          <button id="ai-send" class="ai-send-btn" disabled>Send</button>
+        </div>
+      </div>
+    </section>
+
     <!-- ══════ SHOP ══════ -->
     <section id="section-shop" class="section"></section>
 
@@ -1244,6 +1268,119 @@
     const wrap = document.getElementById('messages-wrap');
     if(wrap) wrap.scrollTop = wrap.scrollHeight;
   });
+
+  // ── AI Chat Section ──
+  (function initAIChat() {
+    const WS_URL = 'wss://gn-math-ai.onrender.com';
+    const chatEl = document.getElementById('ai-chat');
+    const statusEl = document.getElementById('ai-status');
+    const inputEl = document.getElementById('ai-input');
+    const sendBtn = document.getElementById('ai-send');
+    let ws = null, botBubble = null, botText = '', streaming = false, history = [];
+
+    function connect() {
+      statusEl.textContent = 'Connecting...';
+      statusEl.className = 'ai-status';
+      ws = new WebSocket(WS_URL);
+      ws.onopen = () => {
+        statusEl.textContent = 'Connected';
+        statusEl.className = 'ai-status connected';
+        inputEl.disabled = false;
+        sendBtn.disabled = false;
+        inputEl.focus();
+      };
+      ws.onmessage = (ev) => {
+        let msg;
+        try { msg = JSON.parse(ev.data); } catch { return; }
+        switch (msg.type) {
+          case 'stream_start':
+            botText = '';
+            botBubble = addAIMsg('', 'bot');
+            streaming = true;
+            break;
+          case 'stream_token':
+            if (botBubble && msg.token) {
+              renderAIMd(botBubble, botText += msg.token);
+              scrollAIBottom();
+            }
+            break;
+          case 'stream_end':
+            if (botBubble) renderAIMd(botBubble, msg.full || botText);
+            history.push({ role: 'assistant', content: msg.full || botText });
+            botBubble = null;
+            streaming = false;
+            inputEl.disabled = false;
+            sendBtn.disabled = false;
+            inputEl.focus();
+            scrollAIBottom();
+            break;
+          case 'error':
+            addAIMsg('\u26a0 ' + (msg.message || 'Something went wrong.'), 'bot');
+            streaming = false;
+            inputEl.disabled = false;
+            sendBtn.disabled = false;
+            break;
+        }
+      };
+      ws.onclose = () => {
+        statusEl.textContent = 'Disconnected — reconnecting...';
+        statusEl.className = 'ai-status error';
+        inputEl.disabled = true;
+        sendBtn.disabled = true;
+        setTimeout(connect, 3000);
+      };
+      ws.onerror = () => {
+        statusEl.textContent = 'Connection error';
+        statusEl.className = 'ai-status error';
+      };
+    }
+
+    function sendAI() {
+      let text = inputEl.value.trim();
+      if (text && ws && ws.readyState === WebSocket.OPEN && !streaming) {
+        addAIMsg(text, 'user');
+        history.push({ role: 'user', content: text });
+        ws.send(JSON.stringify({ question: text, history: history.slice(-10) }));
+        inputEl.value = '';
+        inputEl.disabled = true;
+        sendBtn.disabled = true;
+      }
+    }
+
+    function addAIMsg(text, cls) {
+      let el = document.createElement('div');
+      el.className = 'ai-msg ' + cls;
+      if (cls === 'user') el.textContent = text;
+      chatEl.appendChild(el);
+      scrollAIBottom();
+      return el;
+    }
+
+    function scrollAIBottom() {
+      chatEl.scrollTop = chatEl.scrollHeight;
+    }
+
+    function renderAIMd(el, text) {
+      let h = text
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/```(\w*)\n([\s\S]*?)```/g, (_, lang, code) => '<pre><code>' + code + '</code></pre>')
+        .replace(/`([^`]+)`/g, '<code>$1</code>')
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.+?)\*/g, '<em>$1</em>')
+        .replace(/\n/g, '<br>');
+      el.innerHTML = h;
+    }
+
+    sendBtn?.addEventListener('click', sendAI);
+    inputEl?.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendAI();
+      }
+    });
+
+    connect();
+  })();
 
   // Scroll to bottom button (DMs)
   document.getElementById('dm-messages-wrap')?.addEventListener('scroll', function() {

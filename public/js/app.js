@@ -5,7 +5,7 @@ import {
   createUserWithEmailAndPassword, signInWithEmailAndPassword,
   signOut, onAuthStateChanged, writeBatch
 } from './firebase.js';
-import { getDatabase, ref as rtRef, set as rtSet, get as rtGet, onValue, serverTimestamp as rtServerTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { getDatabase, ref as rtRef, set as rtSet, get as rtGet, onValue, remove as rtRemove, serverTimestamp as rtServerTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 import { updateEmail, updatePassword, EmailAuthProvider, reauthenticateWithCredential } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { initGoatCoin, setActivity, cleanupGoatCoin, getGoatCoinData, renderGoatCoinTab } from './goatcoin.js';
 import { renderBadgeRow, openProfileModal, renderOwnProfile, checkAutoAwards, BADGE_DEFS, checkAdblocker } from './profile.js';
@@ -394,7 +394,7 @@ function navigate(section) {
   const sec = document.getElementById('section-'+section);
   if(sec) sec.classList.add('active');
   document.querySelectorAll(`[data-section="${section}"]`).forEach(i=>i.classList.add('active'));
-  setActivity(section === 'chat' ? 'chat' : section === 'games' ? 'game' : 'site');
+  setActivity(section === 'chat' ? 'chat' : section === 'games' ? 'game' : section === 'ai' ? 'site' : 'site');
   if(section === 'goatcoin') renderGoatCoinTab();
   if(section === 'shop') renderShopTab();
   document.getElementById('mobile-drawer-overlay')?.remove();
@@ -1003,7 +1003,7 @@ async function sendTyping() {
       const typRef = rtRef(_rtdb, `typing/${currentChannel.id}/${currentUser.uid}`);
       rtSet(typRef, { username: currentUserData.username, ts: Date.now() }).catch(()=>{});
       // Auto-clear after 4s
-      setTimeout(() => remove(typRef).catch(()=>{}), 4000);
+      setTimeout(() => rtRemove(typRef).catch(()=>{}), 4000);
     } else if(currentChannel) {
       const ref = doc(db, `channels/${currentChannel.id}/typing`,'status');
       await setDoc(ref, { [currentUser.uid]: { username: currentUserData.username, ts: serverTimestamp() } }, {merge:true});
@@ -2024,10 +2024,13 @@ async function checkAndShowAnnouncement() {
     if(data.seenBy && data.seenBy[uid]) return;
     // Show popup
     showModal(`
-      <div style="text-align:center;padding:.5rem 0">
-        <div style="font-size:1.5rem;margin-bottom:.5rem">📢</div>
-        <h3 style="margin-bottom:.6rem">${escHtml(data.heading||'Update')}</h3>
-        <p class="modal-p" style="white-space:pre-wrap">${escHtml(data.body||'')}</p>
+      <div class="ann-popup">
+        <div class="ann-popup-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 17H2a3 3 0 000 4h20v-4z"/><path d="M14 9v8M9 9v8"/><path d="M12 4C10 4 8 6 8 9h8c0-3-2-5-4-5z"/></svg>
+        </div>
+        <h3>${escHtml(data.heading||'Update')}</h3>
+        <div class="ann-popup-divider"></div>
+        <div class="ann-popup-body">${escHtml(data.body||'')}</div>
         <div class="modal-actions" style="justify-content:center">
           <button class="btn btn-sm" id="ann-dismiss-btn">Got it</button>
         </div>
@@ -2389,7 +2392,7 @@ function setupDMInput() {
     dmTypingDebounce = setTimeout(() => {
       const typRef = rtRef(_rtdb, 'typing_dm/' + currentDM.id + '/' + currentUser.uid);
       rtSet(typRef, { username: currentUserData.username, ts: Date.now() }).catch(()=>{});
-      setTimeout(() => remove(typRef).catch(()=>{}), 4000);
+      setTimeout(() => rtRemove(typRef).catch(()=>{}), 4000);
     }, 300);
   });
 }
@@ -3299,7 +3302,7 @@ function setupKeyboardShortcuts() {
 
     if(isInput) return;
 
-    // Number keys  -- navigate sections (1-8 for regular, 1-9 if admin)
+    // Number keys  -- navigate sections (1-9 for regular, admin via command palette)
     const navSections = _getNavSections();
     if(e.key >= '1' && e.key <= '9') {
       const idx = parseInt(e.key) - 1;
@@ -3313,7 +3316,7 @@ function setupKeyboardShortcuts() {
 
 /** Returns the ordered nav sections, including 'admin' only for moderators */
 function _getNavSections() {
-  const base = ['home','chat','dms','games','goatcoin','shop','profile','settings'];
+  const base = ['home','chat','dms','games','goatcoin','shop','ai','profile','settings'];
   if(currentUserData && canModerate(currentUserData.rank)) {
     base.push('admin');
   }
@@ -3339,11 +3342,12 @@ function setupCommandPalette() {
       { label: 'Games',           desc: 'Game vault',             action: () => navigate('games'),     svgKey: 'games',    keys: '4' },
       { label: 'GoatCoin',        desc: 'Currency & blackjack',   action: () => navigate('goatcoin'),  svgKey: 'goatcoin', keys: '5' },
       { label: 'Shop',            desc: 'Spend your GoatCoin',    action: () => navigate('shop'),      svgKey: 'shop',     keys: '6' },
-      { label: 'Profile',         desc: 'Your identity',          action: () => navigate('profile'),   svgKey: 'profile',  keys: '7' },
-      { label: 'Settings',        desc: 'Themes & display',       action: () => navigate('settings'),  svgKey: 'settings', keys: '8' },
+      { label: 'AI Chat',         desc: 'Ask the AI anything',    action: () => navigate('ai'),        svgKey: 'ai',       keys: '7' },
+      { label: 'Profile',         desc: 'Your identity',          action: () => navigate('profile'),   svgKey: 'profile',  keys: '8' },
+      { label: 'Settings',        desc: 'Themes & display',       action: () => navigate('settings'),  svgKey: 'settings', keys: '9' },
     ];
     if(isAdmin) {
-      cmds.push({ label: 'Admin', desc: 'Moderation & management', action: () => navigate('admin'), svgKey: 'admin', keys: '9' });
+      cmds.push({ label: 'Admin', desc: 'Moderation & management', action: () => navigate('admin'), svgKey: 'admin' });
     }
     cmds.push({ label: 'Sign Out', desc: 'Log out of Nebula', action: () => document.getElementById('sp-signout')?.click(), svgKey: 'signout' });
     return cmds;

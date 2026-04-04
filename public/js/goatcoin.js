@@ -693,54 +693,60 @@ function _renderPendingChallenges(challenges) {
 }
 
 async function _acceptChallenge(cid) {
-  const snap = await getDoc(doc(db,'bj_challenges',cid));
-  if(!snap.exists()||snap.data().status!=='pending') { toast('Challenge expired','warning'); return; }
-  const c = snap.data();
-  const maxLoss = (c.stake||0) * Math.ceil((c.bestOf||1)/2);
-  const myCoins = _gcData ? Math.floor(_gcData.coins||0) : 0;
-  if(!_gcData || myCoins < maxLoss) {
-    toast(`Not enough GC -- need ${maxLoss.toLocaleString()} to cover worst-case losses`, 'error');
-    return;
-  }
-  const senderGC = await getDoc(doc(db,'goatcoin',c.fromUid));
-  const senderCoins = senderGC.exists() ? Math.floor(senderGC.data().coins||0) : 0;
-  if(senderCoins < maxLoss) {
-    toast('Challenger no longer has enough GC', 'warning');
-    await updateDoc(doc(db,'bj_challenges',cid),{status:'cancelled'}).catch(()=>{});
-    return;
-  }
+  try {
+    const snap = await getDoc(doc(db,'bj_challenges',cid));
+    if(!snap.exists()||snap.data().status!=='pending') { toast('Challenge expired','warning'); return; }
+    const c = snap.data();
+    const maxLoss = (c.stake||0) * Math.ceil((c.bestOf||1)/2);
+    const myCoins = _gcData ? Math.floor(_gcData.coins||0) : 0;
+    if(!_gcData || myCoins < maxLoss) {
+      toast(`Not enough GC -- need ${maxLoss.toLocaleString()} to cover worst-case losses`, 'error');
+      return;
+    }
+    const senderGC = await getDoc(doc(db,'goatcoin',c.fromUid));
+    const senderCoins = senderGC.exists() ? Math.floor(senderGC.data().coins||0) : 0;
+    if(senderCoins < maxLoss) {
+      toast('Challenger no longer has enough GC', 'warning');
+      await updateDoc(doc(db,'bj_challenges',cid),{status:'cancelled'}).catch(()=>{});
+      return;
+    }
 
-  // Create game in RTDB for fast, cheap updates
-  const deck = _newDeck();
-  const gameId = `bj_${Date.now()}_${Math.random().toString(36).slice(2,8)}`;
-  const gameData = {
-    p1uid: c.fromUid, p1name: c.fromUsername, p1color: c.fromColor||avatarColor(c.fromUid), p1icon: c.fromIcon||'',
-    p2uid: _gcUser.uid, p2name: _gcUserData?.username||'', p2color: _gcUserData?.color||avatarColor(_gcUser.uid), p2icon: _gcUserData?.icon||'',
-    stake: c.stake, bestOf: c.bestOf,
-    scores: {p1:0, p2:0}, currentRound: 1,
-    deck: _deckToStr(deck), p1hand: '', p2hand: '', dealerHand: '',
-    phase: 'dealing', p1action: '', p2action: '',
-    p1double: false, p2double: false,
-    winner: '', roundResults: JSON.stringify([]),
-    createdAt: Date.now(), updatedAt: Date.now()
-  };
+    // Create game — deal cards immediately into the initial state
+    const deck = _newDeck();
+    const p1h = [deck.pop(), deck.pop()];
+    const p2h = [deck.pop(), deck.pop()];
+    const dh = [deck.pop(), deck.pop()];
+    const gameId = `bj_${Date.now()}_${Math.random().toString(36).slice(2,8)}`;
+    const gameData = {
+      p1uid: c.fromUid, p1name: c.fromUsername, p1color: c.fromColor||avatarColor(c.fromUid), p1icon: c.fromIcon||'',
+      p2uid: _gcUser.uid, p2name: _gcUserData?.username||'', p2color: _gcUserData?.color||avatarColor(_gcUser.uid), p2icon: _gcUserData?.icon||'',
+      stake: c.stake, bestOf: c.bestOf,
+      scores: {p1:0, p2:0}, currentRound: 1,
+      deck: _deckToStr(deck),
+      p1hand: _handToStr(p1h),
+      p2hand: _handToStr(p2h),
+      dealerHand: _handToStr(dh),
+      phase: 'p1turn', p1action: '', p2action: '',
+      p1double: false, p2double: false,
+      winner: '', roundResults: JSON.stringify([]),
+      createdAt: Date.now(), updatedAt: Date.now()
+    };
 
-  if(_rtdb) {
-    await rtSet(rtRef(_rtdb, `bj_games/${gameId}`), gameData);
-  } else {
-    // Fallback to Firestore if RTDB unavailable
-    const fsRef = await addDoc(collection(db,'bj_games'), {...gameData, createdAt: serverTimestamp()});
-    await updateDoc(doc(db,'bj_challenges',cid), {status:'accepted', gameId: fsRef.id});
-    await _dealRound(fsRef.id, false);
-    _joinGame(fsRef.id, 'p2', false);
-    setTimeout(() => deleteDoc(doc(db,'bj_challenges',cid)).catch(()=>{}), 5000);
-    return;
+    if(_rtdb) {
+      await rtSet(rtRef(_rtdb, `bj_games/${gameId}`), gameData);
+      await updateDoc(doc(db,'bj_challenges',cid), {status:'accepted', gameId});
+      _joinGame(gameId, 'p2', true);
+    } else {
+      // Fallback to Firestore if RTDB unavailable
+      const fsRef = await addDoc(collection(db,'bj_games'), {...gameData, createdAt: serverTimestamp()});
+      await updateDoc(doc(db,'bj_challenges',cid), {status:'accepted', gameId: fsRef.id});
+      _joinGame(fsRef.id, 'p2', false);
+    }
+    setTimeout(() => deleteDoc(doc(db,'bj_challenges',cid)).catch(()=>{}), 8000);
+  } catch(e) {
+    console.error('Accept challenge error:', e);
+    toast('Failed to accept challenge: ' + (e.message||'Unknown error'), 'error');
   }
-
-  await updateDoc(doc(db,'bj_challenges',cid), {status:'accepted', gameId});
-  await _dealRound(gameId, true);
-  _joinGame(gameId, 'p2', true);
-  setTimeout(() => deleteDoc(doc(db,'bj_challenges',cid)).catch(()=>{}), 5000);
 }
 
 async function _declineChallenge(cid) {
@@ -838,26 +844,37 @@ export async function bjHit() {
   const g = _mpGame;
   const myPhase = _myRole==='p1'?'p1turn':'p2turn';
   if(g.phase!==myPhase) return;
-  const deck = _strToDeck(typeof g.deck==='string'?g.deck:'');
-  const currentHand = Array.isArray(g[`${_myRole}hand`]) ? g[`${_myRole}hand`] : [];
-  const hand = [...currentHand, deck.pop()];
-  const total = _handTotal(hand);
-  const updates = {[`${_myRole}hand`]: _handToStr(hand), deck: _deckToStr(deck)};
-  if(total>=21) {
-    updates[`${_myRole}action`]='stand';
-    updates.phase = _myRole==='p1'?'p2turn':'dealer';
+  try {
+    const deck = _strToDeck(typeof g.deck==='string'?g.deck:'');
+    if(!deck.length) { toast('Deck is empty!','error'); return; }
+    const currentHand = Array.isArray(g[`${_myRole}hand`]) ? g[`${_myRole}hand`] : [];
+    const hand = [...currentHand, deck.pop()];
+    const total = _handTotal(hand);
+    const updates = {[`${_myRole}hand`]: _handToStr(hand), deck: _deckToStr(deck)};
+    if(total>=21) {
+      updates[`${_myRole}action`]='stand';
+      updates.phase = _myRole==='p1'?'p2turn':'dealer';
+    }
+    await _updateGame(_mpGameId, _useRTDB, updates);
+  } catch(e) {
+    console.error('Hit error:', e);
+    toast('Hit failed', 'error');
   }
-  await _updateGame(_mpGameId, _useRTDB, updates);
 }
 
 export async function bjStand() {
   if(!_mpGame||!_mpGameId) return;
   const myPhase = _myRole==='p1'?'p1turn':'p2turn';
   if(_mpGame.phase!==myPhase) return;
-  await _updateGame(_mpGameId, _useRTDB, {
-    [`${_myRole}action`]: 'stand',
-    phase: _myRole==='p1'?'p2turn':'dealer',
-  });
+  try {
+    await _updateGame(_mpGameId, _useRTDB, {
+      [`${_myRole}action`]: 'stand',
+      phase: _myRole==='p1'?'p2turn':'dealer',
+    });
+  } catch(e) {
+    console.error('Stand error:', e);
+    toast('Stand failed', 'error');
+  }
 }
 
 export async function bjDouble() {
@@ -865,15 +882,21 @@ export async function bjDouble() {
   const myPhase = _myRole==='p1'?'p1turn':'p2turn';
   const myHand = Array.isArray(_mpGame[`${_myRole}hand`]) ? _mpGame[`${_myRole}hand`] : [];
   if(_mpGame.phase!==myPhase||myHand.length!==2) return;
-  const deck = _strToDeck(typeof _mpGame.deck==='string'?_mpGame.deck:'');
-  const hand = [...myHand, deck.pop()];
-  await _updateGame(_mpGameId, _useRTDB, {
-    [`${_myRole}hand`]: _handToStr(hand),
-    [`${_myRole}double`]: true,
-    deck: _deckToStr(deck),
-    [`${_myRole}action`]: 'stand',
-    phase: _myRole==='p1'?'p2turn':'dealer',
-  });
+  try {
+    const deck = _strToDeck(typeof _mpGame.deck==='string'?_mpGame.deck:'');
+    if(!deck.length) { toast('Deck is empty!','error'); return; }
+    const hand = [...myHand, deck.pop()];
+    await _updateGame(_mpGameId, _useRTDB, {
+      [`${_myRole}hand`]: _handToStr(hand),
+      [`${_myRole}double`]: true,
+      deck: _deckToStr(deck),
+      [`${_myRole}action`]: 'stand',
+      phase: _myRole==='p1'?'p2turn':'dealer',
+    });
+  } catch(e) {
+    console.error('Double error:', e);
+    toast('Double down failed', 'error');
+  }
 }
 
 async function _resolveRound() {
@@ -948,18 +971,23 @@ export async function bjNextRound() {
   if(!_mpGameId||!_mpGame) return;
   const g = _mpGame;
   if((g.phase!=='roundDone' && !(g.phase==='gameDone'&&!g.winner))||_myRole!=='p1') return;
-  const deck = _newDeck();
-  const p1h=[deck.pop(),deck.pop()], p2h=[deck.pop(),deck.pop()], dh=[deck.pop(),deck.pop()];
-  await _updateGame(_mpGameId, _useRTDB, {
-    deck: _deckToStr(deck),
-    p1hand: _handToStr(p1h),
-    p2hand: _handToStr(p2h),
-    dealerHand: _handToStr(dh),
-    phase: 'p1turn', p1action: '', p2action: '',
-    p1double: false, p2double: false,
-    winner: '',
-    currentRound: (g.currentRound||1)+1,
-  });
+  try {
+    const deck = _newDeck();
+    const p1h=[deck.pop(),deck.pop()], p2h=[deck.pop(),deck.pop()], dh=[deck.pop(),deck.pop()];
+    await _updateGame(_mpGameId, _useRTDB, {
+      deck: _deckToStr(deck),
+      p1hand: _handToStr(p1h),
+      p2hand: _handToStr(p2h),
+      dealerHand: _handToStr(dh),
+      phase: 'p1turn', p1action: '', p2action: '',
+      p1double: false, p2double: false,
+      winner: '',
+      currentRound: (g.currentRound||1)+1,
+    });
+  } catch(e) {
+    console.error('Next round error:', e);
+    toast('Failed to start next round', 'error');
+  }
 }
 
 // --------------------------------------------------
