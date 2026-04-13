@@ -1007,6 +1007,22 @@
             <div class="settings-group-title">Secret</div>
             <div class="keybind-row"><span class="keybind-label">Konami Code (hidden portal)</span><div class="keybind-key"><kbd>&uarr;</kbd><kbd>&uarr;</kbd><kbd>&darr;</kbd><kbd>&darr;</kbd><kbd>&larr;</kbd><kbd>&rarr;</kbd><kbd>B</kbd><kbd>A</kbd></div></div>
           </div>
+          <div class="settings-group">
+            <div class="settings-group-title">Safety</div>
+            <div class="keybind-row"><span class="keybind-label">Panic Button</span><div class="keybind-key"><kbd>\</kbd></div></div>
+            <div class="settings-row" style="margin-top:.5rem">
+              <div class="settings-row-text">
+                <div class="settings-row-label">Panic Redirect URL</div>
+                <div class="settings-row-desc">Where to go when the panic key is pressed</div>
+              </div>
+              <div class="settings-row-control" style="display:flex;gap:.5rem">
+                <input type="text" id="panic-url-input" class="field-input" style="width:180px;font-size:0.75rem;padding:.4rem .6rem" placeholder="https://clever.com/...">
+                <button class="btn btn-ghost btn-sm" id="btn-panic-prompt" title="Set via prompt" style="padding:0 .5rem;display:flex;align-items:center;justify-content:center">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- ADVANCED PANEL -->

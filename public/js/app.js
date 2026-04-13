@@ -2986,6 +2986,26 @@ function setupSettings() {
     };
   });
 
+  // Panic URL
+  const panicInput = document.getElementById('panic-url-input');
+  if(panicInput) {
+    const savedPanic = localStorage.getItem('neb_panic_url') || 'https://clever.com/in/northshore/student/portal';
+    panicInput.value = savedPanic;
+    panicInput.addEventListener('input', () => {
+      localStorage.setItem('neb_panic_url', panicInput.value.trim());
+    });
+    const promptBtn = document.getElementById('btn-panic-prompt');
+    if(promptBtn) {
+      promptBtn.onclick = () => {
+        const url = prompt('Enter a new Panic Redirect URL:', panicInput.value);
+        if(url !== null) {
+          panicInput.value = url.trim();
+          localStorage.setItem('neb_panic_url', url.trim());
+        }
+      };
+    }
+  }
+
   buildChannelNotifList();
 }
 
@@ -3297,6 +3317,13 @@ function setupKeyboardShortcuts() {
         window.closeGameVault();
         return;
       }
+      return;
+    }
+
+    // Panic Button (\)
+    if(e.key === '\\') {
+      const panicUrl = localStorage.getItem('neb_panic_url') || 'https://clever.com/in/northshore/student/portal';
+      window.location.href = panicUrl;
       return;
     }
 
