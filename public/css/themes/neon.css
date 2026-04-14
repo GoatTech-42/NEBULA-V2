@@ -84,6 +84,17 @@ body { background: var(--bg); }
 .ctb-announce { background: rgba(163,230,53,.08); border: 1px solid rgba(163,230,53,.2); color: var(--accent); }
 .snav-item.active { text-shadow: 0 0 10px var(--accent-glow); }
 
+/* ── Neon special effects ── */
+/* Phosphor scanlines */
+body::after { content:''; position:fixed; inset:0; background:repeating-linear-gradient(0deg,rgba(163,230,53,.01) 0px,transparent 1px,transparent 3px); pointer-events:none; z-index:1; }
+
+/* Terminal cursor blink on active items */
+.snav-item.active::after { content:'_'; animation: neonBlink 1s step-end infinite; margin-left:.2rem; color:var(--accent); }
+@keyframes neonBlink { 0%,50%{opacity:1} 51%,100%{opacity:0} }
+
+/* Glowing bottom line on home section */
+#section-home::after { content:''; position:fixed; bottom:0; left:0; right:0; height:2px; background:linear-gradient(90deg,transparent 10%,rgba(163,230,53,.5) 50%,transparent 90%); pointer-events:none; z-index:0; box-shadow:0 0 20px rgba(163,230,53,.3); }
+
 /* __NEBULA_GC_THEME__ */
 /* GoatCoin + Blackjack overrides for neon theme */
 .bj-card {

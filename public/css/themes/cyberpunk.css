@@ -42,3 +42,20 @@ body { background: var(--bg); }
 .scroll-to-bottom, .ghdr { background: rgba(4,6,14,.98); }
 .typing-dots span { background: var(--text-muted); }
 .modal-box { background: linear-gradient(145deg,#060608,#0c0e14); border-color: var(--border); }
+
+/* ── Cyberpunk special effects ── */
+/* Glitch scanline overlay */
+body::after { content:''; position:fixed; inset:0; background:repeating-linear-gradient(0deg,rgba(0,255,136,.015) 0px,rgba(0,255,136,.015) 1px,transparent 1px,transparent 4px); pointer-events:none; z-index:1; }
+
+/* Matrix rain columns hint on home */
+#section-home::before { content:''; position:fixed; top:0; left:0; right:0; bottom:0; background-image: repeating-linear-gradient(90deg, rgba(0,255,136,.03) 0px, rgba(0,255,136,.03) 1px, transparent 1px, transparent 80px); pointer-events:none; z-index:0; }
+
+/* Neon border glow on active nav */
+.snav-item.active::before { box-shadow: 0 0 14px rgba(0,255,136,.5), 0 0 4px rgba(0,255,136,.8); }
+
+/* Pulsing accent glow on home cards */
+.home-card { animation: cpGlow 3s ease-in-out infinite alternate; }
+@keyframes cpGlow { 0%{box-shadow:0 8px 28px rgba(0,0,0,.45)} 100%{box-shadow:0 8px 28px rgba(0,0,0,.45),0 0 20px rgba(0,255,136,.08)} }
+
+/* Glowing accent line under topbar */
+.chat-topbar::after { content:''; position:absolute; bottom:0; left:0; right:0; height:1px; background:linear-gradient(90deg,transparent,rgba(0,255,136,.4),transparent); }

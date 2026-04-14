@@ -42,3 +42,14 @@ body { background: var(--bg); }
 .scroll-to-bottom, .ghdr { background: rgba(4,6,14,.98); }
 .typing-dots span { background: var(--text-muted); }
 .modal-box { background: linear-gradient(145deg,#050a10,#0a1420); border-color: var(--border); }
+
+/* ── Arctic special effects ── */
+/* Frost crystal overlay */
+body::after { content:''; position:fixed; inset:0; background:radial-gradient(ellipse at 20% 10%,rgba(186,230,253,.04) 0%,transparent 40%),radial-gradient(ellipse at 80% 90%,rgba(125,211,252,.03) 0%,transparent 35%); pointer-events:none; z-index:1; }
+
+/* Frozen aurora shimmer at top */
+#section-home::before { content:''; position:fixed; top:-10vh; left:0; right:0; height:30vh; background:linear-gradient(180deg,rgba(125,211,252,.12),rgba(186,230,253,.05),transparent); pointer-events:none; z-index:0; animation:arcticShimmer 5s ease-in-out infinite alternate; }
+@keyframes arcticShimmer { 0%{opacity:.5;transform:scaleX(1)} 100%{opacity:.9;transform:scaleX(1.05)} }
+
+/* Ice crystal glow on cards hover */
+.home-card:hover { box-shadow: 0 8px 28px rgba(0,0,0,.45), 0 0 30px rgba(125,211,252,.1), inset 0 0 20px rgba(186,230,253,.02); }
