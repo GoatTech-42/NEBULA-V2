@@ -42,3 +42,14 @@ body { background: var(--bg); }
 .scroll-to-bottom, .ghdr { background: rgba(4,6,14,.98); }
 .typing-dots span { background: var(--text-muted); }
 .modal-box { background: linear-gradient(145deg,#0e080c,#1a0e16); border-color: var(--border); }
+
+/* ── Sakura special effects ── */
+/* Petal fall gradient at top */
+#section-home::before { content:''; position:fixed; top:0; left:0; right:0; height:30vh; background:radial-gradient(ellipse at 30% 0%,rgba(244,114,182,.1) 0%,transparent 50%),radial-gradient(ellipse at 70% 0%,rgba(251,207,232,.08) 0%,transparent 45%); pointer-events:none; z-index:0; animation:sakuraDrift 8s ease-in-out infinite alternate; }
+@keyframes sakuraDrift { 0%{opacity:.6;transform:translateX(-5px)} 100%{opacity:1;transform:translateX(5px)} }
+
+/* Soft bloom glow on cards */
+.home-card:hover { box-shadow: 0 12px 40px rgba(0,0,0,.4), 0 0 25px rgba(244,114,182,.1); }
+
+/* Blossom accent line */
+.chat-topbar::after { content:''; position:absolute; bottom:0; left:0; right:0; height:1px; background:linear-gradient(90deg,transparent,rgba(244,114,182,.3),rgba(251,207,232,.2),transparent); }

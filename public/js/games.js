@@ -1,15 +1,10 @@
 // games.js — Game vault
 //
-// Loads the game list from a GitHub CDN, renders the grid with lazy-loaded
+// Loads the game list from NEBULA-CDN manifest, renders the grid with
 // thumbnails, handles search/sort/favorites, and opens games in the iframe.
 
-const zonesurls = [
-  "https://cdn.jsdelivr.net/gh/gn-math/assets@main/zones.json",
-  "https://cdn.jsdelivr.net/gh/gn-math/assets@latest/zones.json",
-  "https://cdn.jsdelivr.net/gh/gn-math/assets@master/zones.json"
-];
-const coverURL = "https://cdn.jsdelivr.net/gh/gn-math/covers@main";
-const htmlURL = "https://cdn.jsdelivr.net/gh/gn-math/html@main";
+const CDN_BASE = "https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main";
+const MANIFEST_URL = CDN_BASE + "/manifest.json";
 
 let zones = [];
 let popularityData = {};
@@ -25,50 +20,54 @@ function setFavs(arr) {
   document.cookie = `neb_favs=${encodeURIComponent(JSON.stringify(arr))};path=/;max-age=31536000`;
 }
 
-function cleanHTML(html) {
-  html = html.replace(/#sidebarad1\s*,\s*\n?#sidebarad2[\s\S]*?\.sidebar-frame\s*\{[\s\S]*?\}/g, '');
-  html = html.replace(/<div\s+id=["']sidebarad[12]["'][^>]*>[\s\S]*?<\/div>\s*(<\/div>)?/g, '');
-  html = html.replace(/<script>\s*\(function\(_0x[a-f0-9]+[\s\S]*?duplace\.ne[\s\S]*?<\/script>/g, '');
-  html = html.replace(/<style>[^<]*#sidebarad[\s\S]*?<\/style>/g, '');
-  return html;
-}
-
 export async function initGames() {
   try {
-    let zonesURL = zonesurls[Math.floor(Math.random() * zonesurls.length)];
+    // Fetch manifest from NEBULA-CDN
+    let manifestURL = MANIFEST_URL + "?t=" + Date.now();
+    
+    // Try to get latest commit SHA for cache busting
     try {
-      const shaResp = await fetch("https://api.github.com/repos/gn-math/assets/commits?t="+Date.now());
+      const shaResp = await fetch("https://api.github.com/repos/GoatTech-42/NEBULA-CDN/commits?per_page=1&t="+Date.now());
       if(shaResp.status===200) {
         const shajson = await shaResp.json();
         const sha = shajson[0]?.sha;
-        if(sha) zonesURL = `https://cdn.jsdelivr.net/gh/gn-math/assets@${sha}/zones.json`;
+        if(sha) manifestURL = `https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@${sha}/manifest.json`;
       }
     } catch {}
-    const resp = await fetch(zonesURL+"?t="+Date.now());
-    zones = await resp.json();
-    await fetchPopularity();
+
+    const resp = await fetch(manifestURL);
+    let text = await resp.text();
+    // Handle BOM in manifest
+    if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+    const manifest = JSON.parse(text);
+    
+    // Convert NEBULA-CDN manifest format to zones format
+    zones = manifest
+      .filter(g => g.game && g.file && !g.game.startsWith('[!]'))
+      .map((g, i) => ({
+        id: i + 1,
+        name: g.game,
+        file: g.file,
+        url: CDN_BASE + "/" + g.file,
+        cover: '', // No cover images in NEBULA-CDN, we'll generate placeholders
+        author: g.author || '',
+        authorLink: g.authorLink || '',
+        manifestKey: g.manifestKey || '',
+        source: g.source || 'NEBULA-CDN'
+      }));
+
     handleSearch();
     setupVaultEvents();
   } catch(e) {
+    console.error('Games init error:', e);
     const grid = document.getElementById('game-grid');
     if(grid) grid.innerHTML=`<div class="vault-empty"><span>Failed to load games</span></div>`;
   }
 }
 
-async function fetchPopularity() {
-  try {
-    const resp = await fetch("https://data.jsdelivr.com/v1/stats/packages/gh/gn-math/html@main/files?period=year");
-    const data = await resp.json();
-    data.forEach(file => {
-      const m = file.name.match(/\/(\d+)\.html$/);
-      if(m) popularityData[parseInt(m[1])] = file.hits.total;
-    });
-  } catch {}
-}
-
 function handleSearch() {
   const q = (document.getElementById('vault-search')?.value||'').toLowerCase();
-  const sort = document.getElementById('vault-sort')?.value||'popular';
+  const sort = document.getElementById('vault-sort')?.value||'name';
   let filtered = zones.filter(z => {
     const matchSearch = z.name.toLowerCase().includes(q);
     const matchFav = showFavsOnly ? getFavs().includes(z.id) : true;
@@ -76,7 +75,7 @@ function handleSearch() {
   });
   if(sort==='name') filtered.sort((a,b)=>a.name.localeCompare(b.name));
   else if(sort==='id') filtered.sort((a,b)=>b.id-a.id);
-  else filtered.sort((a,b)=>(popularityData[b.id]||0)-(popularityData[a.id]||0));
+  else filtered.sort((a,b)=>a.name.localeCompare(b.name)); // default: A-Z
   renderGrid(filtered);
 }
 
@@ -98,6 +97,14 @@ function getLazyObserver() {
 
 const PAGE_SIZE = 40;
 let _gridPage = 0, _gridData = [], _gridLoading = false;
+
+// Generate a color from game name for placeholder covers
+function nameColor(name) {
+  let h = 0;
+  for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) & 0xffffff;
+  const hue = h % 360;
+  return `hsl(${hue}, 55%, 25%)`;
+}
 
 function renderGrid(data) {
   const grid = document.getElementById('game-grid');
@@ -130,7 +137,6 @@ function renderGridPage() {
   if(!slice.length) return;
   _gridLoading = true;
   _gridPage++;
-  const observer = getLazyObserver();
   const favs = getFavs();
   const frag = document.createDocumentFragment();
   slice.forEach(file => {
@@ -141,19 +147,35 @@ function renderGridPage() {
     favBtn.className = `game-fav-btn${favs.includes(file.id)?' active':''}`;
     favBtn.innerHTML = `<svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`;
     favBtn.onclick = e => { e.stopPropagation(); toggleFav(file.id, card, favBtn); };
-    const img = document.createElement('img');
-    img.dataset.src = file.cover.replace('{COVER_URL}',coverURL).replace('{HTML_URL}',htmlURL);
-    img.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2 3"/>'; // placeholder
-    img.alt = file.name;
-    img.loading = 'lazy';
-    observer.observe(img);
+
+    // Create a styled placeholder since NEBULA-CDN doesn't have cover images
+    const coverDiv = document.createElement('div');
+    coverDiv.className = 'game-card-cover';
+    const bgColor = nameColor(file.name);
+    coverDiv.style.cssText = `background:${bgColor};display:flex;align-items:center;justify-content:center;aspect-ratio:4/3;position:relative;overflow:hidden;`;
+    
+    // Add game controller icon + name overlay
+    coverDiv.innerHTML = `
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.2)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M7 10v4"/><line x1="5" y1="12" x2="9" y2="12"/><circle cx="15" cy="11" r="1"/><circle cx="17" cy="13" r="1"/></svg>
+      <div style="position:absolute;bottom:8px;left:8px;right:8px;font-size:.65rem;font-weight:700;color:rgba(255,255,255,.7);text-shadow:0 1px 3px rgba(0,0,0,.5);line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${file.name}</div>
+    `;
+
     const body = document.createElement('div');
     body.className = 'game-card-body';
     const name = document.createElement('div');
     name.className = 'game-card-name';
     name.textContent = file.name;
-    body.appendChild(name);
-    card.append(favBtn, img, body);
+    if (file.author) {
+      const author = document.createElement('div');
+      author.className = 'game-card-author';
+      author.textContent = file.author;
+      author.style.cssText = 'font-size:.65rem;color:var(--text-faint);margin-top:.15rem';
+      body.appendChild(name);
+      body.appendChild(author);
+    } else {
+      body.appendChild(name);
+    }
+    card.append(favBtn, coverDiv, body);
     frag.appendChild(card);
   });
   grid.appendChild(frag);
@@ -170,9 +192,8 @@ function toggleFav(id, card, btn) {
 
 function openZone(file) {
   if(file.name.includes("SUGGEST")) { window.open("https://discord.com/invite/dKs2sUNUXd","_blank"); return; }
-  if(file.url.startsWith("http")) { window.open(file.url,"_blank"); return; }
-  const url = file.url.replace('{COVER_URL}',coverURL).replace('{HTML_URL}',htmlURL);
-  // Show the vault immediately while loading
+  // The singlefile.html approach: games are HTML files in the NEBULA-CDN repo
+  const url = file.url;
   window.openGameVault(url, file.name);
 }
 
@@ -184,5 +205,4 @@ function setupVaultEvents() {
     document.getElementById('fav-filter-btn').classList.toggle('active', showFavsOnly);
     handleSearch();
   });
-
 }

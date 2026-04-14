@@ -87,3 +87,15 @@ body { background: var(--bg); }
 .badge-chip:hover {
   box-shadow: 0 0 8px rgba(240,80,80,.15);
 }
+
+/* ── Crimson special effects ── */
+/* Blood mist vignette */
+body::before { content:''; position:fixed; inset:0; background:radial-gradient(ellipse at 50% 50%,transparent 40%,rgba(120,10,10,.15) 100%); pointer-events:none; z-index:1; }
+
+/* Ember particles hint on home */
+#section-home::after { content:''; position:fixed; bottom:-10vh; left:0; right:0; height:35vh; background:radial-gradient(ellipse at 50% 100%,rgba(240,60,60,.2) 0%,transparent 70%); pointer-events:none; z-index:0; animation:emberPulse 4s ease-in-out infinite alternate; }
+@keyframes emberPulse { 0%{opacity:.6} 100%{opacity:1} }
+
+/* Pulsing red accent on active nav */
+.snav-item.active::before { animation: crimsonPulse 2s ease-in-out infinite alternate; }
+@keyframes crimsonPulse { 0%{box-shadow:0 0 6px rgba(240,60,60,.3)} 100%{box-shadow:0 0 16px rgba(240,60,60,.6)} }
