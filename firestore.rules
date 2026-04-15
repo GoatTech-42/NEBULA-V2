@@ -1,31 +1,88 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Collections with explicit rules
-    match /presence/{uid} {
-      allow read, write: if request.auth != null;
-    }
-    match /meta/{doc} {
-      allow read, write: if request.auth != null;
+
+    // ── Users ──
+    // Any authenticated user can read user profiles.
+    // Users can write their own doc. Admins managed via client-side rank checks
+    // (Firestore client SDK — no Cloud Functions in this project).
+    match /users/{uid} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
     }
 
-    // Explicit collection rules
+    // ── Channels (top-level docs) ──
+    // Any authenticated user can read channels.
+    // Write is limited to authenticated users (admin checks are client-side).
+    match /channels/{channelId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
+
+      // Channel messages — any authenticated user can read/write
+      match /messages/{msgId} {
+        allow read: if request.auth != null;
+        allow write: if request.auth != null;
+      }
+
+      // Typing indicators — any authenticated user
+      match /typing/{docId} {
+        allow read, write: if request.auth != null;
+      }
+    }
+
+    // ── Direct Messages ──
+    // Any authenticated user can read/write DM threads and messages.
+    // Participant filtering is handled client-side.
+    match /dms/{threadId} {
+      allow read, write: if request.auth != null;
+
+      match /messages/{msgId} {
+        allow read, write: if request.auth != null;
+      }
+    }
+
+    // ── GoatCoin balances ──
+    // Any authenticated user can read any balance (leaderboard, profile stats).
+    // Any authenticated user can write (required for blackjack resolution —
+    // the winner's client updates both players' balances in _resolveRound).
+    match /goatcoin/{uid} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
+    }
+
+    // ── Blackjack challenges ──
+    // Any authenticated user can read/write (send, accept, decline challenges).
     match /bj_challenges/{id} {
       allow read, write: if request.auth != null;
     }
 
+    // ── Blackjack games (Firestore fallback — primary storage is RTDB) ──
+    // Any authenticated user can read/write (both players need access).
     match /bj_games/{id} {
       allow read, write: if request.auth != null;
     }
 
-    match /goatcoin/{uid} {
+    // ── Shop owned items ──
+    // Any authenticated user can read (for display purposes).
+    // Only the owner can write their own purchase records.
+    match /shop_owned/{uid} {
       allow read: if request.auth != null;
       allow write: if request.auth != null && request.auth.uid == uid;
     }
 
-    // Catch-all for all other documents
-    match /{document=**} {
+    // ── Meta (visit counter, announcements) ──
+    // Any authenticated user can read/write.
+    match /meta/{doc} {
       allow read, write: if request.auth != null;
     }
+
+    // ── Presence ──
+    // Any authenticated user can read/write presence data.
+    match /presence/{uid} {
+      allow read, write: if request.auth != null;
+    }
+
+    // ── Deny everything else ──
+    // No catch-all rule — any collection not listed above is denied by default.
   }
 }
