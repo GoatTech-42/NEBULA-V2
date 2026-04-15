@@ -3219,21 +3219,40 @@ window.openGameVault = function(url, name) {
   // Reset frame first
   frame.removeAttribute('srcdoc');
   frame.src = 'about:blank';
-  // Fetch the game HTML, clean it, and inject via srcdoc
-  fetch(url + '?t=' + Date.now())
-    .then(r => r.text())
-    .then(html => {
-      html = cleanHTML(html);
-      // Use srcdoc so the HTML is parsed and executed properly
-      frame.srcdoc = html;
-      frame._gameUrl = url;
-      frame._gameName = name;
-    })
-    .catch(() => {
-      // Fallback: load URL directly
-      frame.removeAttribute('srcdoc');
-      frame.src = url;
-    });
+
+  // Determine if this is a multi-file game (directory-based, e.g. goattech/)
+  // Multi-file games should be loaded via src directly so relative paths work
+  const isMultiFile = url.includes('/goattech/') || url.endsWith('/index.html');
+
+  if (isMultiFile) {
+    // Multi-file games: load directly via src — jsDelivr serves all assets
+    frame.src = url;
+  } else {
+    // Single-file HTML games: fetch, clean, inject <base> tag, use srcdoc
+    const baseUrl = url.substring(0, url.lastIndexOf('/') + 1);
+    fetch(url + '?t=' + Date.now())
+      .then(r => r.text())
+      .then(html => {
+        html = cleanHTML(html);
+        // Inject <base> tag so relative resources resolve from jsDelivr
+        if (html.includes('<head>')) {
+          html = html.replace('<head>', `<head><base href="${baseUrl}">`);
+        } else if (html.includes('<HEAD>')) {
+          html = html.replace('<HEAD>', `<HEAD><base href="${baseUrl}">`);
+        } else {
+          html = `<base href="${baseUrl}">` + html;
+        }
+        frame.srcdoc = html;
+        frame._gameUrl = url;
+        frame._gameName = name;
+      })
+      .catch(() => {
+        // Fallback: load URL directly
+        frame.removeAttribute('srcdoc');
+        frame.src = url;
+      });
+  }
+
   if(currentUser && currentUserData) {
     updateDoc(doc(db,'users',currentUser.uid), { gamesPlayed: increment(1) }).catch(()=>{});
   }
