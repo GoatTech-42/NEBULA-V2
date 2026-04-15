@@ -394,7 +394,7 @@ function navigate(section) {
   const sec = document.getElementById('section-'+section);
   if(sec) sec.classList.add('active');
   document.querySelectorAll(`[data-section="${section}"]`).forEach(i=>i.classList.add('active'));
-  setActivity(section === 'chat' ? 'chat' : section === 'games' ? 'game' : section === 'ai' ? 'site' : 'site');
+  setActivity(section === 'chat' ? 'chat' : section === 'games' ? 'game' : 'site');
   if(section === 'goatcoin') renderGoatCoinTab();
   if(section === 'shop') renderShopTab();
   document.getElementById('mobile-drawer-overlay')?.remove();
@@ -3210,7 +3210,12 @@ function cleanHTML(html) {
   return html;
 }
 
-window.openGameVault = function(url, name) {
+window.openGameVault = function(fileOrUrl, fallbackName) {
+  const file = typeof fileOrUrl === 'object' && fileOrUrl !== null
+    ? fileOrUrl
+    : { url: fileOrUrl, name: fallbackName };
+  const url = file.url;
+  const name = file.name || fallbackName || 'Game';
   const vault = document.getElementById('game-vault');
   vault.style.display = 'flex';
   const frame = document.getElementById('game-frame');
@@ -3222,7 +3227,7 @@ window.openGameVault = function(url, name) {
 
   // Determine if this is a multi-file game (directory-based, e.g. goattech/)
   // Multi-file games should be loaded via src directly so relative paths work
-  const isMultiFile = url.includes('/goattech/') || url.endsWith('/index.html');
+  const isMultiFile = Boolean(file.isMultiFile) || url.includes('/goattech/') || /\/index\.html(?:\?|#|$)/i.test(url);
 
   if (isMultiFile) {
     // Multi-file games: load directly via src — jsDelivr serves all assets
@@ -3362,7 +3367,7 @@ function setupKeyboardShortcuts() {
 
 /** Returns the ordered nav sections, including 'admin' only for moderators */
 function _getNavSections() {
-  const base = ['home','chat','dms','games','goatcoin','shop','ai','profile','settings'];
+  const base = ['home','chat','dms','games','goatcoin','shop','profile','settings'];
   if(currentUserData && canModerate(currentUserData.rank)) {
     base.push('admin');
   }
@@ -3388,9 +3393,8 @@ function setupCommandPalette() {
       { label: 'Games',           desc: 'Game vault',             action: () => navigate('games'),     svgKey: 'games',    keys: '4' },
       { label: 'GoatCoin',        desc: 'Currency & blackjack',   action: () => navigate('goatcoin'),  svgKey: 'goatcoin', keys: '5' },
       { label: 'Shop',            desc: 'Spend your GoatCoin',    action: () => navigate('shop'),      svgKey: 'shop',     keys: '6' },
-      { label: 'AI Chat',         desc: 'Ask the AI anything',    action: () => navigate('ai'),        svgKey: 'ai',       keys: '7' },
-      { label: 'Profile',         desc: 'Your identity',          action: () => navigate('profile'),   svgKey: 'profile',  keys: '8' },
-      { label: 'Settings',        desc: 'Themes & display',       action: () => navigate('settings'),  svgKey: 'settings', keys: '9' },
+      { label: 'Profile',         desc: 'Your identity',          action: () => navigate('profile'),   svgKey: 'profile',  keys: '7' },
+      { label: 'Settings',        desc: 'Themes & display',       action: () => navigate('settings'),  svgKey: 'settings', keys: '8' },
     ];
     if(isAdmin) {
       cmds.push({ label: 'Admin', desc: 'Moderation & management', action: () => navigate('admin'), svgKey: 'admin' });

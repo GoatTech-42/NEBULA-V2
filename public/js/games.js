@@ -8,6 +8,12 @@
 const CDN_BASE = "https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main";
 const MANIFEST_URL = CDN_BASE + "/manifest.json";
 
+function resolveCdnAsset(path) {
+  if (!path) return '';
+  if (/^https?:\/\//i.test(path)) return path;
+  return `${CDN_BASE}/${path.replace(/^\/+/, '')}`;
+}
+
 let allGames = [];       // full manifest after filtering
 let zones = [];           // currently displayed (after source filter)
 let popularityData = {};
@@ -61,8 +67,8 @@ export async function initGames() {
         id: g.manifestKey || `game-${i}`,
         name: g.game,
         file: g.file,
-        url: CDN_BASE + "/" + g.file,
-        image: g.image || '',
+        url: resolveCdnAsset(g.file),
+        image: resolveCdnAsset(g.image || ''),
         author: g.author || '',
         authorLink: g.authorLink || '',
         manifestKey: g.manifestKey || '',
@@ -319,7 +325,7 @@ function toggleFav(id, card, btn) {
 function openZone(file) {
   if (file.name.includes("SUGGEST")) { window.open("https://discord.com/invite/dKs2sUNUXd", "_blank"); return; }
   // Delegate to app.js openGameVault which handles single-file and multi-file games
-  window.openGameVault(file.url, file.name);
+  window.openGameVault(file);
 }
 
 function setupVaultEvents() {
