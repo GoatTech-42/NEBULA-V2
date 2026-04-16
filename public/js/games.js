@@ -256,7 +256,7 @@ function renderGridPage() {
       const catBadge = document.createElement('span');
       catBadge.className = 'game-src-badge';
       const catColor = CAT_COLORS[file.category] || '#64748b';
-      catBadge.style.cssText = `position:absolute;top:6px;right:6px;font-size:.55rem;font-weight:700;padding:.15rem .4rem;border-radius:4px;background:${catColor};color:#fff;z-index:2;text-transform:uppercase;letter-spacing:.5px;`;
+      catBadge.style.cssText = `position:absolute;top:6px;left:6px;font-size:.55rem;font-weight:700;padding:.15rem .4rem;border-radius:4px;background:${catColor};color:#fff;z-index:2;text-transform:uppercase;letter-spacing:.5px;`;
       catBadge.textContent = file.category;
       coverDiv.appendChild(catBadge);
     }
