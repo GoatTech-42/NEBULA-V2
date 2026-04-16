@@ -9,7 +9,7 @@ import { getDatabase, ref as rtRef, set as rtSet, get as rtGet, onValue, remove 
 import { updateEmail, updatePassword, EmailAuthProvider, reauthenticateWithCredential } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { initGoatCoin, setActivity, cleanupGoatCoin, getGoatCoinData, renderGoatCoinTab } from './goatcoin.js';
 import { renderBadgeRow, openProfileModal, renderOwnProfile, checkAutoAwards, BADGE_DEFS, checkAdblocker } from './profile.js';
-import { renderShopTab, initShop } from './shop.js';
+import { renderShopTab, initShop, SHOP_ITEMS } from './shop.js';
 import { CMD_ICONS } from './icons.js';
 
 // ---- State ----
@@ -397,6 +397,17 @@ function navigate(section) {
   setActivity(section === 'chat' ? 'chat' : section === 'games' ? 'game' : 'site');
   if(section === 'goatcoin') renderGoatCoinTab();
   if(section === 'shop') renderShopTab();
+  // Clear unread badges when navigating to the relevant section
+  if(section === 'chat' && currentChannel) {
+    _unreadChannels[currentChannel.id] = 0;
+    _updateChatBadge();
+    _updateChannelListBadges();
+  }
+  if(section === 'dms' && currentDM) {
+    _unreadDMs[currentDM.id] = 0;
+    _updateDMBadge();
+    _updateDMListBadges();
+  }
   document.getElementById('mobile-drawer-overlay')?.remove();
   document.getElementById('mobile-drawer')?.remove();
 }
@@ -933,16 +944,32 @@ function _updateChatBadge() {
   const total = Object.values(_unreadChannels).reduce((a,b)=>a+b,0);
   const el = document.getElementById('chat-badge');
   if(!el) return;
-  if(total > 0) { el.textContent = total > 99 ? '99+' : total; el.classList.remove('hidden'); }
-  else el.classList.add('hidden');
+  if(total > 0) {
+    el.textContent = total > 99 ? '99+' : total;
+    el.classList.remove('hidden');
+    // Re-trigger bounce animation
+    el.style.animation = 'none';
+    el.offsetHeight; // force reflow
+    el.style.animation = '';
+  } else {
+    el.classList.add('hidden');
+  }
 }
 function _updateDMBadge() {
   if(!_unreadEnabled) { document.getElementById('dm-badge')?.classList.add('hidden'); return; }
   const total = Object.values(_unreadDMs).reduce((a,b)=>a+b,0);
   const el = document.getElementById('dm-badge');
   if(!el) return;
-  if(total > 0) { el.textContent = total > 99 ? '99+' : total; el.classList.remove('hidden'); }
-  else el.classList.add('hidden');
+  if(total > 0) {
+    el.textContent = total > 99 ? '99+' : total;
+    el.classList.remove('hidden');
+    // Re-trigger bounce animation
+    el.style.animation = 'none';
+    el.offsetHeight; // force reflow
+    el.style.animation = '';
+  } else {
+    el.classList.add('hidden');
+  }
 }
 function _updateDMListBadges() {
   Object.entries(_unreadDMs).forEach(([dmId, count]) => {
@@ -952,6 +979,7 @@ function _updateDMListBadges() {
     if(count > 0) {
       if(!badge) { badge = document.createElement('span'); badge.className='titem-badge'; item.appendChild(badge); }
       badge.textContent = count > 99 ? '99+' : count;
+      badge.style.animation = 'none'; badge.offsetHeight; badge.style.animation = '';
     } else if(badge) badge.remove();
   });
 }
@@ -963,6 +991,7 @@ function _updateChannelListBadges() {
     if(count > 0) {
       if(!badge) { badge = document.createElement('span'); badge.className='titem-badge'; item.appendChild(badge); }
       badge.textContent = count > 99 ? '99+' : count;
+      badge.style.animation = 'none'; badge.offsetHeight; badge.style.animation = '';
     } else if(badge) badge.remove();
   });
 }
@@ -1932,7 +1961,7 @@ function renderAnnouncementPanel(container) {
     <div class="announce-wrap">
       <div class="announce-form-card">
         <div class="announce-card-hdr">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 17H2a3 3 0 000 4h20v-4z"/><path d="M14 9v8M9 9v8"/><path d="M12 4C10 4 8 6 8 9h8c0-3-2-5-4-5z"/></svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l18-5v12L3 13v-2z"/><path d="M11.6 16.8a3 3 0 11-5.8-1.6"/><line x1="21" y1="6" x2="21" y2="18"/></svg>
           Send Update to All Users
         </div>
         <div class="announce-card-sub">This message will appear as a popup the next time each user opens the app. Once everyone has seen it, it auto-deletes.</div>
@@ -2022,11 +2051,11 @@ async function checkAndShowAnnouncement() {
     const uid = currentUser.uid;
     // Already seen?
     if(data.seenBy && data.seenBy[uid]) return;
-    // Show popup
+    // Show popup — redesigned megaphone style
     showModal(`
       <div class="ann-popup">
         <div class="ann-popup-icon">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 17H2a3 3 0 000 4h20v-4z"/><path d="M14 9v8M9 9v8"/><path d="M12 4C10 4 8 6 8 9h8c0-3-2-5-4-5z"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l18-5v12L3 13v-2z"/><path d="M11.6 16.8a3 3 0 11-5.8-1.6"/><line x1="21" y1="6" x2="21" y2="18"/></svg>
         </div>
         <h3>${escHtml(data.heading||'Update')}</h3>
         <div class="ann-popup-divider"></div>
@@ -2115,7 +2144,7 @@ async function setupAdmin() {
         DB Cleanup
       </button>
       <button class="adm-tab" data-tab="announce">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 17H2a3 3 0 000 4h20v-4z"/><path d="M14 9v8M9 9v8"/><path d="M12 4C10 4 8 6 8 9h8c0-3-2-5-4-5z"/></svg>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l18-5v12L3 13v-2z"/><path d="M11.6 16.8a3 3 0 11-5.8-1.6"/><line x1="21" y1="6" x2="21" y2="18"/></svg>
         Announce
       </button>` : ''}
     </div>
@@ -2508,7 +2537,7 @@ async function propagateProfileToMessages(uid, updates) {
   }
 }
 
-function renderProfileEdit() {
+async function renderProfileEdit() {
   const d = currentUserData;
   const section = document.getElementById('prof-edit-section');
   if(!section) return;
@@ -2666,20 +2695,57 @@ function renderProfileEdit() {
       iconGrid.appendChild(goatOpt);
     }
 
+    // Check which icons are locked behind the shop
+    const _getShopOwnedIcons = () => {
+      // Get owned items from RTDB (synced via shop.js)
+      // We check which icon keys require shop purchase
+      const shopIconKeys = new Set();
+      SHOP_ITEMS.filter(i => i.type === 'icon').forEach(i => shopIconKeys.add(i.iconKey));
+      return shopIconKeys;
+    };
+    const shopIconKeys = _getShopOwnedIcons();
+    // Load owned items from RTDB (uses already-imported rtGet/rtRef)
+    let ownedShopItems = {};
+    try {
+      if (_rtdb) {
+        const snap = await rtGet(rtRef(_rtdb, `shop_owned/${currentUser.uid}`));
+        ownedShopItems = snap.val() || {};
+      }
+    } catch(e) { }
+
     Object.entries(SVG_ICONS).forEach(([key, paths]) => {
+      // Check if this icon is a shop item and if the user owns it
+      const shopItem = SHOP_ITEMS.find(i => i.type === 'icon' && i.iconKey === key);
+      const isShopIcon = !!shopItem;
+      const ownsShopIcon = shopItem ? !!ownedShopItems[shopItem.id] : false;
+      const isLocked = isShopIcon && !ownsShopIcon;
+
       const opt = document.createElement('div');
-      opt.className = 'ava-icon-opt' + (d.icon === key ? ' selected' : '');
-      opt.title = key;
+      opt.className = 'ava-icon-opt' + (d.icon === key ? ' selected' : '') + (isLocked ? ' ava-icon-locked' : '');
+      opt.title = isLocked ? `${key} — Buy in Shop (${shopItem.price} GC)` : key;
+      opt.style.position = 'relative';
       opt.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${paths}</svg>`;
-      opt.addEventListener('click', async () => {
-        iconGrid.querySelectorAll('.ava-icon-opt').forEach(x=>x.classList.remove('selected'));
-        opt.classList.add('selected');
-        await updateDoc(doc(db,'users',currentUser.uid), {icon:key});
-        currentUserData.icon = key;
-        _updateAvaDisplay(key);
-        propagateProfileToMessages(currentUser.uid, { icon: key }).catch(()=>{});
-        toast('Avatar updated.','success');
-      });
+
+      if (isLocked) {
+        // Add lock badge
+        const lockBadge = document.createElement('div');
+        lockBadge.className = 'ava-icon-lock-badge';
+        lockBadge.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>';
+        opt.appendChild(lockBadge);
+        opt.addEventListener('click', () => {
+          toast(`Unlock "${shopItem.name}" in the Shop for ${shopItem.price} GC`, 'warning');
+        });
+      } else {
+        opt.addEventListener('click', async () => {
+          iconGrid.querySelectorAll('.ava-icon-opt').forEach(x=>x.classList.remove('selected'));
+          opt.classList.add('selected');
+          await updateDoc(doc(db,'users',currentUser.uid), {icon:key});
+          currentUserData.icon = key;
+          _updateAvaDisplay(key);
+          propagateProfileToMessages(currentUser.uid, { icon: key }).catch(()=>{});
+          toast('Avatar updated.','success');
+        });
+      }
       iconGrid.appendChild(opt);
     });
   }
@@ -3476,6 +3542,305 @@ function toggleCommandPalette() {
     });
   }
 })();
+
+// ---- Theme Special Effects System ----
+// Each theme can have particle effects, animated overlays, etc.
+const THEME_FX = {
+  synthwave: {
+    particles: { count: 30, colors: ['#ff2d8a','#bf00ff','#00f0ff','#ff6ec7'], speed: 0.4, glow: true, shape: 'line' },
+    scanlines: true,
+  },
+  aurora: {
+    particles: { count: 20, colors: ['#00e5a0','#00b8d9','#34d399','#06b6d4'], speed: 0.2, glow: true, shape: 'circle' },
+    aurora: true,
+  },
+  cyberpunk: {
+    particles: { count: 40, colors: ['#00ff88','#ff0080','#00ffff','#ffff00'], speed: 0.6, glow: true, shape: 'square' },
+    glitch: true,
+  },
+  neon: {
+    particles: { count: 35, colors: ['#00ffa8','#00c8ff','#b0ffd8','#39ff14'], speed: 0.5, glow: true, shape: 'circle' },
+    matrix: true,
+  },
+  void: {
+    particles: { count: 60, colors: ['rgba(255,255,255,.15)','rgba(255,255,255,.08)','rgba(255,255,255,.04)'], speed: 0.1, glow: false, shape: 'dot' },
+  },
+  crimson: {
+    particles: { count: 25, colors: ['#f05050','#c0392b','#ff6b6b','#e74c3c'], speed: 0.3, glow: true, shape: 'ember' },
+    ember: true,
+  },
+  ocean: {
+    particles: { count: 20, colors: ['#22d3ee','#0284c7','#06b6d4','#67e8f9'], speed: 0.15, glow: true, shape: 'bubble' },
+  },
+  forest: {
+    particles: { count: 18, colors: ['#34d399','#059669','#10b981','#6ee7b7'], speed: 0.12, glow: false, shape: 'leaf' },
+  },
+  sakura: {
+    particles: { count: 25, colors: ['#f472b6','#fce7f3','#fbcfe8','#f9a8d4'], speed: 0.2, glow: false, shape: 'petal' },
+  },
+  ember: {
+    particles: { count: 30, colors: ['#f87171','#fca5a5','#ff6b35','#ef4444'], speed: 0.35, glow: true, shape: 'ember' },
+  },
+  solar: {
+    particles: { count: 15, colors: ['#fbbf24','#f59e0b','#fef3c7','#d97706'], speed: 0.2, glow: true, shape: 'circle' },
+    flare: true,
+  },
+  vapor: {
+    particles: { count: 22, colors: ['#c084fc','#ec4899','#e9d5ff','#f0abfc'], speed: 0.18, glow: true, shape: 'circle' },
+  },
+  rose: {
+    particles: { count: 20, colors: ['#f472b6','#c026d3','#ec4899','#f9a8d4'], speed: 0.2, glow: true, shape: 'petal' },
+  },
+  dusk: {
+    particles: { count: 18, colors: ['#fb923c','#c084fc','#f97316','#a855f6'], speed: 0.2, glow: true, shape: 'circle' },
+  },
+  glacier: {
+    particles: { count: 15, colors: ['#2dd4bf','#99f6e4','#5eead4','#ccfbf1'], speed: 0.1, glow: true, shape: 'snowflake' },
+    frost: true,
+  },
+  arctic: {
+    particles: { count: 20, colors: ['#7dd3fc','#bae6fd','#e0f2fe','#38bdf8'], speed: 0.15, glow: false, shape: 'snowflake' },
+  },
+  midnight: {
+    particles: { count: 12, colors: ['#f0a030','#c07010','#ffedc0','#d4a020'], speed: 0.15, glow: true, shape: 'firefly' },
+  },
+  candy: {
+    particles: { count: 25, colors: ['#f9a8d4','#d946ef','#fce7f3','#f0abfc'], speed: 0.25, glow: false, shape: 'confetti' },
+  },
+  ice: {
+    particles: { count: 15, colors: ['#a5b4fc','#c7d2fe','#e0e7ff','#818cf8'], speed: 0.1, glow: true, shape: 'crystal' },
+  },
+  copper: {
+    particles: { count: 10, colors: ['#d97706','#f59e0b','#fef3c7','#b45309'], speed: 0.15, glow: true, shape: 'circle' },
+  },
+  moss: {
+    particles: { count: 15, colors: ['#86efac','#bbf7d0','#4ade80','#22c55e'], speed: 0.1, glow: false, shape: 'leaf' },
+  },
+  lavender: {
+    particles: { count: 18, colors: ['#a78bfa','#c4b5fd','#e9d5ff','#8b5cf6'], speed: 0.15, glow: true, shape: 'circle' },
+  },
+  rust: {
+    particles: { count: 12, colors: ['#ea580c','#fb923c','#fed7aa','#c2410c'], speed: 0.2, glow: true, shape: 'ember' },
+  },
+  blush: {
+    particles: { count: 18, colors: ['#fb7185','#fda4af','#ffe4e6','#f43f5e'], speed: 0.18, glow: false, shape: 'petal' },
+  },
+  slate: {
+    particles: { count: 10, colors: ['#6366f1','#8b8ff8','#c7c9ff','#4f46e5'], speed: 0.1, glow: true, shape: 'dot' },
+  },
+};
+
+let _fxCanvas = null;
+let _fxCtx = null;
+let _fxParticles = [];
+let _fxAnimFrame = null;
+
+function initThemeFX(themeName) {
+  // Clean up existing effects
+  if(_fxAnimFrame) { cancelAnimationFrame(_fxAnimFrame); _fxAnimFrame = null; }
+  let layer = document.getElementById('theme-fx-layer');
+  if(layer) layer.remove();
+  _fxParticles = [];
+
+  // Remove special body classes
+  document.body.classList.remove('fx-scanlines','fx-glitch','fx-matrix','fx-aurora','fx-frost','fx-ember','fx-flare');
+
+  const fx = THEME_FX[themeName];
+  if(!fx) return;
+
+  // Create FX layer
+  layer = document.createElement('div');
+  layer.id = 'theme-fx-layer';
+  document.body.prepend(layer);
+
+  const canvas = document.createElement('canvas');
+  layer.appendChild(canvas);
+  _fxCanvas = canvas;
+  _fxCtx = canvas.getContext('2d');
+
+  function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  // Add special overlay classes
+  if(fx.scanlines) document.body.classList.add('fx-scanlines');
+  if(fx.glitch) document.body.classList.add('fx-glitch');
+  if(fx.matrix) document.body.classList.add('fx-matrix');
+  if(fx.aurora) document.body.classList.add('fx-aurora');
+  if(fx.frost) document.body.classList.add('fx-frost');
+  if(fx.ember) document.body.classList.add('fx-ember');
+  if(fx.flare) document.body.classList.add('fx-flare');
+
+  // Create particles
+  if(fx.particles) {
+    const p = fx.particles;
+    for(let i = 0; i < p.count; i++) {
+      _fxParticles.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        vx: (Math.random() - 0.5) * p.speed * 2,
+        vy: (Math.random() - 0.5) * p.speed * 2 - p.speed * 0.5,
+        size: Math.random() * 3 + 1,
+        color: p.colors[Math.floor(Math.random() * p.colors.length)],
+        alpha: Math.random() * 0.6 + 0.1,
+        glow: p.glow,
+        shape: p.shape,
+        rot: Math.random() * Math.PI * 2,
+        rotSpeed: (Math.random() - 0.5) * 0.02,
+        life: Math.random(),
+        lifeSpeed: Math.random() * 0.003 + 0.001,
+      });
+    }
+    animateFX();
+  }
+}
+
+function animateFX() {
+  if(!_fxCtx || !_fxCanvas) return;
+  const ctx = _fxCtx;
+  const w = _fxCanvas.width;
+  const h = _fxCanvas.height;
+  ctx.clearRect(0, 0, w, h);
+
+  _fxParticles.forEach(p => {
+    p.x += p.vx;
+    p.y += p.vy;
+    p.rot += p.rotSpeed;
+    p.life += p.lifeSpeed;
+    if(p.life > 1) p.life = 0;
+
+    // Wrap around
+    if(p.x < -20) p.x = w + 20;
+    if(p.x > w + 20) p.x = -20;
+    if(p.y < -20) p.y = h + 20;
+    if(p.y > h + 20) p.y = -20;
+
+    const alpha = p.alpha * (0.5 + 0.5 * Math.sin(p.life * Math.PI * 2));
+    ctx.save();
+    ctx.translate(p.x, p.y);
+    ctx.rotate(p.rot);
+    ctx.globalAlpha = alpha;
+
+    if(p.glow) {
+      ctx.shadowColor = p.color;
+      ctx.shadowBlur = 8 + p.size * 2;
+    }
+
+    ctx.fillStyle = p.color;
+    ctx.strokeStyle = p.color;
+
+    switch(p.shape) {
+      case 'circle':
+        ctx.beginPath();
+        ctx.arc(0, 0, p.size, 0, Math.PI * 2);
+        ctx.fill();
+        break;
+      case 'dot':
+        ctx.beginPath();
+        ctx.arc(0, 0, p.size * 0.5, 0, Math.PI * 2);
+        ctx.fill();
+        break;
+      case 'square':
+        ctx.fillRect(-p.size, -p.size, p.size * 2, p.size * 2);
+        break;
+      case 'line':
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(-p.size * 3, 0);
+        ctx.lineTo(p.size * 3, 0);
+        ctx.stroke();
+        break;
+      case 'ember':
+        ctx.beginPath();
+        ctx.arc(0, 0, p.size, 0, Math.PI * 2);
+        ctx.fill();
+        p.vy -= 0.01; // float upwards
+        break;
+      case 'bubble':
+        ctx.lineWidth = 0.5;
+        ctx.beginPath();
+        ctx.arc(0, 0, p.size * 1.5, 0, Math.PI * 2);
+        ctx.stroke();
+        p.vy -= 0.005; // float up slowly
+        break;
+      case 'leaf':
+        ctx.beginPath();
+        ctx.ellipse(0, 0, p.size * 2, p.size * 0.8, p.rot, 0, Math.PI * 2);
+        ctx.fill();
+        p.vy += 0.005; // fall slowly
+        p.vx += Math.sin(p.life * Math.PI * 4) * 0.01;
+        break;
+      case 'petal':
+        ctx.beginPath();
+        ctx.ellipse(0, 0, p.size * 1.5, p.size * 0.6, p.rot, 0, Math.PI * 2);
+        ctx.fill();
+        p.vy += 0.008;
+        p.vx += Math.sin(p.life * Math.PI * 6) * 0.015;
+        break;
+      case 'snowflake':
+        ctx.lineWidth = 0.8;
+        for(let i = 0; i < 6; i++) {
+          ctx.beginPath();
+          ctx.moveTo(0, 0);
+          ctx.lineTo(0, p.size * 2.5);
+          ctx.stroke();
+          ctx.rotate(Math.PI / 3);
+        }
+        p.vy += 0.003;
+        break;
+      case 'firefly':
+        ctx.beginPath();
+        ctx.arc(0, 0, p.size * 0.6, 0, Math.PI * 2);
+        ctx.fill();
+        p.vx += Math.sin(p.life * Math.PI * 8) * 0.02;
+        p.vy += Math.cos(p.life * Math.PI * 6) * 0.02;
+        break;
+      case 'confetti':
+        ctx.fillRect(-p.size, -p.size * 0.4, p.size * 2, p.size * 0.8);
+        p.vy += 0.01;
+        p.rotSpeed = 0.05;
+        break;
+      case 'crystal':
+        ctx.beginPath();
+        ctx.moveTo(0, -p.size * 2);
+        ctx.lineTo(p.size, 0);
+        ctx.lineTo(0, p.size * 2);
+        ctx.lineTo(-p.size, 0);
+        ctx.closePath();
+        ctx.fill();
+        break;
+      default:
+        ctx.beginPath();
+        ctx.arc(0, 0, p.size, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    ctx.restore();
+  });
+
+  _fxAnimFrame = requestAnimationFrame(animateFX);
+}
+
+// Hook into theme apply
+const _origApplyTheme = applyTheme;
+function applyThemeWithFX(name, animate = true) {
+  _origApplyTheme(name, animate);
+  // Delay FX init slightly to let theme CSS load
+  setTimeout(() => initThemeFX(name), animate ? 400 : 50);
+}
+// Override the theme card click handlers and initial boot theme
+// We patch this by calling initThemeFX on boot
+setTimeout(() => initThemeFX(loadTheme()), 500);
+
+// Patch theme card clicks in settings
+const _origSetupSettings = setupSettings;
+// Re-apply FX when settings applies a new theme
+document.addEventListener('click', e => {
+  const card = e.target.closest('.theme-card[data-theme]');
+  if(card) setTimeout(() => initThemeFX(card.dataset.theme), 500);
+});
 
 // ---- Exports for other modules ----
 export { toast, avatarColor, avatarInitial, escHtml, avatarHtml, canModerate, RANK_COLORS, RANKS, rankOf, SVG_ICONS, renderRankBadge };
