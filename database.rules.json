@@ -1,0 +1,84 @@
+{
+  "rules": {
+    // ─────────────────────────────────────────────────────────────
+    // Nebula V2 — Realtime Database security rules
+    //
+    // Auth is required for every read/write. App Check is enforced
+    // at the project level; these rules are the second line of
+    // defense. Client-side logic handles finer participant checks.
+    // ─────────────────────────────────────────────────────────────
+
+    // Default-deny catch-all (explicit)
+    ".read": false,
+    ".write": false,
+
+    // ── Blackjack games (primary storage for low latency) ──
+    // Any authenticated user can list games (needed for cleanup
+    // sweeps of stale entries) and read/write individual game docs.
+    // Participant enforcement is handled client-side alongside a
+    // modest schema guard below.
+    "bj_games": {
+      ".read": "auth != null",
+      ".write": "auth != null",
+      "$gameId": {
+        ".read": "auth != null",
+        ".write": "auth != null",
+        // Either the creator writes a full new doc (has p1uid+p2uid)
+        // or a participant updates an existing one. On delete newData
+        // is null, which we allow.
+        ".validate": "newData == null || (newData.hasChildren(['p1uid','p2uid','stake']) && newData.child('p1uid').isString() && newData.child('p2uid').isString())"
+      }
+    },
+
+    // ── Presence (online/offline heartbeat) ──
+    "presence": {
+      ".read": "auth != null",
+      "$uid": {
+        // Each user can only write their own presence node
+        ".write": "auth != null && auth.uid == $uid"
+      }
+    },
+
+    // ── Typing indicators (channel + DM) ──
+    "typing": {
+      ".read": "auth != null",
+      "$channelId": {
+        ".read": "auth != null",
+        ".write": "auth != null",
+        "$uid": {
+          // Only the user can write their own typing state
+          ".write": "auth != null && auth.uid == $uid"
+        }
+      }
+    },
+    "typing_dm": {
+      ".read": "auth != null",
+      "$dmId": {
+        ".read": "auth != null",
+        ".write": "auth != null",
+        "$uid": {
+          ".write": "auth != null && auth.uid == $uid"
+        }
+      }
+    },
+
+    // ── Meta (visit counter, global announcement flags, etc.) ──
+    "meta": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+
+    // ── Shop ephemeral flags / cooldowns ──
+    // Some cosmetic shop items reserve claim locks in RTDB.
+    "shop_locks": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+
+    // ── Ephemeral events (nudge, ping, etc.) ──
+    "events": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    }
+  }
+}

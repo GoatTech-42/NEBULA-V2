@@ -16,13 +16,50 @@ Nebula V2 is a zero-framework web app built entirely with vanilla HTML/CSS/JS an
 # Install Firebase CLI (if you don't have it)
 npm install -g firebase-tools
 
-# Login & deploy
+# Login
 firebase login
+
+# Deploy EVERYTHING (hosting + both sets of security rules)
+firebase deploy
+
+# Or deploy individual targets:
 firebase deploy --only hosting
+firebase deploy --only firestore:rules
+firebase deploy --only database      # Realtime Database rules
 ```
 
 **Firebase project**: `nebulahistorians`
 **RTDB URL**: `https://nebulahistorians-default-rtdb.firebaseio.com`
+
+> ⚠️ **Important:** the 1v1 blackjack feature stores active games in the
+> Realtime Database. If you only deploy hosting/Firestore the RTDB rules
+> in `database.rules.json` won't be live, and accepting a challenge will
+> fail with *permission_denied*. Always run `firebase deploy --only database`
+> after cloning this repo or whenever the rules file changes.
+
+---
+
+## Troubleshooting
+
+### "Permission denied" when accepting a blackjack challenge
+
+This means the Realtime Database rules haven't been deployed. Run:
+
+```bash
+firebase deploy --only database
+```
+
+The app will automatically fall back to Firestore if RTDB writes fail, so
+challenges can still be accepted, but latency will be higher than normal.
+You can verify RTDB is reachable by opening the browser console and running
+`nebulaDebug()` — the `tests.rtdbWrite` field should report `ok`.
+
+### General debugging
+
+Every authenticated page exposes a `nebulaDebug()` helper on `window`. It
+prints the current user, active game, pending challenges, and probes both
+Firestore and RTDB for read/write access. Share the output with an admin
+when reporting a bug.
 
 ---
 

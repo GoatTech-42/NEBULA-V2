@@ -83,23 +83,50 @@ async function _cleanupStaleData() {
     const toDel = [];
     [...sentSnap.docs, ...recvSnap.docs].forEach(d => {
       const data = d.data();
+      // Always clean up terminal challenges (accepted/declined/cancelled) — they
+      // are just turn-coordination artifacts and should not persist.
       if(data.status !== 'pending') toDel.push(d.ref);
       else if(data.createdAt?.toDate && data.createdAt.toDate() < cutoff) toDel.push(d.ref);
     });
-    await Promise.all(toDel.map(r => deleteDoc(r).catch(()=>{})));
-    // Clean up stale RTDB games
+    await Promise.all(toDel.map(r => deleteDoc(r).catch(err => console.debug('[BJ] stale challenge delete skipped:', err?.code || err?.message))));
+    // Clean up stale RTDB games. If RTDB reads fail (rules, network), log and move on —
+    // this is best-effort housekeeping, not critical path.
     if(_rtdb) {
-      const gamesSnap = await rtGet(rtRef(_rtdb, 'bj_games'));
-      if(gamesSnap.val()) {
-        const now = Date.now();
-        Object.entries(gamesSnap.val()).forEach(([gid, g]) => {
-          if(g.phase === 'gameDone' || (g.createdAt && (now - g.createdAt) > 24*60*60*1000)) {
-            rtRemove(rtRef(_rtdb, `bj_games/${gid}`)).catch(()=>{});
-          }
-        });
+      try {
+        const gamesSnap = await rtGet(rtRef(_rtdb, 'bj_games'));
+        if(gamesSnap.val()) {
+          const now = Date.now();
+          Object.entries(gamesSnap.val()).forEach(([gid, g]) => {
+            // Also sweep games where the creator is us and older than 24h to
+            // avoid lingering 'gameDone' + stuck abandoned games.
+            const stale = g.phase === 'gameDone' || (g.createdAt && (now - g.createdAt) > 24*60*60*1000);
+            if(stale) rtRemove(rtRef(_rtdb, `bj_games/${gid}`)).catch(()=>{});
+          });
+        }
+      } catch(rtdbErr) {
+        console.debug('[BJ] RTDB cleanup skipped:', rtdbErr?.code || rtdbErr?.message);
       }
     }
-  } catch(e) {}
+    // Also sweep stale Firestore-fallback games that involve us.
+    try {
+      const [p1Snap, p2Snap] = await Promise.all([
+        getDocs(query(collection(db,'bj_games'), where('p1uid','==',_gcUser.uid))),
+        getDocs(query(collection(db,'bj_games'), where('p2uid','==',_gcUser.uid)))
+      ]);
+      const now = Date.now();
+      [...p1Snap.docs, ...p2Snap.docs].forEach(d => {
+        const g = d.data();
+        const ts = typeof g.createdAt === 'number' ? g.createdAt : g.createdAt?.toDate?.()?.getTime() || 0;
+        if(g.phase === 'gameDone' || (ts && (now - ts) > 24*60*60*1000)) {
+          deleteDoc(d.ref).catch(()=>{});
+        }
+      });
+    } catch(fsErr) {
+      console.debug('[BJ] Firestore game cleanup skipped:', fsErr?.code || fsErr?.message);
+    }
+  } catch(e) {
+    console.debug('[BJ] _cleanupStaleData error (non-fatal):', e?.code || e?.message);
+  }
 }
 
 export function setActivity(mode) {
@@ -558,23 +585,43 @@ async function _sendChallenge() {
 
   if(_mpChalUnsub2) _mpChalUnsub2();
   _mpChalUnsub2 = onSnapshot(doc(db,'bj_challenges',ref.id), snap => {
-    if(!snap.exists()) { _mpChalUnsub2?.(); return; }
+    if(!snap.exists()) { _mpChalUnsub2?.(); _clearWaitingTimers(); return; }
     const data = snap.data();
     if(data.status==='accepted'&&data.gameId) {
+      _clearWaitingTimers();
       _mpChalUnsub2?.(); _mpChallengeId=null; _mpChalOpp=null;
-      _joinGame(data.gameId,'p1');
+      // Honor the accepter's choice of backend (rtdb / firestore fallback).
+      const useRtdb = data.backend ? (data.backend === 'rtdb') : true;
+      _joinGame(data.gameId,'p1',useRtdb);
     } else if(data.status==='declined') {
+      _clearWaitingTimers();
       _mpChalUnsub2?.(); _mpChallengeId=null; _mpChalOpp=null;
       toast(`${_selectedOpp?.username||'Opponent'} declined`,'warning'); _renderTab();
     } else if(data.status==='cancelled') {
+      _clearWaitingTimers();
       _mpChalUnsub2?.(); _mpChallengeId=null; _mpChalOpp=null; _renderTab();
     }
   });
 }
 
+// Pending-challenge self-expire window. If the accepter hasn't responded
+// after this many ms, we auto-cancel and free the sender. Keeps the UI
+// from hanging forever if the opponent tabs away or goes offline.
+const BJ_CHALLENGE_EXPIRE_MS = 120_000; // 2 minutes
+
+let _waitingExpireTimer = null;
+let _waitingTickTimer   = null;
+
+function _clearWaitingTimers() {
+  if (_waitingExpireTimer) { clearTimeout(_waitingExpireTimer); _waitingExpireTimer = null; }
+  if (_waitingTickTimer)   { clearInterval(_waitingTickTimer);  _waitingTickTimer = null; }
+}
+
 function _showWaitingState(opp, stake, bestOf) {
   const col = document.getElementById('gc-bj-col');
   if(!col) return;
+  _clearWaitingTimers();
+  const startedAt = Date.now();
   col.innerHTML = `
     <div class="bj-lobby-card bj-waiting-card">
       <div class="bj-waiting-header">
@@ -585,13 +632,33 @@ function _showWaitingState(opp, stake, bestOf) {
         <div class="bj-waiting-opp" style="background:${opp.color||avatarColor(opp.uid)}">${avatarHtml(opp.icon||'',opp.username,'55%')}</div>
       </div>
       <div class="bj-waiting-text">Waiting for <strong>${escHtml(opp.username)}</strong> to accept...</div>
-      <div class="bj-waiting-meta">${stake} GC per round Â· Best of ${bestOf}</div>
+      <div class="bj-waiting-meta">${stake} GC per round · Best of ${bestOf}</div>
+      <div class="bj-waiting-timer" id="bj-waiting-timer" aria-live="polite" style="font-size:.68rem;color:var(--text-muted);letter-spacing:.04em;margin-top:6px">auto-cancel in 2:00</div>
       <button class="btn btn-ghost btn-sm" id="bj-cancel-challenge">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         Cancel
       </button>
     </div>`;
   document.getElementById('bj-cancel-challenge')?.addEventListener('click', _cancelChallenge);
+
+  // Tick the countdown every second and auto-cancel on expire.
+  _waitingTickTimer = setInterval(() => {
+    const el = document.getElementById('bj-waiting-timer');
+    if (!el) { _clearWaitingTimers(); return; }
+    const remaining = Math.max(0, BJ_CHALLENGE_EXPIRE_MS - (Date.now() - startedAt));
+    const s = Math.ceil(remaining / 1000);
+    const mm = Math.floor(s / 60);
+    const ss = String(s % 60).padStart(2, '0');
+    el.textContent = remaining > 0 ? `auto-cancel in ${mm}:${ss}` : 'cancelling…';
+  }, 1000);
+
+  _waitingExpireTimer = setTimeout(async () => {
+    _clearWaitingTimers();
+    if (_mpChallengeId) {
+      toast(`${opp.username} didn't respond — challenge cancelled`, 'warning');
+      await _cancelChallenge();
+    }
+  }, BJ_CHALLENGE_EXPIRE_MS);
 }
 
 function _restoreWaitingState() {
@@ -599,24 +666,34 @@ function _restoreWaitingState() {
   _showWaitingState(_mpChalOpp, _mpChalStake, _mpChalBestOf);
   if(_mpChalUnsub2) _mpChalUnsub2();
   _mpChalUnsub2 = onSnapshot(doc(db,'bj_challenges',_mpChallengeId), snap => {
-    if(!snap.exists()) { _mpChalUnsub2?.(); return; }
+    if(!snap.exists()) { _mpChalUnsub2?.(); _clearWaitingTimers(); return; }
     const data = snap.data();
     if(data.status==='accepted'&&data.gameId) {
+      _clearWaitingTimers();
       _mpChalUnsub2?.(); _mpChallengeId=null; _mpChalOpp=null;
-      _joinGame(data.gameId,'p1');
+      const useRtdb = data.backend ? (data.backend === 'rtdb') : true;
+      _joinGame(data.gameId,'p1',useRtdb);
     } else if(data.status==='declined') {
+      _clearWaitingTimers();
       _mpChalUnsub2?.(); _mpChallengeId=null; _mpChalOpp=null;
       toast('Challenge declined','warning'); _renderTab();
     } else if(data.status==='cancelled') {
+      _clearWaitingTimers();
       _mpChalUnsub2?.(); _mpChallengeId=null; _mpChalOpp=null; _renderTab();
     }
   });
 }
 
 async function _cancelChallenge() {
+  _clearWaitingTimers();
   if(!_mpChallengeId) return;
-  await updateDoc(doc(db,'bj_challenges',_mpChallengeId),{status:'cancelled'}).catch(()=>{});
+  const cid = _mpChallengeId;
+  // Optimistically clear local state first so the UI is responsive even if
+  // the network write takes a moment.
   _mpChallengeId=null; _mpChalOpp=null; _mpChalStake=0; _selectedOpp=null; _renderTab();
+  await updateDoc(doc(db,'bj_challenges',cid),{status:'cancelled'}).catch(()=>{});
+  // Clean up the doc so it doesn't clutter the collection.
+  setTimeout(() => deleteDoc(doc(db,'bj_challenges',cid)).catch(()=>{}), 2000);
 }
 
 function _updateBJNavBadge() {
@@ -683,7 +760,7 @@ function _renderPendingChallenges(challenges) {
         <div class="bj-sr-ava bj-mystery-ava">?</div>
         <div class="bj-chal-info">
           <span class="bj-chal-from bj-mystery-name">Someone challenges you</span>
-          <span class="bj-chal-meta">${c.stake} GC/round Â· Best of ${c.bestOf} Â· <span style="color:var(--warn);font-weight:700">Identity hidden until accepted</span></span>
+          <span class="bj-chal-meta">${c.stake} GC/round · Best of ${c.bestOf} · <span style="color:var(--warn);font-weight:700">Identity hidden until accepted</span></span>
         </div>
         <button class="ta-btn ta-green bj-accept-btn" data-cid="${c.id}">Accept</button>
         <button class="ta-btn ta-red bj-decline-btn" data-cid="${c.id}">Decline</button>
@@ -692,36 +769,85 @@ function _renderPendingChallenges(challenges) {
   el.querySelectorAll('.bj-decline-btn').forEach(btn=>btn.addEventListener('click',()=>_declineChallenge(btn.dataset.cid)));
 }
 
+// Human-friendly error text for Firebase permission / network errors.
+// Surfaces the *real* reason instead of the raw code so users know what
+// to do (retry vs. report a bug vs. check connection).
+function _friendlyFirebaseError(e) {
+  const msg = (e && (e.message || e.code)) || '';
+  const code = (e && e.code) || '';
+  if (code === 'permission-denied' || /permission[_ -]?denied/i.test(msg)) {
+    return 'Server rejected the write (permissions). This is usually temporary — try again in a few seconds.';
+  }
+  if (/unavailable|network|offline|failed to get document/i.test(msg)) {
+    return 'Network problem. Check your connection and try again.';
+  }
+  if (/quota|resource[_ -]?exhausted/i.test(msg)) {
+    return 'Server is busy right now. Try again in a moment.';
+  }
+  if (/unauthenticated/i.test(msg) || code === 'unauthenticated') {
+    return 'Your session expired. Refresh the page to sign back in.';
+  }
+  return msg || 'Unknown error';
+}
+
+// Flag used to prevent double-accepts (e.g. rapid double-click on the Accept button).
+let _acceptInFlight = false;
+
 async function _acceptChallenge(cid) {
+  if (_acceptInFlight) return;
+  _acceptInFlight = true;
+  // Disable the button immediately so a second click can't race us into a duplicate game.
+  const btn = document.querySelector(`.bj-accept-btn[data-cid="${cid}"]`);
+  const declineBtn = document.querySelector(`.bj-decline-btn[data-cid="${cid}"]`);
+  if (btn) { btn.disabled = true; btn.textContent = 'Joining…'; btn.style.opacity = '.7'; }
+  if (declineBtn) declineBtn.disabled = true;
+
   try {
-    const snap = await getDoc(doc(db,'bj_challenges',cid));
-    if(!snap.exists()||snap.data().status!=='pending') { toast('Challenge expired','warning'); return; }
-    const c = snap.data();
-    const maxLoss = (c.stake||0) * Math.ceil((c.bestOf||1)/2);
-    const myCoins = _gcData ? Math.floor(_gcData.coins||0) : 0;
-    if(!_gcData || myCoins < maxLoss) {
-      toast(`Not enough GC -- need ${maxLoss.toLocaleString()} to cover worst-case losses`, 'error');
-      return;
-    }
-    const senderGC = await getDoc(doc(db,'goatcoin',c.fromUid));
-    const senderCoins = senderGC.exists() ? Math.floor(senderGC.data().coins||0) : 0;
-    if(senderCoins < maxLoss) {
-      toast('Challenger no longer has enough GC', 'warning');
-      await updateDoc(doc(db,'bj_challenges',cid),{status:'cancelled'}).catch(()=>{});
+    if (!_gcUser || !_gcUser.uid) {
+      toast('You need to be signed in to accept challenges', 'error');
       return;
     }
 
-    // Create game — deal cards immediately into the initial state
+    const snap = await getDoc(doc(db, 'bj_challenges', cid));
+    if (!snap.exists() || snap.data().status !== 'pending') {
+      toast('Challenge expired', 'warning');
+      return;
+    }
+    const c = snap.data();
+
+    // Sanity check — challenge has to be addressed to us.
+    if (c.toUid !== _gcUser.uid) {
+      toast('This challenge is not addressed to you', 'error');
+      return;
+    }
+
+    const maxLoss = (c.stake || 0) * Math.ceil((c.bestOf || 1) / 2);
+    const myCoins = _gcData ? Math.floor(_gcData.coins || 0) : 0;
+    if (!_gcData || myCoins < maxLoss) {
+      toast(`Not enough GC — need ${maxLoss.toLocaleString()} to cover worst-case losses`, 'error');
+      return;
+    }
+
+    const senderGC = await getDoc(doc(db, 'goatcoin', c.fromUid));
+    const senderCoins = senderGC.exists() ? Math.floor(senderGC.data().coins || 0) : 0;
+    if (senderCoins < maxLoss) {
+      toast('Challenger no longer has enough GC', 'warning');
+      await updateDoc(doc(db, 'bj_challenges', cid), { status: 'cancelled' }).catch(() => {});
+      return;
+    }
+
+    // Build initial game state (cards dealt up front so both clients render
+    // a full table immediately after the listener attaches).
     const deck = _newDeck();
     const p1h = [deck.pop(), deck.pop()];
     const p2h = [deck.pop(), deck.pop()];
-    const dh = [deck.pop(), deck.pop()];
-    const gameId = `bj_${Date.now()}_${Math.random().toString(36).slice(2,8)}`;
+    const dh  = [deck.pop(), deck.pop()];
+    const gameId = `bj_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
     const gameData = {
-      p1uid: c.fromUid, p1name: c.fromUsername, p1color: c.fromColor||avatarColor(c.fromUid), p1icon: c.fromIcon||'',
-      p2uid: _gcUser.uid, p2name: _gcUserData?.username||'', p2color: _gcUserData?.color||avatarColor(_gcUser.uid), p2icon: _gcUserData?.icon||'',
+      p1uid: c.fromUid, p1name: c.fromUsername, p1color: c.fromColor || avatarColor(c.fromUid), p1icon: c.fromIcon || '',
+      p2uid: _gcUser.uid, p2name: _gcUserData?.username || '', p2color: _gcUserData?.color || avatarColor(_gcUser.uid), p2icon: _gcUserData?.icon || '',
       stake: c.stake, bestOf: c.bestOf,
-      scores: {p1:0, p2:0}, currentRound: 1,
+      scores: { p1: 0, p2: 0 }, currentRound: 1,
       deck: _deckToStr(deck),
       p1hand: _handToStr(p1h),
       p2hand: _handToStr(p2h),
@@ -732,28 +858,98 @@ async function _acceptChallenge(cid) {
       createdAt: Date.now(), updatedAt: Date.now()
     };
 
-    if(_rtdb) {
-      await rtSet(rtRef(_rtdb, `bj_games/${gameId}`), gameData);
-      await updateDoc(doc(db,'bj_challenges',cid), {status:'accepted', gameId});
-      _joinGame(gameId, 'p2', true);
-    } else {
-      // Fallback to Firestore if RTDB unavailable
-      const fsRef = await addDoc(collection(db,'bj_games'), {...gameData, createdAt: serverTimestamp()});
-      await updateDoc(doc(db,'bj_challenges',cid), {status:'accepted', gameId: fsRef.id});
-      _joinGame(fsRef.id, 'p2', false);
+    // Try RTDB first (low latency, cheap). If it fails for ANY reason
+    // — permission, network, rules not yet deployed — fall back to
+    // Firestore so accepting a challenge always works. This is the fix
+    // for the "permission denied when accepting BJ challenge" issue.
+    let createdGameId = null;
+    let usingRtdb = false;
+
+    if (_rtdb) {
+      try {
+        await rtSet(rtRef(_rtdb, `bj_games/${gameId}`), gameData);
+        createdGameId = gameId;
+        usingRtdb = true;
+      } catch (rtdbErr) {
+        console.warn('[BJ] RTDB game creation failed, falling back to Firestore:', rtdbErr);
+        // Notify the user once that we're degrading to the slower path.
+        toast('Using fallback channel — game will be a touch slower.', 'info');
+      }
     }
-    setTimeout(() => deleteDoc(doc(db,'bj_challenges',cid)).catch(()=>{}), 8000);
-  } catch(e) {
+
+    if (!createdGameId) {
+      // Firestore fallback (or no RTDB instance at all).
+      try {
+        const fsRef = await addDoc(collection(db, 'bj_games'), {
+          ...gameData,
+          createdAt: serverTimestamp()
+        });
+        createdGameId = fsRef.id;
+        usingRtdb = false;
+      } catch (fsErr) {
+        console.error('[BJ] Firestore game creation also failed:', fsErr);
+        throw new Error('Could not create the game — ' + _friendlyFirebaseError(fsErr));
+      }
+    }
+
+    // Mark the challenge accepted so the sender's listener joins the game.
+    // We include `backend` so the sender knows whether to listen via RTDB or
+    // Firestore (required now that we can fall back). If this write fails we
+    // retry once and surface a recoverable warning.
+    const acceptPayload = {
+      status: 'accepted',
+      gameId: createdGameId,
+      backend: usingRtdb ? 'rtdb' : 'firestore'
+    };
+    try {
+      await updateDoc(doc(db, 'bj_challenges', cid), acceptPayload);
+    } catch (updateErr) {
+      console.warn('[BJ] Challenge status update failed, retrying once:', updateErr);
+      await new Promise(r => setTimeout(r, 400));
+      try {
+        await updateDoc(doc(db, 'bj_challenges', cid), acceptPayload);
+      } catch (retryErr) {
+        console.error('[BJ] Retry also failed:', retryErr);
+        // Game exists but sender won't auto-join — they'll have to refresh.
+        toast('Game created, but telling the challenger failed. They may need to refresh.', 'warning');
+      }
+    }
+
+    // Join the game. Pass usingRtdb so the listener uses the right backend.
+    _joinGame(createdGameId, 'p2', usingRtdb);
+
+    // Clean up the challenge doc after both clients have had time to pick up
+    // the "accepted" state and transition into the game.
+    setTimeout(() => deleteDoc(doc(db, 'bj_challenges', cid)).catch(() => {}), 8000);
+  } catch (e) {
     console.error('Accept challenge error:', e);
-    toast('Failed to accept challenge: ' + (e.message||'Unknown error'), 'error');
+    toast('Failed to accept challenge: ' + _friendlyFirebaseError(e), 'error');
+    // Re-enable buttons so the user can try again.
+    if (btn) { btn.disabled = false; btn.textContent = 'Accept'; btn.style.opacity = ''; }
+    if (declineBtn) declineBtn.disabled = false;
+  } finally {
+    _acceptInFlight = false;
   }
 }
 
 async function _declineChallenge(cid) {
-  // Use updateDoc so the sender's onSnapshot fires with status:'declined'
-  await updateDoc(doc(db,'bj_challenges',cid), {status:'declined'}).catch(()=>{});
+  // Disable buttons instantly so the user gets immediate feedback.
+  const btn = document.querySelector(`.bj-decline-btn[data-cid="${cid}"]`);
+  const acceptBtn = document.querySelector(`.bj-accept-btn[data-cid="${cid}"]`);
+  if (btn) { btn.disabled = true; btn.style.opacity = '.7'; }
+  if (acceptBtn) acceptBtn.disabled = true;
+  try {
+    // Use updateDoc so the sender's onSnapshot fires with status:'declined'
+    await updateDoc(doc(db, 'bj_challenges', cid), { status: 'declined' });
+  } catch (e) {
+    console.warn('[BJ] decline write failed:', e);
+    toast('Could not decline: ' + _friendlyFirebaseError(e), 'error');
+    if (btn) { btn.disabled = false; btn.style.opacity = ''; }
+    if (acceptBtn) acceptBtn.disabled = false;
+    return;
+  }
   // Clean up after a short delay
-  setTimeout(() => deleteDoc(doc(db,'bj_challenges',cid)).catch(()=>{}), 3000);
+  setTimeout(() => deleteDoc(doc(db, 'bj_challenges', cid)).catch(() => {}), 3000);
 }
 
 // --------------------------------------------------
@@ -1062,7 +1258,7 @@ function _renderBJTable() {
             <span>${escHtml(myName)} (You)</span>
             <span class="bj-mp-score">${scores[_myRole]||0}</span>
           </div>
-          <div class="bj-mp-vs">vs Â· Round ${g.currentRound||1} of ${g.bestOf||3} Â· ${g.stake}GC/rd</div>
+          <div class="bj-mp-vs">vs · Round ${g.currentRound||1} of ${g.bestOf||3} · ${g.stake}GC/rd</div>
           <div class="bj-mp-player">
             <div class="bj-mp-ava" style="background:${oppColor}">${avatarHtml(oppIcon,oppName,'60%')}</div>
             <span>${escHtml(oppName)}</span>
@@ -1240,4 +1436,56 @@ export function cleanupGoatCoin() {
   if(_mpGameUnsub) { _mpGameUnsub(); _mpGameUnsub=null; }
   if(_mpChalUnsub) { _mpChalUnsub(); _mpChalUnsub=null; }
   if(_mpChalUnsub2){ _mpChalUnsub2(); _mpChalUnsub2=null; }
+  _clearWaitingTimers();
+}
+
+// --------------------------------------------------
+//  DIAGNOSTICS  — expose a small debug helper on window so
+//  users hitting an issue can quickly share the state with us.
+//  Usage in the browser console: `nebulaDebug()`
+// --------------------------------------------------
+if (typeof window !== 'undefined') {
+  window.nebulaDebug = async function nebulaDebug() {
+    const out = {
+      now: new Date().toISOString(),
+      user: _gcUser ? { uid: _gcUser.uid, email: _gcUser.email } : null,
+      userData: _gcUserData ? { username: _gcUserData.username, rank: _gcUserData.rank } : null,
+      gcCoins: _gcData ? Math.floor(_gcData.coins || 0) : null,
+      rtdbAttached: !!_rtdb,
+      activeGame: _mpGameId ? {
+        gameId: _mpGameId,
+        role: _myRole,
+        useRTDB: _useRTDB,
+        phase: _mpGame?.phase || null
+      } : null,
+      pendingChallenges: _cachedIncoming.length,
+      sentChallenge: _mpChallengeId ? { id: _mpChallengeId, opp: _mpChalOpp?.username || null } : null,
+      tests: {}
+    };
+    // Quick RTDB round-trip probe so we immediately know if writes are
+    // blocked (the #1 reason BJ accept used to fail).
+    if (_rtdb && _gcUser) {
+      try {
+        const probeRef = rtRef(_rtdb, `events/probe/${_gcUser.uid}`);
+        await rtSet(probeRef, { t: Date.now(), msg: 'nebulaDebug ping' });
+        await rtRemove(probeRef).catch(() => {});
+        out.tests.rtdbWrite = 'ok';
+      } catch (e) {
+        out.tests.rtdbWrite = `fail: ${e?.code || e?.message || e}`;
+      }
+    } else {
+      out.tests.rtdbWrite = 'skipped (no rtdb handle)';
+    }
+    // Firestore probe too.
+    if (_gcUser) {
+      try {
+        await getDoc(doc(db, 'goatcoin', _gcUser.uid));
+        out.tests.firestoreRead = 'ok';
+      } catch (e) {
+        out.tests.firestoreRead = `fail: ${e?.code || e?.message || e}`;
+      }
+    }
+    console.log('%c[Nebula Debug]', 'background:#6366f1;color:#fff;padding:2px 6px;border-radius:3px;font-weight:700', out);
+    return out;
+  };
 }
