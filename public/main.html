@@ -16,13 +16,23 @@
   <title>Nebula V2</title>
   <meta name="description" content="Nebula V2 — Beyond The Stars. Chat, game, and connect.">
   <meta name="theme-color" content="#071827">
+  <meta name="color-scheme" content="dark light">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Nebula">
+  <meta name="mobile-web-app-capable" content="yes">
+  <link rel="manifest" href="/manifest.webmanifest">
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✦</text></svg>">
+  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='36' fill='%23071827'/><text x='50%25' y='55%25' text-anchor='middle' dominant-baseline='middle' font-size='130' fill='%2338bdf8'>✦</text></svg>">
   <!-- Layout (structure only) -->
   <link rel="stylesheet" href="css/layout.css">
   <!-- Active theme injected by JS — default fallback -->
   <link rel="stylesheet" id="theme-stylesheet" href="css/themes/og.css">
 </head>
 <body>
+
+<!-- Skip-link for keyboard / screen-reader users -->
+<a href="#main" class="skip-link">Skip to main content</a>
 
 <!-- ═══════════════════════════════
      BACKGROUND LAYERS
@@ -286,6 +296,14 @@
             <div class="stat-label">Total Visits</div>
           </div>
           <div class="stat-item">
+            <div class="stat-value" id="online-count" style="color:var(--success);font-size:1.1rem">--</div>
+            <div class="stat-label">Online Now</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="ping-val" style="color:var(--accent);font-size:1.1rem">--</div>
+            <div class="stat-label">Ping</div>
+          </div>
+          <div class="stat-item">
             <div id="battery-wrap" style="display:flex;align-items:center;gap:.4rem;justify-content:center;"></div>
             <div class="stat-label">Battery</div>
           </div>
@@ -294,8 +312,23 @@
             <div class="stat-label">Session</div>
           </div>
         </div>
+
+        <!-- Deploy / build info strip -->
+        <div class="home-deploy" id="home-deploy" role="status" aria-live="polite">
+          <span class="hd-dot" id="hd-conn-dot" title="Connection status"></span>
+          <span class="hd-chip" id="hd-version" title="Current build">v—</span>
+          <span class="hd-sep">·</span>
+          <span class="hd-label">Last deployed</span>
+          <span class="hd-time" id="hd-deploy-time" title="">—</span>
+          <span class="hd-sep">·</span>
+          <span class="hd-chip hd-chip-soft" id="hd-channel">production</span>
+          <span class="hd-sep">·</span>
+          <span class="hd-chip hd-chip-soft" id="hd-platform">—</span>
+          <button class="hd-whatsnew" id="hd-whatsnew" type="button" title="What's new in this build">What's new</button>
+        </div>
+
         <div class="home-shortcuts">
-          <kbd>Ctrl</kbd>+<kbd>K</kbd> Search &nbsp;&middot;&nbsp; <kbd>Esc</kbd> Close &nbsp;&middot;&nbsp; <kbd>1</kbd>-<kbd>8</kbd> Navigate
+          <kbd>Ctrl</kbd>+<kbd>K</kbd> Search &nbsp;&middot;&nbsp; <kbd>?</kbd> Shortcuts &nbsp;&middot;&nbsp; <kbd>Esc</kbd> Close &nbsp;&middot;&nbsp; <kbd>1</kbd>-<kbd>8</kbd> Navigate
         </div>
         <div class="home-copy">nebula v2 — beyond the stars</div>
       </div>
@@ -1199,6 +1232,22 @@
 ═══════════════════════════════ -->
 <div id="notif-stack"></div>
 
+<!-- SW update banner — appears when a new service-worker build is ready -->
+<div id="sw-update-banner" class="sw-update-banner hidden" role="alert" aria-live="polite">
+  <span class="swu-icon" aria-hidden="true">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+  </span>
+  <span class="swu-msg">A new build of Nebula is ready.</span>
+  <button class="swu-btn" id="sw-update-btn" type="button">Reload</button>
+  <button class="swu-dismiss" id="sw-update-dismiss" type="button" aria-label="Dismiss">×</button>
+</div>
+
+<!-- Install PWA floating button — only appears if the browser fires beforeinstallprompt -->
+<button id="pwa-install-btn" class="pwa-install-btn hidden" type="button" title="Install Nebula">
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+  <span>Install App</span>
+</button>
+
 <!-- ═══════════════════════════════
      SCRIPTS
 ═══════════════════════════════ -->
@@ -1270,6 +1319,82 @@
   document.getElementById('dm-scroll-to-bottom-btn')?.addEventListener('click', () => {
     const wrap = document.getElementById('dm-messages-wrap');
     if(wrap) wrap.scrollTop = wrap.scrollHeight;
+  });
+
+  // ═══════════════════════════════════════════════════════════
+  // Service worker registration + update prompt
+  // ═══════════════════════════════════════════════════════════
+  if('serviceWorker' in navigator && location.protocol !== 'file:') {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/service-worker.js', { scope: '/' })
+        .then((reg) => {
+          // Check for updates every time the page loads
+          reg.update().catch(()=>{});
+          // Show update banner when a new SW is waiting
+          const promptUpdate = (worker) => {
+            if(!worker) return;
+            const banner = document.getElementById('sw-update-banner');
+            const btn    = document.getElementById('sw-update-btn');
+            const dismiss= document.getElementById('sw-update-dismiss');
+            if(banner) banner.classList.remove('hidden');
+            if(btn) btn.onclick = () => {
+              worker.postMessage({ type: 'SKIP_WAITING' });
+            };
+            if(dismiss) dismiss.onclick = () => banner?.classList.add('hidden');
+          };
+          if(reg.waiting) promptUpdate(reg.waiting);
+          reg.addEventListener('updatefound', () => {
+            const nw = reg.installing;
+            if(!nw) return;
+            nw.addEventListener('statechange', () => {
+              if(nw.state === 'installed' && navigator.serviceWorker.controller) {
+                promptUpdate(nw);
+              }
+            });
+          });
+        })
+        .catch((err) => console.warn('[Nebula] SW registration failed', err));
+
+      let reloading = false;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if(reloading) return;
+        reloading = true;
+        window.location.reload();
+      });
+    });
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // PWA install prompt
+  // ═══════════════════════════════════════════════════════════
+  let _deferredInstall = null;
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    _deferredInstall = e;
+    const btn = document.getElementById('pwa-install-btn');
+    // Only show if the user hasn't dismissed it recently
+    const dismissedAt = parseInt(localStorage.getItem('neb_pwa_install_dismiss') || '0', 10);
+    if(Date.now() - dismissedAt < 7 * 24 * 60 * 60 * 1000) return;
+    if(btn) btn.classList.remove('hidden');
+  });
+  document.getElementById('pwa-install-btn')?.addEventListener('click', async (ev) => {
+    // Alt/shift click = dismiss for a week
+    if(ev.altKey || ev.shiftKey) {
+      localStorage.setItem('neb_pwa_install_dismiss', String(Date.now()));
+      ev.currentTarget.classList.add('hidden');
+      return;
+    }
+    if(!_deferredInstall) { ev.currentTarget.classList.add('hidden'); return; }
+    _deferredInstall.prompt();
+    const { outcome } = await _deferredInstall.userChoice.catch(()=>({outcome:'dismissed'}));
+    if(outcome === 'dismissed') {
+      localStorage.setItem('neb_pwa_install_dismiss', String(Date.now()));
+    }
+    _deferredInstall = null;
+    ev.currentTarget.classList.add('hidden');
+  });
+  window.addEventListener('appinstalled', () => {
+    document.getElementById('pwa-install-btn')?.classList.add('hidden');
   });
 </script>
 

@@ -79,6 +79,15 @@
     "events": {
       ".read": "auth != null",
       ".write": "auth != null"
+    },
+
+    // ── Debug probe (used by nebulaDebug() to verify RTDB reachability) ──
+    // Each user can only write their own probe node; reads are optional.
+    "debug_probe": {
+      ".read": "auth != null",
+      "$uid": {
+        ".write": "auth != null && auth.uid == $uid"
+      }
     }
   }
 }
