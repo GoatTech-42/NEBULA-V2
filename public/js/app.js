@@ -11,19 +11,23 @@ import { initGoatCoin, setActivity, cleanupGoatCoin, getGoatCoinData, renderGoat
 import { renderBadgeRow, openProfileModal, renderOwnProfile, checkAutoAwards, BADGE_DEFS, checkAdblocker } from './profile.js';
 import { renderShopTab, initShop, SHOP_ITEMS } from './shop.js';
 import { CMD_ICONS } from './icons.js';
-import { APP_VERSION, APP_CODENAME, BUILD_DATE, BUILD_CHANNEL, CHANGELOG, relativeTime, formatDeployDate } from './version.js';
+import { APP_VERSION, APP_CODENAME, BUILD_DATE, BUILD_CHANNEL, BUILD_COMMIT, BUILD_NUMBER, CHANGELOG, relativeTime, formatDeployDate } from './version.js';
 
 // Expose build info globally — handy for debugging and for the
-// nebulaDebug() helper.
+// nebulaDebug() helper. Now includes commit hash + build number so bug
+// reports can identify the exact deploy.
 window.NEBULA_BUILD = Object.freeze({
   version: APP_VERSION, codename: APP_CODENAME,
-  date: BUILD_DATE, channel: BUILD_CHANNEL
+  date: BUILD_DATE,    channel:  BUILD_CHANNEL,
+  commit: BUILD_COMMIT, number:  BUILD_NUMBER,
 });
 
 // Console banner — because why not.
 try {
+  const _commitTail = (BUILD_COMMIT && BUILD_COMMIT !== 'local') ? ` · ${BUILD_COMMIT}` : '';
+  const _numTail    = BUILD_NUMBER ? ` · #${BUILD_NUMBER}` : '';
   console.log(
-    `%c✦ Nebula V2 %cv${APP_VERSION} %c${APP_CODENAME}%c · deployed ${BUILD_DATE}\n%cType nebulaDebug() for diagnostics.`,
+    `%c✦ Nebula V2 %cv${APP_VERSION} %c${APP_CODENAME}%c · deployed ${BUILD_DATE}${_commitTail}${_numTail}\n%cType nebulaDebug() for diagnostics.`,
     'color:#38bdf8;font-weight:900;font-size:14px;',
     'color:#fde68a;font-weight:700;',
     'color:#a855f7;font-weight:600;',
@@ -685,7 +689,13 @@ function setupDeployInfo() {
   const chan  = document.getElementById('hd-channel');
   const plat  = document.getElementById('hd-platform');
   if(ver)  ver.textContent = `v${APP_VERSION}`;
-  if(ver)  ver.title = `${APP_CODENAME} · ${APP_VERSION}`;
+  if(ver) {
+    // Tooltip includes commit hash and build number so admins can tell
+    // exactly which deploy a user is on without opening the console.
+    const _commitTail = (BUILD_COMMIT && BUILD_COMMIT !== 'local') ? ` · ${BUILD_COMMIT}` : '';
+    const _numTail    = BUILD_NUMBER ? ` · build #${BUILD_NUMBER}` : '';
+    ver.title = `${APP_CODENAME} · ${APP_VERSION}${_commitTail}${_numTail}`;
+  }
   if(chan) chan.textContent = BUILD_CHANNEL;
   if(time) {
     const update = () => { time.textContent = relativeTime(BUILD_DATE); };
@@ -748,6 +758,8 @@ function _copyBuildInfo() {
     `Nebula V2 — ${APP_CODENAME}`,
     `Version:  v${APP_VERSION}`,
     `Channel:  ${BUILD_CHANNEL}`,
+    `Commit:   ${BUILD_COMMIT}`,
+    `Build #:  ${BUILD_NUMBER}`,
     `Deployed: ${formatDeployDate(BUILD_DATE)} (${relativeTime(BUILD_DATE)})`,
     `Platform: ${_detectPlatform()}`,
     `User-Agent: ${navigator.userAgent}`,
@@ -883,7 +895,7 @@ function showChangelogModal() {
     <div class="changelog-modal">
       <h2 style="margin-top:0;margin-bottom:.2rem;font-size:1.25rem;font-weight:800;">What's New</h2>
       <div style="font-size:.72rem;color:var(--text-faint,rgba(255,255,255,.45));letter-spacing:1px;text-transform:uppercase;margin-bottom:1rem;">
-        Build v${APP_VERSION} · ${APP_CODENAME} · deployed ${relativeTime(BUILD_DATE)}
+        Build v${APP_VERSION} · ${APP_CODENAME} · deployed ${relativeTime(BUILD_DATE)}${(BUILD_COMMIT && BUILD_COMMIT !== 'local') ? ` · ${BUILD_COMMIT}` : ''}${BUILD_NUMBER ? ` · #${BUILD_NUMBER}` : ''}
       </div>
       ${entries}
       <div style="display:flex;justify-content:flex-end;margin-top:1rem;">

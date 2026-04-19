@@ -1,26 +1,78 @@
 // version.js — central build / version metadata for Nebula V2
 //
-// This file is the single source of truth for "what build is live".
-// Bump APP_VERSION on every meaningful deploy and the "What's New" modal
-// on the home screen will automatically show once to each user after the
-// new build goes live.
+// This file is the SINGLE SOURCE OF TRUTH for "what build is live".
+// The Python deploy script (`deploy.py` at the repo root) edits this file
+// automatically on every deploy: it bumps APP_VERSION, re-stamps
+// BUILD_DATE with the current UTC time, fills in the short git commit
+// hash as BUILD_COMMIT, bumps BUILD_NUMBER, and prepends a new entry to
+// the CHANGELOG array.
 //
-// BUILD_DATE is the ISO timestamp of the last time this file was edited.
-// Keep them in sync — the home screen shows a relative "Last deployed X
-// ago" string computed from BUILD_DATE.
+// The constants below are also mirrored into `service-worker.js` so that
+// old caches are automatically invalidated when a new build ships.
 //
-// Because we're on the Firebase Spark plan there's no Cloud Functions
-// hook to auto-stamp this on deploy, so we just hand-bump it. That's fine
-// for a small team and keeps everything purely on Firebase Hosting.
+// ---------------------------------------------------------------------
+//  Field reference
+// ---------------------------------------------------------------------
+//  APP_VERSION     Semantic version string — shown in UI, SW cache key.
+//  APP_CODENAME    Human-friendly name for the release ("Spark", ...).
+//  BUILD_DATE      ISO-8601 UTC timestamp of the deploy.
+//  BUILD_CHANNEL   'production' | 'beta' | 'dev' | 'nightly'.
+//  BUILD_COMMIT    Short git SHA (7 chars) of the deploy. 'local' if none.
+//  BUILD_NUMBER    Monotonically increasing integer across deploys.
+//  CHANGELOG       Newest-first array of entries the "What's New" modal
+//                  renders. Each entry: { version, date, title, items[] }.
+//
+//  The markers "// @@deploy:..." below are read by deploy.py — do not
+//  remove them. The script regex-replaces the line right after each
+//  marker, so any formatting changes to this file need to keep those
+//  markers intact.
+// ---------------------------------------------------------------------
 
-export const APP_VERSION = '2.4.0';
-export const APP_CODENAME = 'Spark';
-export const BUILD_DATE   = '2026-04-19T21:30:00Z';
+// @@deploy:APP_VERSION
+export const APP_VERSION   = '2.5.0';
+// @@deploy:APP_CODENAME
+export const APP_CODENAME  = 'Launchpad';
+// @@deploy:BUILD_DATE
+export const BUILD_DATE    = '2026-04-19T22:00:00Z';
+// @@deploy:BUILD_CHANNEL
 export const BUILD_CHANNEL = 'production';
+// @@deploy:BUILD_COMMIT
+export const BUILD_COMMIT  = 'local';
+// @@deploy:BUILD_NUMBER
+export const BUILD_NUMBER  = 1;
 
-// Each entry powers one line in the "What's New" modal.
-// Newest first. Keep it short & punchy.
+// Convenience object — some callers prefer a single import.
+export const BUILD_INFO = Object.freeze({
+  version:   APP_VERSION,
+  codename:  APP_CODENAME,
+  date:      BUILD_DATE,
+  channel:   BUILD_CHANNEL,
+  commit:    BUILD_COMMIT,
+  number:    BUILD_NUMBER,
+});
+
+// @@deploy:CHANGELOG_BEGIN
+// Each entry powers one block in the "What's New" modal. Newest first.
+// Keep bullets short & punchy. The deploy script prepends new entries
+// right after the "CHANGELOG_BEGIN" marker above, so keep that line as-is.
 export const CHANGELOG = [
+  {
+    version: '2.5.0',
+    date: '2026-04-19',
+    title: 'Launchpad — one-command deploys & auto-versioning',
+    items: [
+      'New `deploy.py` — interactive release tool with version picker (patch / minor / major / custom)',
+      'Shows current build and last 5 releases before every deploy',
+      'Auto-stamps BUILD_DATE (UTC), BUILD_COMMIT (short SHA) and BUILD_NUMBER on every release',
+      'Service worker cache key now derives from APP_VERSION + BUILD_COMMIT — no more stale caches',
+      'Multi-line CHANGELOG prompt; items become the "What\'s New" bullets automatically',
+      'Channel selector: production / beta / dev / nightly',
+      'Dry-run mode (`--dry-run`) previews every file edit without touching disk',
+      'Non-interactive mode (`--yes --version 2.5.1 ...`) for CI pipelines',
+      'Auto-commit, auto-tag (`v2.5.0`), auto-push, then `firebase deploy` in one flow',
+      'New BUILD_COMMIT + BUILD_NUMBER fields exposed to the app for richer deploy strip',
+    ],
+  },
   {
     version: '2.4.0',
     date: '2026-04-19',
@@ -63,9 +115,13 @@ export const CHANGELOG = [
     ],
   },
 ];
+// @@deploy:CHANGELOG_END
 
-// Tiny utility — "5 minutes ago" / "2 days ago" style formatting.
-// Exported so both the home dashboard and the command palette can use it.
+// ---------------------------------------------------------------------
+//  Time-formatting helpers (exported for app.js & the command palette).
+// ---------------------------------------------------------------------
+
+/** "5 minutes ago", "2 days ago", "1 year ago". Safe for bad input. */
 export function relativeTime(iso) {
   const then = new Date(iso).getTime();
   if (!Number.isFinite(then)) return 'unknown';
@@ -85,7 +141,7 @@ export function relativeTime(iso) {
   return `${y} year${y === 1 ? '' : 's'} ago`;
 }
 
-// Absolute date formatter — "Apr 19, 2026 · 9:30 PM"
+/** "Apr 19, 2026 · 10:00 PM" — locale-aware, graceful fallback. */
 export function formatDeployDate(iso) {
   try {
     const d = new Date(iso);
@@ -96,4 +152,16 @@ export function formatDeployDate(iso) {
   } catch {
     return iso;
   }
+}
+
+/** Full build string — "v2.5.0 · Launchpad · production · a1b2c3d · #42". */
+export function buildString() {
+  const parts = [
+    `v${APP_VERSION}`,
+    APP_CODENAME,
+    BUILD_CHANNEL,
+  ];
+  if (BUILD_COMMIT && BUILD_COMMIT !== 'local') parts.push(BUILD_COMMIT);
+  if (BUILD_NUMBER)                              parts.push(`#${BUILD_NUMBER}`);
+  return parts.join(' · ');
 }
