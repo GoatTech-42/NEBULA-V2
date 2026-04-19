@@ -17,7 +17,7 @@
 // required.
 
 // @@deploy:CACHE_VERSION  (kept in sync by deploy.py with public/js/version.js)
-const CACHE_VERSION = 'nebula-v2.3.4-3824780';
+const CACHE_VERSION = 'nebula-v2.3.5-98bd31f';
 const CORE_CACHE    = `core-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `runtime-${CACHE_VERSION}`;
 
