@@ -16,7 +16,8 @@
 // served as a static asset from Firebase Hosting — no Cloud Functions
 // required.
 
-const CACHE_VERSION = 'nebula-v2.4.0';
+// @@deploy:CACHE_VERSION  (kept in sync by deploy.py with public/js/version.js)
+const CACHE_VERSION = 'nebula-v2.5.0-local';
 const CORE_CACHE    = `core-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `runtime-${CACHE_VERSION}`;
 

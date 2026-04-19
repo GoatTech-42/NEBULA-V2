@@ -19,14 +19,84 @@ npm install -g firebase-tools
 # Login
 firebase login
 
-# Deploy EVERYTHING (hosting + both sets of security rules)
-firebase deploy
+# ► One-command release (recommended) — see "Deploying a new release" below
+python3 deploy.py
 
-# Or deploy individual targets:
+# Or the manual way:
+firebase deploy                      # hosting + both sets of security rules
 firebase deploy --only hosting
 firebase deploy --only firestore:rules
 firebase deploy --only database      # Realtime Database rules
 ```
+
+---
+
+## Deploying a new release (`deploy.py`)
+
+`deploy.py` at the repo root is a zero-dependency Python script that
+drives the entire release workflow:
+
+1. Shows you the **current build** (version, codename, channel, commit,
+   build number, deploy date) plus the **last 5 releases** pulled
+   straight out of `public/js/version.js`.
+2. Lets you pick the **next version** — `patch` / `minor` / `major`
+   / `custom`.
+3. Prompts for a **codename**, **title**, **channel**
+   (`production` / `beta` / `dev` / `nightly`), and a **multi-line
+   changelog** (one bullet per line, blank line to finish).
+4. **Auto-stamps** `BUILD_DATE` (UTC, ISO-8601), `BUILD_COMMIT` (short
+   git SHA), and bumps `BUILD_NUMBER`.
+5. Updates `public/js/version.js` **and** `public/service-worker.js`
+   (cache key is kept in sync so users never see a stale build).
+6. Shows you a unified diff and asks for final confirmation.
+7. `git add` → `git commit` → `git tag vX.Y.Z` → `git push` →
+   `firebase deploy --only hosting,firestore:rules,database`.
+
+### Interactive
+
+```bash
+python3 deploy.py
+```
+
+### Non-interactive / CI
+
+```bash
+python3 deploy.py --yes \
+    --bump minor \
+    --codename "Orbit" \
+    --title "Faster chat, new themes" \
+    --channel production \
+    --changelog "Chat is 2× faster" "Three new themes" "Bug fixes"
+```
+
+### Useful flags
+
+| Flag | Purpose |
+|---|---|
+| `--dry-run` | Preview every edit and command — writes **nothing**. |
+| `--yes` / `-y` | Skip the final confirmation prompt (for CI). |
+| `--bump patch\|minor\|major` | Non-interactive version bump. |
+| `--version X.Y.Z` | Non-interactive exact version. |
+| `--codename TEXT` | Release codename (e.g. `"Orbit"`). |
+| `--title TEXT` | One-line release title. |
+| `--channel production\|beta\|dev\|nightly` | Release channel. |
+| `--changelog "bullet 1" "bullet 2" …` | Changelog items. |
+| `--no-commit` | Skip `git commit`/tag/push. |
+| `--no-tag` | Commit & push but don't create a version tag. |
+| `--no-push` | Commit & tag locally without pushing. |
+| `--no-firebase` | Skip `firebase deploy`. |
+| `--firebase-only hosting` | Override the `firebase deploy --only` target. |
+| `--allow-dirty` | Proceed even with uncommitted changes. |
+
+### How it edits `version.js` safely
+
+`public/js/version.js` has `// @@deploy:FIELD` anchors above each
+exported constant and around the `CHANGELOG` array. The script only
+rewrites the single line under each anchor and *prepends* a new entry
+to the changelog array — so nothing else in the file is touched, no
+matter how much you rearrange the rest of it. The same anchor pattern
+is used in `public/service-worker.js` to keep `CACHE_VERSION` in
+lock-step with `APP_VERSION` + `BUILD_COMMIT`.
 
 **Firebase project**: `nebulahistorians`
 **Plan**: Spark (free tier) — no Cloud Functions required. Every feature, including the PWA service worker and presence heartbeat, runs entirely on Firebase Hosting + Firestore + RTDB.
@@ -289,6 +359,20 @@ One-time migration from Firestore to RTDB for presence and visit data. Only need
 
 ## Changelog
 
+### April 2026 — v2.5.0 "Launchpad"
+- **`deploy.py`** — new zero-dependency interactive release tool
+  - Shows current build (version, codename, channel, commit, build #, date) and the last 5 releases before every deploy
+  - Version picker: patch / minor / major / custom
+  - Prompts for codename, title, channel, and multi-line changelog bullets
+  - **Auto-stamps** `BUILD_DATE` (UTC ISO-8601), `BUILD_COMMIT` (git short SHA) and bumps `BUILD_NUMBER`
+  - Shows a unified diff of every edit before writing anything
+  - `--dry-run`, `--yes`, and a full set of non-interactive flags for CI
+  - Auto-commits (`release(v…)`), auto-tags `vX.Y.Z`, auto-pushes, then runs `firebase deploy`
+- **Service worker cache key auto-synced** — `CACHE_VERSION` is now derived from `APP_VERSION` + `BUILD_COMMIT` so no more stale caches after a release
+- **`version.js` upgrade** — new `BUILD_COMMIT` + `BUILD_NUMBER` fields, new `BUILD_INFO` object, new `buildString()` helper, and `// @@deploy:…` anchors so the deploy script can safely rewrite single fields
+- **Richer deploy strip & console banner** — now include the commit hash and build number; `_copyBuildInfo()` includes them too for bug reports
+- **README**: full `deploy.py` reference, manual-fallback instructions
+
 ### April 2026 — v2.4.0 "Spark"
 - **Home dashboard upgrade**: new stats (Online Now, Ping, Platform) + a deploy-info strip showing current build, channel, and a live "Last deployed X ago" timestamp driven by `public/js/version.js`
 - **PWA**: installable web app (`manifest.webmanifest`), Apple touch icon, PWA shortcuts for Chat / GoatCoin / Games. A floating "Install App" button appears when the browser offers the prompt
@@ -308,13 +392,33 @@ One-time migration from Firestore to RTDB for presence and visit data. Only need
 
 #### Bumping the build version
 
-Edit [`public/js/version.js`](public/js/version.js):
+**Preferred:** run the interactive deploy script — see
+[Deploying a new release](#deploying-a-new-release-deploypy) above.
+
+```bash
+python3 deploy.py           # interactive picker
+python3 deploy.py --bump patch --yes   # one-shot CI-friendly
+```
+
+The script bumps `APP_VERSION`, re-stamps `BUILD_DATE`, fills in
+`BUILD_COMMIT` + `BUILD_NUMBER`, keeps `service-worker.js`'s
+`CACHE_VERSION` in sync, commits, tags, pushes, and runs
+`firebase deploy` — all in one flow.
+
+**Manual fallback** (if you can't run Python for some reason), edit
+[`public/js/version.js`](public/js/version.js):
 
 ```js
-export const APP_VERSION = '2.4.1';      // bump this
-export const BUILD_DATE  = '2026-04-20T08:00:00Z'; // and this
+export const APP_VERSION   = '2.5.1';                 // bump this
+export const BUILD_DATE    = '2026-04-20T08:00:00Z';  // and this
+export const BUILD_COMMIT  = 'abcdef1';               // short SHA
+export const BUILD_NUMBER  = 3;                       // +1
 // ...then prepend a CHANGELOG entry so users see what changed.
 ```
+
+…and also bump `CACHE_VERSION` in
+[`public/service-worker.js`](public/service-worker.js) so old caches
+are invalidated.
 
 When the new build goes live the service worker picks up `CACHE_VERSION` from inside itself, old caches get dropped, and every user sees the "What's New" modal exactly once.
 
