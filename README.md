@@ -29,6 +29,7 @@ firebase deploy --only database      # Realtime Database rules
 ```
 
 **Firebase project**: `nebulahistorians`
+**Plan**: Spark (free tier) — no Cloud Functions required. Every feature, including the PWA service worker and presence heartbeat, runs entirely on Firebase Hosting + Firestore + RTDB.
 **RTDB URL**: `https://nebulahistorians-default-rtdb.firebaseio.com`
 
 > ⚠️ **Important:** the 1v1 blackjack feature stores active games in the
@@ -86,6 +87,8 @@ public/
 ├── index.html                # Nebula Historians — disguised entry point
 ├── main.html                 # Main app shell
 ├── construction.html         # Maintenance page
+├── manifest.webmanifest      # PWA manifest (installable web app)
+├── service-worker.js         # Offline app shell + update prompt
 ├── css/
 │   ├── layout.css            # Core layout & component styles
 │   └── themes/               # 29 color themes
@@ -120,6 +123,7 @@ public/
 │       └── glacier.css       # Icy teal frozen waters
 └── js/
     ├── firebase.js           # Firebase init, App Check, config & re-exports
+    ├── version.js            # APP_VERSION / BUILD_DATE / CHANGELOG (bump on deploy)
     ├── app.js                # Core app: auth, chat, DMs, admin, nav, settings
     ├── icons.js              # SVG icon library for command palette & UI
     ├── goatcoin.js           # GoatCoin economy, blackjack, leaderboard
@@ -284,6 +288,35 @@ One-time migration from Firestore to RTDB for presence and visit data. Only need
 ---
 
 ## Changelog
+
+### April 2026 — v2.4.0 "Spark"
+- **Home dashboard upgrade**: new stats (Online Now, Ping, Platform) + a deploy-info strip showing current build, channel, and a live "Last deployed X ago" timestamp driven by `public/js/version.js`
+- **PWA**: installable web app (`manifest.webmanifest`), Apple touch icon, PWA shortcuts for Chat / GoatCoin / Games. A floating "Install App" button appears when the browser offers the prompt
+- **Service worker** (`public/service-worker.js`): full offline app shell with network-first HTML + stale-while-revalidate static assets. Firebase / RTDB / reCAPTCHA hosts are intentionally bypassed so realtime features never stall. Spark-plan friendly — it's served as a static asset
+- **Update banner**: when a new build is deployed, users see a non-blocking "A new build of Nebula is ready — Reload" banner; clicking instantly activates the new SW and refreshes
+- **"What's New" modal**: auto-displays once after every `APP_VERSION` bump (read from `version.js`). Also accessible from the home strip, the command palette, or programmatically via `showChangelogModal()`
+- **Live connection indicator**: dot on the home strip reflects `navigator.onLine` + RTDB `.info/connected` so you can tell at a glance whether realtime is healthy
+- **Toast system overhaul**: icon per severity (info/success/warn/error), optional action button (`Undo`, `Retry`, etc.), stack cap, ARIA live-region semantics, backwards-compatible with the old `toast(msg, type, dur)` signature
+- **Keyboard shortcut cheatsheet**: press `?` anywhere (or pick "Keyboard Shortcuts" in the palette) to open a grid of every hotkey
+- **Command palette additions**: `What's New`, `Keyboard Shortcuts`, `Random Theme`, `Check for Updates`, `Copy Build Info`
+- **Accessibility**: skip-to-content link, consistent `:focus-visible` outline, improved `role="alert"`/`role="status"` semantics on toasts and the deploy strip
+- **First-run theme**: if the user has no saved theme and their OS prefers light mode, we default to the `light` theme instead of the dark `og`
+- **`nebulaDebug()`** (advertised in this README but previously missing) is now actually implemented — returns build info, user state, Firestore + RTDB probe results
+- **Console banner**: shows `Nebula V2 · vX.Y.Z · Codename · deployed ISO` on every load
+- **Firebase Hosting headers**: `/service-worker.js` is `no-cache`, `/manifest.webmanifest` gets the correct `Content-Type`
+- **RTDB rules**: new `debug_probe/{uid}` path so `nebulaDebug()` can verify write access
+
+#### Bumping the build version
+
+Edit [`public/js/version.js`](public/js/version.js):
+
+```js
+export const APP_VERSION = '2.4.1';      // bump this
+export const BUILD_DATE  = '2026-04-20T08:00:00Z'; // and this
+// ...then prepend a CHANGELOG entry so users see what changed.
+```
+
+When the new build goes live the service worker picks up `CACHE_VERSION` from inside itself, old caches get dropped, and every user sees the "What's New" modal exactly once.
 
 ### March 2026
 - **Settings overhaul**: Split into 8 tabs — Themes, Alerts, Display, Sound, Chat, Keybinds, Advanced, Credits

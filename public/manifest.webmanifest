@@ -1,0 +1,46 @@
+{
+  "name": "Nebula V2",
+  "short_name": "Nebula",
+  "description": "Nebula V2 — Beyond The Stars. Chat, game, and connect.",
+  "start_url": "/main.html",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#071827",
+  "theme_color": "#071827",
+  "categories": ["social", "games", "entertainment"],
+  "icons": [
+    {
+      "src": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='36' fill='%23071827'/><text x='50%25' y='55%25' text-anchor='middle' dominant-baseline='middle' font-size='140' fill='%2338bdf8'>✦</text></svg>",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='96' fill='%23071827'/><text x='50%25' y='55%25' text-anchor='middle' dominant-baseline='middle' font-size='380' fill='%2338bdf8'>✦</text></svg>",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Chat",
+      "short_name": "Chat",
+      "url": "/main.html#chat",
+      "description": "Jump straight to channels"
+    },
+    {
+      "name": "GoatCoin",
+      "short_name": "GC",
+      "url": "/main.html#goatcoin",
+      "description": "Check your balance & leaderboard"
+    },
+    {
+      "name": "Games",
+      "short_name": "Games",
+      "url": "/main.html#games",
+      "description": "Open the game vault"
+    }
+  ]
+}

@@ -11,6 +11,26 @@ import { initGoatCoin, setActivity, cleanupGoatCoin, getGoatCoinData, renderGoat
 import { renderBadgeRow, openProfileModal, renderOwnProfile, checkAutoAwards, BADGE_DEFS, checkAdblocker } from './profile.js';
 import { renderShopTab, initShop, SHOP_ITEMS } from './shop.js';
 import { CMD_ICONS } from './icons.js';
+import { APP_VERSION, APP_CODENAME, BUILD_DATE, BUILD_CHANNEL, CHANGELOG, relativeTime, formatDeployDate } from './version.js';
+
+// Expose build info globally — handy for debugging and for the
+// nebulaDebug() helper.
+window.NEBULA_BUILD = Object.freeze({
+  version: APP_VERSION, codename: APP_CODENAME,
+  date: BUILD_DATE, channel: BUILD_CHANNEL
+});
+
+// Console banner — because why not.
+try {
+  console.log(
+    `%c✦ Nebula V2 %cv${APP_VERSION} %c${APP_CODENAME}%c · deployed ${BUILD_DATE}\n%cType nebulaDebug() for diagnostics.`,
+    'color:#38bdf8;font-weight:900;font-size:14px;',
+    'color:#fde68a;font-weight:700;',
+    'color:#a855f7;font-weight:600;',
+    'color:#94a3b8;',
+    'color:#64748b;font-style:italic;'
+  );
+} catch {}
 
 // ---- State ----
 let currentUser = null;
@@ -50,12 +70,46 @@ function avatarColor(uid) { let h=0; for(let c of uid) h=(h<<5)-h+c.charCodeAt(0
 function avatarInitial(u) { return (u||'?')[0].toUpperCase(); }
 
 // ---- Toast ----
-function toast(msg, type='info', dur=3000) {
+// Backward-compatible: old call sites still use toast(msg, type, dur).
+// New call sites can pass an options object as the 3rd arg:
+//   toast('Deleted', 'success', { duration: 5000, action: { label: 'Undo', onClick: () => ... } })
+// A max of 5 toasts stack at a time — older ones auto-dismiss.
+const TOAST_ICONS = {
+  info:    '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>',
+  success: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',
+  warn:    '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+  danger:  '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>',
+  error:   '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>',
+};
+const MAX_TOASTS = 5;
+function toast(msg, type='info', durOrOpts=3000) {
   const stack = document.getElementById('notif-stack');
+  if(!stack) return;
+
+  // Limit number of on-screen toasts.
+  while(stack.children.length >= MAX_TOASTS) {
+    stack.firstElementChild?.remove();
+  }
+
+  // Normalize the 3rd argument.
+  const opts = (typeof durOrOpts === 'number')
+    ? { duration: durOrOpts }
+    : (durOrOpts || {});
+  const duration = opts.duration ?? 3000;
+  const action   = opts.action || null;
+  const icon     = opts.icon ?? TOAST_ICONS[type] ?? TOAST_ICONS.info;
+
   const el = document.createElement('div');
   el.className = `notif ${type}`;
-  el.innerHTML = `<div class="notif-dot"></div><span class="nmsg">${msg}</span>`;
-  el.style.cursor = 'pointer';
+  el.setAttribute('role', type === 'error' || type === 'danger' ? 'alert' : 'status');
+  // We keep the existing .notif-dot for backwards-compat with theme CSS,
+  // and layer our SVG icon on top of it.
+  el.innerHTML = `
+    <div class="notif-dot"></div>
+    ${icon ? `<span class="notif-ico" aria-hidden="true">${icon}</span>` : ''}
+    <span class="nmsg">${msg}</span>
+  `;
+
   let dismissed = false;
   const dismiss = () => {
     if (dismissed) return;
@@ -66,9 +120,25 @@ function toast(msg, type='info', dur=3000) {
     el.addEventListener('transitionend', () => el.remove(), { once: true });
     setTimeout(() => el.remove(), 350); // fallback
   };
+
+  if(action && action.label) {
+    const btn = document.createElement('button');
+    btn.className = 'notif-action';
+    btn.type = 'button';
+    btn.textContent = action.label;
+    btn.addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      try { action.onClick?.(ev); } catch(e) { console.error(e); }
+      dismiss();
+    });
+    el.appendChild(btn);
+  }
+
+  el.style.cursor = 'pointer';
   el.addEventListener('click', dismiss);
   stack.appendChild(el);
-  setTimeout(dismiss, dur);
+  if(duration > 0) setTimeout(dismiss, duration);
+  return { dismiss, element: el };
 }
 
 // ---- Modal ----
@@ -331,6 +401,7 @@ async function initApp(user) {
   if(canModerate(data.rank)) setupAdmin();
   trackVisits();
   setupPresence();
+  setupOnlinePresence();
   initGoatCoin(user, data, _rtdb);
   initShop(user, data, _rtdb);
   window._onGCUpdate = () => {
@@ -495,6 +566,9 @@ function initHome() {
   setupFPS();
   setupBattery();
   setupUptime();
+  setupDeployInfo();
+  setupPingMeter();
+  setupConnectionIndicator();
 
   document.querySelectorAll('.home-card[data-goto]').forEach(c => {
     c.addEventListener('click', () => navigate(c.dataset.goto));
@@ -598,6 +672,287 @@ function trackVisits() {
       if(snap.exists()) el.textContent = (snap.data().count || 0).toLocaleString();
     });
   }
+}
+
+// ══════════════════════════════════════════════════════════════════
+// Home dashboard v2.4 extras
+// ══════════════════════════════════════════════════════════════════
+
+/** Populate the deploy-info strip with APP_VERSION / BUILD_DATE / channel / platform */
+function setupDeployInfo() {
+  const ver   = document.getElementById('hd-version');
+  const time  = document.getElementById('hd-deploy-time');
+  const chan  = document.getElementById('hd-channel');
+  const plat  = document.getElementById('hd-platform');
+  if(ver)  ver.textContent = `v${APP_VERSION}`;
+  if(ver)  ver.title = `${APP_CODENAME} · ${APP_VERSION}`;
+  if(chan) chan.textContent = BUILD_CHANNEL;
+  if(time) {
+    const update = () => { time.textContent = relativeTime(BUILD_DATE); };
+    time.title = formatDeployDate(BUILD_DATE);
+    update();
+    // Refresh every 30s so "X minutes ago" stays fresh while the page is open.
+    setInterval(update, 30_000);
+  }
+  if(plat) plat.textContent = _detectPlatform();
+
+  // Wire up the "What's New" button
+  const btn = document.getElementById('hd-whatsnew');
+  if(btn) {
+    const seenVer = localStorage.getItem('neb_seen_version');
+    if(seenVer !== APP_VERSION) btn.classList.add('has-update');
+    btn.addEventListener('click', () => showChangelogModal());
+  }
+  // Auto-show the changelog once per user after a version bump
+  maybeAutoShowChangelog();
+}
+
+/** Pick a random theme different from the current one and apply it. */
+function _randomizeTheme() {
+  const names = Object.keys(THEME_FILES);
+  const cur = loadTheme();
+  const pool = names.filter(n => n !== cur);
+  const next = pool[Math.floor(Math.random() * pool.length)];
+  applyTheme(next);
+  // Refresh the theme-card UI if the settings page is open.
+  document.querySelectorAll('.theme-card').forEach(c => {
+    c.classList.toggle('active', c.dataset.theme === next);
+  });
+  toast(`Theme → ${next}`, 'success', 1800);
+}
+
+/** Force the service worker to check for updates and prompt a reload. */
+async function _forceAppUpdate() {
+  toast('Checking for updates…', 'info', 2200);
+  try {
+    if('serviceWorker' in navigator) {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(regs.map(r => r.update()));
+      // If there's a waiting worker, send skipWaiting so it activates now.
+      const regWithWaiting = regs.find(r => r.waiting);
+      if(regWithWaiting) {
+        regWithWaiting.waiting.postMessage({ type: 'SKIP_WAITING' });
+        return; // controllerchange will reload the page
+      }
+    }
+    // Otherwise just hard-reload to bust cache.
+    setTimeout(() => window.location.reload(), 600);
+  } catch(e) {
+    toast('Update check failed — try again', 'error');
+  }
+}
+
+/** Copy a plain-text build-info block to the clipboard for bug reports. */
+function _copyBuildInfo() {
+  const info = [
+    `Nebula V2 — ${APP_CODENAME}`,
+    `Version:  v${APP_VERSION}`,
+    `Channel:  ${BUILD_CHANNEL}`,
+    `Deployed: ${formatDeployDate(BUILD_DATE)} (${relativeTime(BUILD_DATE)})`,
+    `Platform: ${_detectPlatform()}`,
+    `User-Agent: ${navigator.userAgent}`,
+    `URL: ${location.href}`,
+  ].join('\n');
+  navigator.clipboard?.writeText(info)
+    .then(() => toast('Build info copied', 'success', 2500))
+    .catch(() => toast('Clipboard blocked — see console', 'warn', 3500));
+  console.info('[Nebula] Build info:\n' + info);
+}
+
+function _detectPlatform() {
+  const ua = navigator.userAgent || '';
+  const isStandalone = window.matchMedia?.('(display-mode: standalone)').matches
+    || window.navigator.standalone === true;
+  if(isStandalone) return 'pwa';
+  if(/iPhone|iPad|iPod/.test(ua)) return 'ios';
+  if(/Android/.test(ua))          return 'android';
+  if(/Macintosh/.test(ua))        return 'macOS';
+  if(/Windows/.test(ua))          return 'windows';
+  if(/Linux/.test(ua))            return 'linux';
+  return 'web';
+}
+
+/** Measure round-trip latency to RTDB (falls back to Google favicon). */
+function setupPingMeter() {
+  const el = document.getElementById('ping-val');
+  if(!el) return;
+  let failCount = 0;
+  async function ping() {
+    const start = performance.now();
+    try {
+      // Use RTDB .info/serverTimeOffset — a cheap one-shot read.
+      if(_rtdb) {
+        await rtGet(rtRef(_rtdb, '.info/serverTimeOffset'));
+      } else {
+        // Fallback — HEAD to our own origin so we don't leak the ping.
+        await fetch(location.origin + '/manifest.webmanifest', { cache: 'no-store' });
+      }
+      const ms = Math.round(performance.now() - start);
+      failCount = 0;
+      el.textContent = `${ms}ms`;
+      el.style.color = ms < 120 ? 'var(--success)' : ms < 400 ? 'var(--warn)' : 'var(--danger)';
+    } catch(e) {
+      failCount++;
+      el.textContent = failCount > 2 ? '—' : '…';
+      el.style.color = 'var(--danger)';
+    }
+  }
+  ping();
+  setInterval(ping, 15_000);
+}
+
+/**
+ * Maintain a lightweight online-now counter via RTDB presence.
+ *
+ * Each client writes to /presence/{uid}/{sessionId} with onDisconnect set
+ * to remove it. The dashboard listens on /presence and counts unique UIDs.
+ *
+ * This is extremely cheap on the Firebase Spark (free) plan because
+ * RTDB charges only for bandwidth — no per-document reads.
+ */
+async function setupOnlinePresence() {
+  const el = document.getElementById('online-count');
+  if(!el || !_rtdb || !currentUser) return;
+  try {
+    const { onDisconnect } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js");
+    const sessionId = 'sess_' + Math.random().toString(36).slice(2, 10);
+    const meRef = rtRef(_rtdb, `presence/${currentUser.uid}/${sessionId}`);
+    // Heartbeat so stale sessions get garbage-collected by RTDB itself.
+    rtSet(meRef, { t: rtServerTimestamp(), v: APP_VERSION }).catch(()=>{});
+    onDisconnect(meRef).remove().catch(()=>{});
+    // Refresh own heartbeat every 45s — cheap, and keeps the record fresh.
+    setInterval(() => {
+      rtSet(meRef, { t: rtServerTimestamp(), v: APP_VERSION }).catch(()=>{});
+    }, 45_000);
+    // Listen for everyone's presence.
+    const allRef = rtRef(_rtdb, 'presence');
+    onValue(allRef, snap => {
+      const val = snap.val() || {};
+      const count = Object.keys(val).length;
+      el.textContent = count > 0 ? count.toString() : '1';
+    }, () => {
+      // Permission error → just show self
+      el.textContent = '1';
+    });
+  } catch(e) {
+    el.textContent = '—';
+  }
+}
+
+/** Live connection status dot in the deploy strip */
+function setupConnectionIndicator() {
+  const dot = document.getElementById('hd-conn-dot');
+  if(!dot) return;
+  const setState = (state) => {
+    if(state === 'online') dot.removeAttribute('data-state');
+    else dot.setAttribute('data-state', state);
+    dot.title = `Connection: ${state}`;
+  };
+  const update = () => setState(navigator.onLine ? 'online' : 'offline');
+  update();
+  window.addEventListener('online',  () => { update(); toast('Back online', 'success', 2200); });
+  window.addEventListener('offline', () => { update(); toast('You are offline — some features unavailable', 'warn', 4500); });
+
+  // Hook into RTDB .info/connected for a real-time signal.
+  if(_rtdb) {
+    try {
+      onValue(rtRef(_rtdb, '.info/connected'), snap => {
+        if(!navigator.onLine) return; // network wins
+        setState(snap.val() === true ? 'online' : 'degraded');
+      });
+    } catch(e) { /* ignore */ }
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════
+// Changelog / "What's New" modal
+// ══════════════════════════════════════════════════════════════════
+function showChangelogModal() {
+  const entries = CHANGELOG.map(e => `
+    <div class="changelog-entry">
+      <div class="cl-head">
+        <span class="cl-ver">v${e.version}</span>
+        <span class="cl-date">${e.date}</span>
+      </div>
+      <div class="cl-title">${_escapeHtml(e.title)}</div>
+      <ul>${e.items.map(i => `<li>${_escapeHtml(i)}</li>`).join('')}</ul>
+    </div>
+  `).join('');
+
+  showModal(`
+    <div class="changelog-modal">
+      <h2 style="margin-top:0;margin-bottom:.2rem;font-size:1.25rem;font-weight:800;">What's New</h2>
+      <div style="font-size:.72rem;color:var(--text-faint,rgba(255,255,255,.45));letter-spacing:1px;text-transform:uppercase;margin-bottom:1rem;">
+        Build v${APP_VERSION} · ${APP_CODENAME} · deployed ${relativeTime(BUILD_DATE)}
+      </div>
+      ${entries}
+      <div style="display:flex;justify-content:flex-end;margin-top:1rem;">
+        <button type="button" class="btn" id="cl-dismiss-btn" style="padding:.5rem 1.2rem;">Got it</button>
+      </div>
+    </div>
+  `);
+  // Persist the seen-version so the red dot goes away.
+  localStorage.setItem('neb_seen_version', APP_VERSION);
+  document.getElementById('hd-whatsnew')?.classList.remove('has-update');
+
+  document.getElementById('cl-dismiss-btn')?.addEventListener('click', () => {
+    document.getElementById('modal-overlay')?.click();
+  });
+}
+
+function maybeAutoShowChangelog() {
+  const seenVer = localStorage.getItem('neb_seen_version');
+  // Skip if it's the very first time (user just signed up)
+  if(!seenVer) {
+    localStorage.setItem('neb_seen_version', APP_VERSION);
+    return;
+  }
+  if(seenVer !== APP_VERSION) {
+    // Delay a bit so the home screen finishes animating in first.
+    setTimeout(showChangelogModal, 1800);
+  }
+}
+
+function _escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[c]));
+}
+
+// ══════════════════════════════════════════════════════════════════
+// Shortcut cheatsheet modal (press ? to open)
+// ══════════════════════════════════════════════════════════════════
+function showShortcutSheet() {
+  const rows = [
+    { lbl: 'Command palette',       keys: ['Ctrl', 'K'] },
+    { lbl: 'Shortcut cheatsheet',   keys: ['?'] },
+    { lbl: 'Close modal / palette', keys: ['Esc'] },
+    { lbl: 'Home',                  keys: ['1'] },
+    { lbl: 'Chat',                  keys: ['2'] },
+    { lbl: 'DMs',                   keys: ['3'] },
+    { lbl: 'Games',                 keys: ['4'] },
+    { lbl: 'GoatCoin',              keys: ['5'] },
+    { lbl: 'Shop',                  keys: ['6'] },
+    { lbl: 'Profile',               keys: ['7'] },
+    { lbl: 'Settings',              keys: ['8'] },
+    { lbl: 'Admin (mods only)',     keys: ['9'] },
+    { lbl: 'Edit last chat message',keys: ['↑'] },
+    { lbl: 'Panic redirect',        keys: ['\\'] },
+  ];
+  const html = rows.map(r => `
+    <div class="sk-row">
+      <span class="sk-lbl">${r.lbl}</span>
+      <span class="sk-keys">${r.keys.map(k => `<kbd>${k}</kbd>`).join(' + ')}</span>
+    </div>
+  `).join('');
+  showModal(`
+    <h2 style="margin-top:0;margin-bottom:.9rem;font-size:1.15rem;font-weight:800;">Keyboard Shortcuts</h2>
+    <div class="shortcut-sheet">${html}</div>
+    <div style="font-size:.65rem;color:var(--text-faint,rgba(255,255,255,.4));margin-top:1rem;letter-spacing:.5px;">
+      Press <kbd style="background:rgba(255,255,255,.08);padding:.05rem .3rem;border-radius:3px;">?</kbd>
+      anywhere to reopen.
+    </div>
+  `);
 }
 
 // ---- Channel message pruning ----
@@ -3360,8 +3715,61 @@ window._openDMWithUid = async function(uid) {
   setTimeout(()=>openDM(other), 100);
 };
 
+// ---- nebulaDebug() — surface everything useful for bug reports ----
+// The README advertises this helper; make sure it's actually defined
+// and returns rich diagnostics.
+window.nebulaDebug = async function nebulaDebug() {
+  const out = {
+    build: { ...window.NEBULA_BUILD, relative: relativeTime(BUILD_DATE) },
+    user: currentUser ? {
+      uid: currentUser.uid,
+      email: currentUser.email,
+      username: currentUserData?.username,
+      rank: currentUserData?.rank,
+      status: currentUserData?.status,
+    } : null,
+    state: {
+      currentChannel: currentChannel?.id || null,
+      currentDM: currentDM?.id || null,
+      theme: loadTheme(),
+      platform: _detectPlatform(),
+      online: navigator.onLine,
+      swController: !!navigator.serviceWorker?.controller,
+    },
+    tests: { firestoreRead: 'skipped', rtdbWrite: 'skipped' },
+  };
+  // Probe Firestore
+  try {
+    if(currentUser) {
+      const snap = await getDoc(doc(db, 'users', currentUser.uid));
+      out.tests.firestoreRead = snap.exists() ? 'ok' : 'missing-doc';
+    }
+  } catch(e) { out.tests.firestoreRead = 'err: ' + e.code; }
+  // Probe RTDB
+  try {
+    if(_rtdb && currentUser) {
+      await rtSet(rtRef(_rtdb, `debug_probe/${currentUser.uid}`), { t: Date.now() });
+      await rtRemove(rtRef(_rtdb, `debug_probe/${currentUser.uid}`));
+      out.tests.rtdbWrite = 'ok';
+    }
+  } catch(e) { out.tests.rtdbWrite = 'err: ' + (e.code || e.message); }
+  console.group('%c[Nebula] debug', 'color:#38bdf8;font-weight:700');
+  console.log(out);
+  console.groupEnd();
+  return out;
+};
+
 // ---- Boot ----
 function boot() {
+  // First-run: honour OS colour-scheme preference. If the user has never
+  // picked a theme AND their system is set to light mode, default to our
+  // "light" theme instead of the dark blue "og". This only runs once —
+  // after that they're just using whatever they last saved.
+  const hasTheme = /nebula_theme=\w+/.test(document.cookie);
+  if(!hasTheme && window.matchMedia?.('(prefers-color-scheme: light)').matches) {
+    document.cookie = 'nebula_theme=light;path=/;max-age=31536000';
+  }
+
   applyTheme(loadTheme(), false);
   setupAuth();
   setupChatInput();
@@ -3419,6 +3827,13 @@ function setupKeyboardShortcuts() {
 
     if(isInput) return;
 
+    // ? — open the shortcut cheatsheet
+    if(e.key === '?' || (e.shiftKey && e.key === '/')) {
+      e.preventDefault();
+      showShortcutSheet();
+      return;
+    }
+
     // Number keys  -- navigate sections (1-9 for regular, admin via command palette)
     const navSections = _getNavSections();
     if(e.key >= '1' && e.key <= '9') {
@@ -3465,6 +3880,37 @@ function setupCommandPalette() {
     if(isAdmin) {
       cmds.push({ label: 'Admin', desc: 'Moderation & management', action: () => navigate('admin'), svgKey: 'admin' });
     }
+    // ── v2.4 quick-action commands ──
+    cmds.push({
+      label: "What's New",
+      desc:  `v${APP_VERSION} · ${APP_CODENAME} — changelog`,
+      action: () => showChangelogModal(),
+      svgKey: 'settings',
+    });
+    cmds.push({
+      label: 'Keyboard Shortcuts',
+      desc:  'View all hotkeys',
+      action: () => showShortcutSheet(),
+      svgKey: 'settings',
+    });
+    cmds.push({
+      label: 'Random Theme',
+      desc:  'Shuffle to a random theme',
+      action: () => _randomizeTheme(),
+      svgKey: 'settings',
+    });
+    cmds.push({
+      label: 'Check for Updates',
+      desc:  'Force refresh service worker',
+      action: () => _forceAppUpdate(),
+      svgKey: 'settings',
+    });
+    cmds.push({
+      label: 'Copy Build Info',
+      desc:  `v${APP_VERSION} · ${relativeTime(BUILD_DATE)}`,
+      action: () => _copyBuildInfo(),
+      svgKey: 'settings',
+    });
     cmds.push({ label: 'Sign Out', desc: 'Log out of Nebula', action: () => document.getElementById('sp-signout')?.click(), svgKey: 'signout' });
     return cmds;
   }
