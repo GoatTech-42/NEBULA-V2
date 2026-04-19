@@ -29,17 +29,17 @@
 // ---------------------------------------------------------------------
 
 // @@deploy:APP_VERSION
-export const APP_VERSION   = '2.3.2';
+export const APP_VERSION   = '2.3.3';
 // @@deploy:APP_CODENAME
 export const APP_CODENAME  = 'Launchpad';
 // @@deploy:BUILD_DATE
-export const BUILD_DATE    = '2026-04-19T22:03:23Z';
+export const BUILD_DATE    = '2026-04-19T22:08:33Z';
 // @@deploy:BUILD_CHANNEL
 export const BUILD_CHANNEL = 'production';
 // @@deploy:BUILD_COMMIT
-export const BUILD_COMMIT  = 'ddadb08';
+export const BUILD_COMMIT  = '2a91b2c';
 // @@deploy:BUILD_NUMBER
-export const BUILD_NUMBER  = 3;
+export const BUILD_NUMBER  = 4;
 
 // Convenience object — some callers prefer a single import.
 export const BUILD_INFO = Object.freeze({
@@ -56,6 +56,14 @@ export const BUILD_INFO = Object.freeze({
 // Keep bullets short & punchy. The deploy script prepends new entries
 // right after the "CHANGELOG_BEGIN" marker above, so keep that line as-is.
 export const CHANGELOG = [
+  {
+    version: '2.3.3',
+    date: '2026-04-19',
+    title: 'Launchpad — release 2.3.3',
+    items: [
+      "Removed What's New, platform/channel chips, and Install App button",
+    ],
+  },
   {
     version: '2.3.2',
     date: '2026-04-19',
