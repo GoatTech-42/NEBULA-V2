@@ -17,7 +17,7 @@
 // required.
 
 // @@deploy:CACHE_VERSION  (kept in sync by deploy.py with public/js/version.js)
-const CACHE_VERSION = 'nebula-v2.3.5-98bd31f';
+const CACHE_VERSION = 'nebula-v2.3.6-853c827';
 const CORE_CACHE    = `core-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `runtime-${CACHE_VERSION}`;
 
@@ -65,7 +65,6 @@ self.addEventListener('install', (event) => {
           cache.add(u).catch(() => null)
         ));
       }))
-      .then(() => self.skipWaiting())
   );
 });
 
