@@ -26,7 +26,7 @@
         // Either the creator writes a full new doc (has p1uid+p2uid)
         // or a participant updates an existing one. On delete newData
         // is null, which we allow.
-        ".validate": "newData == null || (newData.hasChildren(['p1uid','p2uid','stake']) && newData.child('p1uid').isString() && newData.child('p2uid').isString())"
+        ".validate": "!newData.exists() || (newData.hasChildren(['p1uid','p2uid','stake']) && newData.child('p1uid').isString() && newData.child('p2uid').isString())"
       }
     },
 

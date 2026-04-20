@@ -88,6 +88,7 @@ REPO_ROOT     = Path(__file__).resolve().parent
 VERSION_FILE  = REPO_ROOT / "public" / "js" / "version.js"
 SW_FILE       = REPO_ROOT / "public" / "service-worker.js"
 FIREBASE_JSON = REPO_ROOT / "firebase.json"
+DATABASE_RULES = REPO_ROOT / "database.rules.json"
 
 # Allowed channels (also used for prompt validation).
 CHANNELS      = ("production", "beta", "dev", "nightly")
@@ -566,6 +567,56 @@ def show_diff(path: Path, old: str, new: str) -> None:
 
 
 # ---------------------------------------------------------------------------
+#  RTDB rules preflight
+# ---------------------------------------------------------------------------
+
+_RTDB_NULL_COMPARE_RE = re.compile(r"\b(newData\s*([!=]=)\s*null|null\s*([!=]=)\s*newData)\b")
+
+
+def _firebase_targets(args: argparse.Namespace) -> set[str]:
+    only = args.firebase_only or "hosting,firestore:rules,database"
+    return {p.strip() for p in only.split(",") if p.strip()}
+
+
+def validate_database_rules_safety(args: argparse.Namespace) -> None:
+    """Block known-invalid RTDB null comparisons before deploy.
+
+    Firebase RTDB rules do not allow comparing DataSnapshot values directly to
+    null (for example `newData == null`). Use existence checks instead.
+    """
+    if args.no_firebase:
+        return
+    if "database" not in _firebase_targets(args):
+        return
+    if not DATABASE_RULES.exists():
+        return
+
+    text = DATABASE_RULES.read_text(encoding="utf-8")
+    offenders: list[tuple[int, str]] = []
+
+    for idx, raw_line in enumerate(text.splitlines(), start=1):
+        line = raw_line.strip()
+        if not line or line.startswith("//"):
+            continue
+        m = _RTDB_NULL_COMPARE_RE.search(raw_line)
+        if m:
+            offenders.append((idx, m.group(1).strip()))
+
+    if not offenders:
+        return
+
+    details = ", ".join(f"line {line_no}: {expr}" for line_no, expr in offenders[:5])
+    if len(offenders) > 5:
+        details += f", ... (+{len(offenders) - 5} more)"
+
+    fail(
+        "Realtime Database rules contain invalid null comparisons "
+        f"({details}). Use !newData.exists() instead of newData == null "
+        "and newData.exists() instead of newData != null."
+    )
+
+
+# ---------------------------------------------------------------------------
 #  Main
 # ---------------------------------------------------------------------------
 
@@ -621,6 +672,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     if not FIREBASE_JSON.exists():
         warn("firebase.json not found — --no-firebase will be forced.")
         args.no_firebase = True
+
+    validate_database_rules_safety(args)
 
     print(f"{C.BOLD}{C.MAG}╭───────────────────────────────────────────╮")
     print(f"│  Nebula V2 · deploy.py · interactive build │")
