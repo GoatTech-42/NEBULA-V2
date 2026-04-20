@@ -630,6 +630,7 @@ function initHome() {
   setupDeployInfo();
   setupPingMeter();
   setupConnectionIndicator();
+  setupOnlinePresence();
 
   document.querySelectorAll('.home-card[data-goto]').forEach(c => {
     c.addEventListener('click', () => navigate(c.dataset.goto));
