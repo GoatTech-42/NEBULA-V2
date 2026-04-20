@@ -1210,6 +1210,8 @@ body.compact-mode .msg:not(.first-in-group) .msg-ava-spacer { display: none; }
 .chat-input-wrap { display: flex; gap: .52rem; align-items: center; border: 1.5px solid var(--border2); border-radius: 10px; padding: .55rem .9rem; transition: border-color var(--tm), box-shadow var(--tm); background: var(--input-bg); }
 .chat-input-wrap:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-dim); }
 .chat-input-wrap input { flex: 1; background: transparent; border: none; color: var(--text); font-size: .87rem; outline: none; font-family: var(--font-body); }
+.chat-input-wrap input:focus,
+.chat-input-wrap input:focus-visible { outline: none !important; box-shadow: none !important; }
 .chat-input-wrap input::placeholder { color: var(--text-faint); }
 .char-ctr { font-size: .58rem; font-weight: 700; min-width: 28px; text-align: right; color: var(--text-faint); transition: color var(--t); }
 .char-ctr.warn { color: var(--warn); }

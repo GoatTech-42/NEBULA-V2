@@ -29,17 +29,17 @@
 // ---------------------------------------------------------------------
 
 // @@deploy:APP_VERSION
-export const APP_VERSION   = '2.4.0';
+export const APP_VERSION   = '2.4.1';
 // @@deploy:APP_CODENAME
 export const APP_CODENAME  = 'Polish';
 // @@deploy:BUILD_DATE
-export const BUILD_DATE    = '2026-04-20T00:11:57Z';
+export const BUILD_DATE    = '2026-04-20T00:41:00Z';
 // @@deploy:BUILD_CHANNEL
 export const BUILD_CHANNEL = 'production';
 // @@deploy:BUILD_COMMIT
-export const BUILD_COMMIT  = '5090b2e';
+export const BUILD_COMMIT  = 'cea6955';
 // @@deploy:BUILD_NUMBER
-export const BUILD_NUMBER  = 9;
+export const BUILD_NUMBER  = 10;
 
 // Convenience object — some callers prefer a single import.
 export const BUILD_INFO = Object.freeze({
@@ -56,6 +56,15 @@ export const BUILD_INFO = Object.freeze({
 // Keep bullets short & punchy. The deploy script prepends new entries
 // right after the "CHANGELOG_BEGIN" marker above, so keep that line as-is.
 export const CHANGELOG = [
+  {
+    version: '2.4.1',
+    date: '2026-04-19',
+    title: 'Polish everything for v2.4.1',
+    items: [
+      'Removed the extra inner chat input highlight box while typing',
+      'Refined chat input focus styling for cleaner typing UX',
+    ],
+  },
   {
     version: '2.4.0',
     date: '2026-04-19',
