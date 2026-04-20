@@ -33,13 +33,13 @@ export const APP_VERSION   = '2.4.0';
 // @@deploy:APP_CODENAME
 export const APP_CODENAME  = 'Polish';
 // @@deploy:BUILD_DATE
-export const BUILD_DATE    = '2026-04-20T00:00:00Z';
+export const BUILD_DATE    = '2026-04-20T00:11:57Z';
 // @@deploy:BUILD_CHANNEL
 export const BUILD_CHANNEL = 'production';
 // @@deploy:BUILD_COMMIT
-export const BUILD_COMMIT  = 'local';
+export const BUILD_COMMIT  = '5090b2e';
 // @@deploy:BUILD_NUMBER
-export const BUILD_NUMBER  = 8;
+export const BUILD_NUMBER  = 9;
 
 // Convenience object — some callers prefer a single import.
 export const BUILD_INFO = Object.freeze({
@@ -56,6 +56,14 @@ export const BUILD_INFO = Object.freeze({
 // Keep bullets short & punchy. The deploy script prepends new entries
 // right after the "CHANGELOG_BEGIN" marker above, so keep that line as-is.
 export const CHANGELOG = [
+  {
+    version: '2.4.0',
+    date: '2026-04-19',
+    title: 'Polish - Release 2.4.0',
+    items: [
+      'Polish',
+    ],
+  },
   {
     version: '2.4.0',
     date: '2026-04-20',
