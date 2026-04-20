@@ -630,7 +630,6 @@ function initHome() {
   setupDeployInfo();
   setupPingMeter();
   setupConnectionIndicator();
-  setupOnlinePresence();
 
   document.querySelectorAll('.home-card[data-goto]').forEach(c => {
     c.addEventListener('click', () => navigate(c.dataset.goto));
@@ -865,44 +864,6 @@ function setupPingMeter() {
   }
   ping();
   setInterval(ping, 15_000);
-}
-
-/**
- * Maintain a lightweight online-now counter via RTDB presence.
- *
- * Each client writes to /presence/{uid}/{sessionId} with onDisconnect set
- * to remove it. The dashboard listens on /presence and counts unique UIDs.
- *
- * This is extremely cheap on the Firebase Spark (free) plan because
- * RTDB charges only for bandwidth — no per-document reads.
- */
-async function setupOnlinePresence() {
-  const el = document.getElementById('online-count');
-  if(!el || !_rtdb || !currentUser) return;
-  try {
-    const { onDisconnect } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js");
-    const sessionId = 'sess_' + Math.random().toString(36).slice(2, 10);
-    const meRef = rtRef(_rtdb, `presence/${currentUser.uid}/${sessionId}`);
-    // Heartbeat so stale sessions get garbage-collected by RTDB itself.
-    rtSet(meRef, { t: rtServerTimestamp(), v: APP_VERSION }).catch(()=>{});
-    onDisconnect(meRef).remove().catch(()=>{});
-    // Refresh own heartbeat every 45s — cheap, and keeps the record fresh.
-    setInterval(() => {
-      rtSet(meRef, { t: rtServerTimestamp(), v: APP_VERSION }).catch(()=>{});
-    }, 45_000);
-    // Listen for everyone's presence.
-    const allRef = rtRef(_rtdb, 'presence');
-    onValue(allRef, snap => {
-      const val = snap.val() || {};
-      const count = Object.keys(val).length;
-      el.textContent = count > 0 ? count.toString() : '1';
-    }, () => {
-      // Permission error → just show self
-      el.textContent = '1';
-    });
-  } catch(e) {
-    el.textContent = '—';
-  }
 }
 
 /** Live connection status dot in the deploy strip */
