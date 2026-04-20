@@ -146,30 +146,88 @@ function toast(msg, type='info', durOrOpts=3000) {
 }
 
 // ---- Modal ----
-function showModal(html, onClose) {
-  const ov = document.getElementById('modal-overlay');
+// v2.4 overhaul: single source of truth for opening/closing modals.
+//   * Always renders a dismiss [×] button in the top-right of the box
+//     (unless `opts.noClose === true`) so modals are *always* closable.
+//   * Clicking the backdrop, pressing Escape, or calling closeModal() all
+//     route through the same close path — no more stuck modals.
+//   * Re-opening while a close animation is in-flight cancels it safely.
+//   * The pending onClose callback is tracked globally so it fires
+//     exactly once regardless of how the modal is dismissed.
+let _modalOnClose = null;
+let _modalClosing = false;
+function showModal(html, onClose, opts = {}) {
+  const ov   = document.getElementById('modal-overlay');
   const wrap = document.getElementById('modal-wrap');
-  const box = document.getElementById('modal-box-main');
+  const box  = document.getElementById('modal-box-main');
+  if(!ov || !box) return null;
+
+  // Cancel any in-flight close animation so re-opening is instant.
+  _modalClosing = false;
+  ov.classList.remove('closing');
+  if(box) { box.style.opacity=''; box.style.transform=''; box.style.transition=''; }
+
   ov.classList.remove('hidden');
   if(wrap) wrap.classList.remove('hidden');
   box.classList.remove('hidden');
-  box.innerHTML = html;
-  ov.onclick = e => { if(e.target===ov) closeModal(onClose); };
+
+  // Optional close button — on by default.
+  const closeBtn = (opts.noClose === true)
+    ? ''
+    : '<button type="button" class="modal-close-x" data-modal-close aria-label="Close">&times;</button>';
+  box.innerHTML = closeBtn + html;
+
+  // Track the callback globally so Escape / backdrop / [×] all honour it.
+  _modalOnClose = typeof onClose === 'function' ? onClose : null;
+
+  // Wire up the close button we just injected.
+  box.querySelectorAll('[data-modal-close]').forEach(b => {
+    b.addEventListener('click', () => closeModal());
+  });
+
   return box;
 }
+
 function closeModal(cb) {
-  const ov = document.getElementById('modal-overlay');
+  const ov   = document.getElementById('modal-overlay');
   const wrap = document.getElementById('modal-wrap');
-  const box = document.getElementById('modal-box-main');
-  if(ov.classList.contains('hidden')) { if(cb) cb(); return; }
+  const box  = document.getElementById('modal-box-main');
+  if(!ov || ov.classList.contains('hidden')) {
+    if(cb) cb();
+    return;
+  }
+  if(_modalClosing) return; // already closing — ignore double calls
+  _modalClosing = true;
+
   ov.classList.add('closing');
-  if(box) { box.style.transition='opacity .2s ease, transform .2s cubic-bezier(.4,0,.2,1)'; box.style.opacity='0'; box.style.transform='translateY(8px) scale(.96)'; }
-  setTimeout(()=>{
+  if(box) {
+    box.style.transition = 'opacity .18s ease, transform .18s cubic-bezier(.4,0,.2,1)';
+    box.style.opacity    = '0';
+    box.style.transform  = 'translateY(8px) scale(.96)';
+  }
+  setTimeout(() => {
     ov.classList.add('hidden'); ov.classList.remove('closing');
     if(wrap) wrap.classList.add('hidden');
-    if(box) { box.classList.add('hidden'); box.innerHTML=''; box.style.opacity=''; box.style.transform=''; box.style.transition=''; }
-    if(cb) cb();
-  },220);
+    if(box) {
+      box.classList.add('hidden');
+      box.innerHTML     = '';
+      box.style.opacity = '';
+      box.style.transform  = '';
+      box.style.transition = '';
+    }
+    _modalClosing = false;
+    const onClose = _modalOnClose; _modalOnClose = null;
+    if(onClose) { try { onClose(); } catch(e){ console.warn(e); } }
+    if(cb)     { try { cb();      } catch(e){ console.warn(e); } }
+  }, 200);
+}
+
+// Expose the modal helpers globally so inline onclick="…" handlers in
+// HTML templates and other modules (profile.js, shop.js…) can use them
+// without needing to import anything.
+if(typeof window !== 'undefined') {
+  window.closeModal = closeModal;
+  window.showModal  = showModal;
 }
 
 // ---- Theme ----
@@ -690,11 +748,16 @@ function setupDeployInfo() {
   const plat  = document.getElementById('hd-platform');
   if(ver)  ver.textContent = `v${APP_VERSION}`;
   if(ver) {
-    // Tooltip includes commit hash and build number so admins can tell
-    // exactly which deploy a user is on without opening the console.
-    const _commitTail = (BUILD_COMMIT && BUILD_COMMIT !== 'local') ? ` · ${BUILD_COMMIT}` : '';
-    const _numTail    = BUILD_NUMBER ? ` · build #${BUILD_NUMBER}` : '';
-    ver.title = `${APP_CODENAME} · ${APP_VERSION}${_commitTail}${_numTail}`;
+    // v2.4: strip was decluttered — fold channel / platform / commit / build #
+    // into the version chip's tooltip so the info is still one hover away.
+    const lines = [
+      `${APP_CODENAME} · v${APP_VERSION}`,
+      `Channel: ${BUILD_CHANNEL}`,
+      `Platform: ${_detectPlatform()}`,
+    ];
+    if(BUILD_COMMIT && BUILD_COMMIT !== 'local') lines.push(`Commit: ${BUILD_COMMIT}`);
+    if(BUILD_NUMBER)                              lines.push(`Build #${BUILD_NUMBER}`);
+    ver.title = lines.join('\n');
   }
   if(chan) chan.textContent = BUILD_CHANNEL;
   if(time) {
@@ -899,17 +962,13 @@ function showChangelogModal() {
       </div>
       ${entries}
       <div style="display:flex;justify-content:flex-end;margin-top:1rem;">
-        <button type="button" class="btn" id="cl-dismiss-btn" style="padding:.5rem 1.2rem;">Got it</button>
+        <button type="button" class="btn" data-modal-close style="padding:.5rem 1.2rem;">Got it</button>
       </div>
     </div>
   `);
   // Persist the seen-version so the red dot goes away.
   localStorage.setItem('neb_seen_version', APP_VERSION);
   document.getElementById('hd-whatsnew')?.classList.remove('has-update');
-
-  document.getElementById('cl-dismiss-btn')?.addEventListener('click', () => {
-    document.getElementById('modal-overlay')?.click();
-  });
 }
 
 function maybeAutoShowChangelog() {
@@ -1464,7 +1523,7 @@ window.deleteMsg = function(id) {
     <h3>Delete Message</h3>
     <p class="modal-p">This message will be permanently removed. This can't be undone.</p>
     <div class="modal-actions">
-      <button class="btn btn-ghost btn-sm" onclick="document.getElementById('modal-overlay').click()">Cancel</button>
+      <button class="btn btn-ghost btn-sm" onclick="closeModal()">Cancel</button>
       <button class="btn btn-danger btn-sm" id="confirm-del-btn">Delete</button>
     </div>
   `);
@@ -1772,7 +1831,7 @@ function showCreateChannelModal() {
       <div id="m-pwdfield" class="field-group hidden"><label class="field-label">Password</label><input id="m-chpwdval" class="field-input" type="text" placeholder="Channel password" /></div>
       <div class="merr" id="m-cherr"></div>
       <div class="modal-actions">
-        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('modal-overlay').click()">Cancel</button>
+        <button class="btn btn-ghost btn-sm" onclick="closeModal()">Cancel</button>
         <button class="btn btn-sm" onclick="window.createChannel()">Create Channel</button>
       </div>
     </div>
@@ -1787,7 +1846,7 @@ window.wipeThread = function(channelId, channelName) {
     <h3>Wipe #${channelName}?</h3>
     <p class="modal-p">This permanently deletes <strong>all messages</strong> in this channel. The channel itself stays. This cannot be undone.</p>
     <div class="modal-actions">
-      <button class="btn btn-ghost btn-sm" onclick="document.getElementById('modal-overlay').click()">Cancel</button>
+      <button class="btn btn-ghost btn-sm" onclick="closeModal()">Cancel</button>
       <button class="btn btn-danger btn-sm" id="confirm-wipe-btn">Wipe All Messages</button>
     </div>
   `);
@@ -1815,7 +1874,7 @@ window.deleteChannel = function(id, name) {
     <h3>Delete #${name}</h3>
     <p class="modal-p">This will permanently delete the channel and all its messages. This cannot be undone.</p>
     <div class="modal-actions">
-      <button class="btn btn-ghost btn-sm" onclick="document.getElementById('modal-overlay').click()">Cancel</button>
+      <button class="btn btn-ghost btn-sm" onclick="closeModal()">Cancel</button>
       <button class="btn btn-danger btn-sm" id="confirm-delch-btn">Delete Channel</button>
     </div>
   `);
@@ -2165,7 +2224,7 @@ window.cleanupWipeAllCoins = function() {
     <h3>Wipe ALL GoatCoin Balances?</h3>
     <p class="modal-p">This will set <strong>every user's</strong> coins, weekCoins, totalCoins, and all stats to 0. This is permanent.</p>
     <div class="modal-actions">
-      <button class="btn btn-ghost btn-sm" onclick="document.getElementById('modal-overlay').click()">Cancel</button>
+      <button class="btn btn-ghost btn-sm" onclick="closeModal()">Cancel</button>
       <button class="btn btn-danger btn-sm" id="confirm-wipe-coins">Yes, Wipe All Coins</button>
     </div>`);
   document.getElementById('confirm-wipe-coins').onclick = async () => {
@@ -2187,7 +2246,7 @@ window.cleanupResetWeeklyStats = function() {
     <h3>Reset Weekly Stats?</h3>
     <p class="modal-p">Resets weekCoins, weekChatMins, weekGameMins, and weekBJWins for all users. Does not touch balances.</p>
     <div class="modal-actions">
-      <button class="btn btn-ghost btn-sm" onclick="document.getElementById('modal-overlay').click()">Cancel</button>
+      <button class="btn btn-ghost btn-sm" onclick="closeModal()">Cancel</button>
       <button class="btn btn-danger btn-sm" id="confirm-reset-weekly">Reset Weekly Stats</button>
     </div>`);
   document.getElementById('confirm-reset-weekly').onclick = async () => {
@@ -2207,7 +2266,7 @@ window.cleanupResetWeeklyStats = function() {
 window.cleanupDeleteUserGC = async function() {
   const uid = document.getElementById('cleanup-gc-uid')?.value.trim();
   if(!uid) { toast('Enter a UID','warning'); return; }
-  showModal(`<h3>Delete GoatCoin for UID?</h3><p class="modal-p">UID: <code>${escHtml(uid)}</code><br>This permanently removes their GoatCoin document.</p><div class="modal-actions"><button class="btn btn-ghost btn-sm" onclick="document.getElementById('modal-overlay').click()">Cancel</button><button class="btn btn-danger btn-sm" id="confirm-del-gc">Delete</button></div>`);
+  showModal(`<h3>Delete GoatCoin for UID?</h3><p class="modal-p">UID: <code>${escHtml(uid)}</code><br>This permanently removes their GoatCoin document.</p><div class="modal-actions"><button class="btn btn-ghost btn-sm" onclick="closeModal()">Cancel</button><button class="btn btn-danger btn-sm" id="confirm-del-gc">Delete</button></div>`);
   document.getElementById('confirm-del-gc').onclick = async () => {
     closeModal();
     try { await deleteDoc(doc(db,'goatcoin',uid)); _cleanupLog(`Deleted GoatCoin doc for ${uid}.`, 'success'); }
@@ -2218,7 +2277,7 @@ window.cleanupDeleteUserGC = async function() {
 window.cleanupWipeChannel = function() {
   const chId = document.getElementById('cleanup-ch-sel')?.value;
   if(!chId) { toast('Pick a channel from the dropdown first.','warning'); return; }
-  showModal(`<h3>Wipe #${chId}?</h3><p class="modal-p">Deletes all messages in <strong>#${escHtml(chId)}</strong>. Cannot be undone.</p><div class="modal-actions"><button class="btn btn-ghost btn-sm" onclick="document.getElementById('modal-overlay').click()">Cancel</button><button class="btn btn-danger btn-sm" id="confirm-wipe-ch">Wipe Channel</button></div>`);
+  showModal(`<h3>Wipe #${chId}?</h3><p class="modal-p">Deletes all messages in <strong>#${escHtml(chId)}</strong>. Cannot be undone.</p><div class="modal-actions"><button class="btn btn-ghost btn-sm" onclick="closeModal()">Cancel</button><button class="btn btn-danger btn-sm" id="confirm-wipe-ch">Wipe Channel</button></div>`);
   document.getElementById('confirm-wipe-ch').onclick = async () => {
     closeModal();
     try {
@@ -2233,7 +2292,7 @@ window.cleanupWipeChannel = function() {
 };
 
 window.cleanupWipeDMs = function() {
-  showModal(`<h3>Wipe ALL Direct Messages?</h3><p class="modal-p">This deletes every DM thread and all messages inside them, for every user. Permanent.</p><div class="modal-actions"><button class="btn btn-ghost btn-sm" onclick="document.getElementById('modal-overlay').click()">Cancel</button><button class="btn btn-danger btn-sm" id="confirm-wipe-dms">Wipe All DMs</button></div>`);
+  showModal(`<h3>Wipe ALL Direct Messages?</h3><p class="modal-p">This deletes every DM thread and all messages inside them, for every user. Permanent.</p><div class="modal-actions"><button class="btn btn-ghost btn-sm" onclick="closeModal()">Cancel</button><button class="btn btn-danger btn-sm" id="confirm-wipe-dms">Wipe All DMs</button></div>`);
   document.getElementById('confirm-wipe-dms').onclick = async () => {
     closeModal();
     try {
@@ -2289,7 +2348,7 @@ window.cleanupResetAllProfilePics = function() {
     <h3>Reset All Profile Pics?</h3>
     <p class="modal-p">This will remove the custom icon from <strong>every user's profile</strong>, reverting them to their letter initials. This is permanent.</p>
     <div class="modal-actions">
-      <button class="btn btn-ghost btn-sm" onclick="document.getElementById('modal-overlay').click()">Cancel</button>
+      <button class="btn btn-ghost btn-sm" onclick="closeModal()">Cancel</button>
       <button class="btn btn-danger btn-sm" id="confirm-reset-pics">Reset All Pics</button>
     </div>`);
   document.getElementById('confirm-reset-pics').onclick = async () => {
@@ -2757,7 +2816,7 @@ window.deleteDM = function(id) {
     <h3>Delete Message</h3>
     <p class="modal-p">This message will be permanently removed.</p>
     <div class="modal-actions">
-      <button class="btn btn-ghost btn-sm" onclick="document.getElementById('modal-overlay').click()">Cancel</button>
+      <button class="btn btn-ghost btn-sm" onclick="closeModal()">Cancel</button>
       <button class="btn btn-danger btn-sm" id="confirm-del-dm-btn">Delete</button>
     </div>
   `);
@@ -3164,7 +3223,7 @@ async function renderProfileEdit() {
       <div class="field-group"><label class="field-label">Current Password</label><input id="m-reauth-pass" class="field-input" type="password" placeholder="••••••••" autocomplete="current-password"></div>
       <div class="merr" id="m-reauth-err"></div>
       <div class="modal-actions">
-        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('modal-overlay').click()">Cancel</button>
+        <button class="btn btn-ghost btn-sm" onclick="closeModal()">Cancel</button>
         <button class="btn btn-sm" id="m-reauth-btn">Confirm & Update</button>
       </div>`);
     setTimeout(()=>document.getElementById('m-reauth-pass')?.focus(),80);
@@ -3408,7 +3467,7 @@ function setupSettings() {
       <h3>Reset All Settings?</h3>
       <p class="modal-p">This clears every saved preference and reloads with defaults. Your account data is not affected.</p>
       <div class="modal-actions">
-        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('modal-overlay').click()">Cancel</button>
+        <button class="btn btn-ghost btn-sm" onclick="closeModal()">Cancel</button>
         <button class="btn btn-danger btn-sm" id="confirm-reset-prefs">Reset Everything</button>
       </div>`);
     document.getElementById('confirm-reset-prefs').onclick = () => {
@@ -3603,7 +3662,7 @@ window.deleteAccount = async function(uid, username) {
     <h3>Permanently Delete Account</h3>
     <p class="modal-p">This removes all data for <strong>${escHtml(username)}</strong>: profile, GoatCoin balance, and all history. The Firebase Auth account will remain (you'll need to delete it from the Firebase console). This cannot be undone.</p>
     <div class="modal-actions">
-      <button class="btn btn-ghost btn-sm" onclick="document.getElementById('modal-overlay').click()">Cancel</button>
+      <button class="btn btn-ghost btn-sm" onclick="closeModal()">Cancel</button>
       <button class="btn btn-danger btn-sm" id="confirm-delacc-btn">Delete Everything</button>
     </div>
   `);
@@ -3625,7 +3684,7 @@ window.changeRank = function(uid, currentRank, username) {
     <h3>Change Rank: ${escHtml(username)}</h3>
     <p class="modal-p">Select a new rank for this user.</p>
     ${availableRanks.map(r=>`<button class="rank-btn ${r}" onclick="window.applyRank('${uid}','${r}')">${r.toUpperCase()}</button>`).join('')}
-    <div class="modal-actions"><button class="btn btn-ghost btn-sm" onclick="document.getElementById('modal-overlay').click()">Cancel</button></div>
+    <div class="modal-actions"><button class="btn btn-ghost btn-sm" onclick="closeModal()">Cancel</button></div>
   `);
 };
 
@@ -3810,21 +3869,24 @@ function setupKeyboardShortcuts() {
       return;
     }
 
-    // Escape  -- close things
+    // Escape  -- close things (priority: modal > palette > game vault)
     if(e.key === 'Escape') {
-      const cmd = document.getElementById('cmd-palette');
-      if(cmd && !cmd.classList.contains('hidden')) {
-        cmd.classList.add('hidden');
-        return;
-      }
       const ov = document.getElementById('modal-overlay');
       if(ov && !ov.classList.contains('hidden')) {
-        ov.click();
+        e.preventDefault();
+        closeModal();
+        return;
+      }
+      const cmd = document.getElementById('cmd-palette');
+      if(cmd && !cmd.classList.contains('hidden')) {
+        e.preventDefault();
+        cmd.classList.add('hidden');
         return;
       }
       const vault = document.getElementById('game-vault');
       if(vault && vault.style.display === 'flex') {
-        window.closeGameVault();
+        e.preventDefault();
+        window.closeGameVault && window.closeGameVault();
         return;
       }
       return;

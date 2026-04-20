@@ -286,50 +286,32 @@
             <div class="hcard-sub">Themes & alerts</div>
           </div>
         </div>
+        <!-- v2.4: decluttered stats — only the 3 that actually matter at a glance. -->
         <div class="home-stats">
           <div class="stat-item">
-            <div class="stat-value" id="fps-val" style="color:var(--success)">--</div>
-            <div class="stat-label">FPS</div>
+            <div class="stat-value" id="online-count" style="color:var(--success)">--</div>
+            <div class="stat-label">Online Now</div>
           </div>
           <div class="stat-item">
             <div class="stat-value" id="visits-count" style="color:var(--accent)">--</div>
             <div class="stat-label">Total Visits</div>
           </div>
           <div class="stat-item">
-            <div class="stat-value" id="online-count" style="color:var(--success);font-size:1.1rem">--</div>
-            <div class="stat-label">Online Now</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-value" id="ping-val" style="color:var(--accent);font-size:1.1rem">--</div>
-            <div class="stat-label">Ping</div>
-          </div>
-          <div class="stat-item">
-            <div id="battery-wrap" style="display:flex;align-items:center;gap:.4rem;justify-content:center;"></div>
-            <div class="stat-label">Battery</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-value" id="uptime-val" style="color:var(--text-muted);font-size:.9rem">0:00</div>
+            <div class="stat-value" id="uptime-val" style="color:var(--text-muted)">0:00</div>
             <div class="stat-label">Session</div>
           </div>
         </div>
 
-        <!-- Deploy / build info strip -->
+        <!-- v2.4: compact deploy strip — version + "what's new" button only.
+             Channel, commit, build number, ping & platform moved to the tooltip. -->
         <div class="home-deploy" id="home-deploy" role="status" aria-live="polite">
           <span class="hd-dot" id="hd-conn-dot" title="Connection status"></span>
           <span class="hd-chip" id="hd-version" title="Current build">v—</span>
           <span class="hd-sep">·</span>
-          <span class="hd-label">Last deployed</span>
           <span class="hd-time" id="hd-deploy-time" title="">—</span>
-          <span class="hd-sep">·</span>
-          <span class="hd-chip hd-chip-soft" id="hd-channel">production</span>
-          <span class="hd-sep">·</span>
-          <span class="hd-chip hd-chip-soft" id="hd-platform">—</span>
           <button class="hd-whatsnew" id="hd-whatsnew" type="button" title="What's new in this build">What's new</button>
         </div>
 
-        <div class="home-shortcuts">
-          <kbd>Ctrl</kbd>+<kbd>K</kbd> Search &nbsp;&middot;&nbsp; <kbd>?</kbd> Shortcuts &nbsp;&middot;&nbsp; <kbd>Esc</kbd> Close &nbsp;&middot;&nbsp; <kbd>1</kbd>-<kbd>8</kbd> Navigate
-        </div>
         <div class="home-copy">nebula v2 — beyond the stars</div>
       </div>
     </section>
@@ -1291,10 +1273,13 @@
     });
   }
 
-  // Modal overlay close
-  document.getElementById('modal-overlay')?.addEventListener('click', () => {
-    document.getElementById('modal-overlay')?.classList.add('hidden');
-    document.getElementById('modal-box-main').innerHTML = '';
+  // Modal overlay close — route through the unified closeModal() in app.js
+  // so the close animation runs AND the onClose callback fires.
+  document.getElementById('modal-overlay')?.addEventListener('click', (e) => {
+    // Only close when clicking the backdrop itself, not the modal content.
+    if(e.target && e.target.id === 'modal-overlay' && typeof window.closeModal === 'function') {
+      window.closeModal();
+    }
   });
 
   // Scroll to bottom button (chat)
