@@ -29,17 +29,17 @@
 // ---------------------------------------------------------------------
 
 // @@deploy:APP_VERSION
-export const APP_VERSION   = '2.3.6';
+export const APP_VERSION   = '2.4.0';
 // @@deploy:APP_CODENAME
-export const APP_CODENAME  = 'Launchpad';
+export const APP_CODENAME  = 'Polish';
 // @@deploy:BUILD_DATE
-export const BUILD_DATE    = '2026-04-19T22:25:32Z';
+export const BUILD_DATE    = '2026-04-20T00:00:00Z';
 // @@deploy:BUILD_CHANNEL
 export const BUILD_CHANNEL = 'production';
 // @@deploy:BUILD_COMMIT
-export const BUILD_COMMIT  = '853c827';
+export const BUILD_COMMIT  = 'local';
 // @@deploy:BUILD_NUMBER
-export const BUILD_NUMBER  = 7;
+export const BUILD_NUMBER  = 8;
 
 // Convenience object — some callers prefer a single import.
 export const BUILD_INFO = Object.freeze({
@@ -56,6 +56,24 @@ export const BUILD_INFO = Object.freeze({
 // Keep bullets short & punchy. The deploy script prepends new entries
 // right after the "CHANGELOG_BEGIN" marker above, so keep that line as-is.
 export const CHANGELOG = [
+  {
+    version: '2.4.0',
+    date: '2026-04-20',
+    title: 'Polish — declutter & bug-fix release',
+    items: [
+      'Fixed unclosable modals — every modal now has a dedicated [×] close button',
+      'Escape key now reliably closes any open modal, command palette, or game vault',
+      'Modal backdrop click and Escape now route through a single, unified close path',
+      'Re-opening a modal while another is closing no longer leaves the old one stuck',
+      'onClose callbacks now fire exactly once, no matter how the modal was dismissed',
+      'Decluttered home dashboard — 6 stat tiles pared back to 3 (Online / Visits / Session)',
+      'Compact deploy strip — channel, platform, commit & build # moved into the tooltip',
+      'Removed redundant shortcut hints line (press ? anywhere for the cheatsheet)',
+      'Replaced "Got it" button wiring with the unified `data-modal-close` attribute',
+      'Retired the inline `modal-overlay.click()` pattern across all modules',
+      'Global `window.closeModal()` helper so any inline HTML can close modals safely',
+    ],
+  },
   {
     version: '2.3.6',
     date: '2026-04-19',

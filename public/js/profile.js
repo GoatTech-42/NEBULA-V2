@@ -100,15 +100,28 @@ function _showAdblockerBanner() {
 }
 
 // -- Open profile modal for any uid --
+// v2.4: uses the global showModal() so we get the unified close-button,
+// Escape handling, and animation treatment for free.
 export async function openProfileModal(uid, currentUserData) {
+  // Render a loading placeholder first through the unified system so the
+  // [×] close button is wired up even while we're fetching.
+  if(typeof window.showModal === 'function') {
+    window.showModal(`<div style="padding:2rem;color:var(--text-muted);font-size:.82rem">Loading profile…</div>`);
+  } else {
+    const m = document.getElementById('modal-box-main');
+    const o = document.getElementById('modal-overlay');
+    if(!m || !o) return;
+    o.classList.remove('hidden');
+    document.getElementById('modal-wrap')?.classList.remove('hidden');
+    m.classList.remove('hidden');
+    m.innerHTML = `<div style="padding:2rem;color:var(--text-muted);font-size:.82rem">Loading profile…</div>`;
+  }
   const modal = document.getElementById('modal-box-main');
-  const ov = document.getElementById('modal-overlay');
-  if(!modal || !ov) return;
-  ov.classList.remove('hidden');
-  document.getElementById('modal-wrap')?.classList.remove('hidden');
-  modal.classList.remove('hidden');
-  modal.innerHTML = `<div style="padding:2rem;color:var(--text-muted);font-size:.82rem">Loading profile...</div>`;
-  ov.onclick = e => { if(e.target===ov) _closeProfileModal(); };
+  if(!modal) return;
+
+  // Always keep the unified [×] close button present, even when we later
+  // overwrite the modal body with the fetched profile content.
+  const CLOSE_X = `<button type="button" class="modal-close-x" data-modal-close aria-label="Close">&times;</button>`;
 
   try {
     const [userSnap, gcSnap] = await Promise.all([
@@ -117,7 +130,8 @@ export async function openProfileModal(uid, currentUserData) {
     ]);
 
     if(!userSnap.exists()) {
-      modal.innerHTML = `<div style="padding:2rem;color:var(--danger)">User not found</div>`;
+      modal.innerHTML = CLOSE_X + `<div style="padding:2rem;color:var(--danger)">User not found</div>`;
+      modal.querySelectorAll('[data-modal-close]').forEach(b => b.addEventListener('click', () => window.closeModal && window.closeModal()));
       return;
     }
 
@@ -131,7 +145,7 @@ export async function openProfileModal(uid, currentUserData) {
     const seen = new Set();
     const badges = rawBadges.filter(b => { if(seen.has(b)) return false; seen.add(b); return true; });
 
-    modal.innerHTML = `
+    modal.innerHTML = CLOSE_X + `
       <div class="prof-modal">
         <div class="prof-modal-hero" style="background:linear-gradient(135deg,${color}44,${color}11)">
           <div class="prof-modal-ava" style="background:${color}">${avatarHtml(u.icon, u.username, '52%')}</div>
@@ -188,10 +202,13 @@ export async function openProfileModal(uid, currentUserData) {
 
           <div class="modal-actions" style="margin-top:1.2rem">
             ${!isOwn ? `<button class="btn btn-ghost btn-sm" id="prof-dm-btn">Message</button>` : ''}
-            <button class="btn btn-ghost btn-sm" onclick="document.getElementById('modal-overlay').click()">Close</button>
+            <button class="btn btn-ghost btn-sm" data-modal-close>Close</button>
           </div>
         </div>
       </div>`;
+
+    // Re-wire the [×] and the footer Close button after the innerHTML rewrite.
+    modal.querySelectorAll('[data-modal-close]').forEach(b => b.addEventListener('click', () => window.closeModal && window.closeModal()));
 
     if(canAdmin) {
       modal.querySelectorAll('.badge-admin-btn:not(.bab-custom)').forEach(btn => {
@@ -257,12 +274,17 @@ export async function openProfileModal(uid, currentUserData) {
     });
 
   } catch(e) {
-    modal.innerHTML = `<div style="padding:2rem;color:var(--danger)">Failed to load profile</div>`;
+    modal.innerHTML = CLOSE_X + `<div style="padding:2rem;color:var(--danger)">Failed to load profile</div>`;
+    modal.querySelectorAll('[data-modal-close]').forEach(b => b.addEventListener('click', () => window.closeModal && window.closeModal()));
     console.error(e);
   }
 }
 
+// v2.4: delegate to the unified closeModal() in app.js so animations and
+// onClose callbacks stay consistent across every modal in the app.
 function _closeProfileModal() {
+  if(typeof window.closeModal === 'function') { window.closeModal(); return; }
+  // Fallback for the edge case where app.js hasn't loaded yet.
   const ov = document.getElementById('modal-overlay');
   const wrap = document.getElementById('modal-wrap');
   const box = document.getElementById('modal-box-main');
