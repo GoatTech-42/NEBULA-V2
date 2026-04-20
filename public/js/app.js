@@ -11,7 +11,7 @@ import { initGoatCoin, setActivity, cleanupGoatCoin, getGoatCoinData, renderGoat
 import { renderBadgeRow, openProfileModal, renderOwnProfile, checkAutoAwards, BADGE_DEFS, checkAdblocker } from './profile.js';
 import { renderShopTab, initShop, SHOP_ITEMS } from './shop.js';
 import { CMD_ICONS } from './icons.js';
-import { APP_VERSION, APP_CODENAME, BUILD_DATE, BUILD_CHANNEL, BUILD_COMMIT, BUILD_NUMBER, CHANGELOG, relativeTime, formatDeployDate } from './version.js';
+import { APP_VERSION, APP_CODENAME, BUILD_DATE, BUILD_CHANNEL, BUILD_COMMIT, BUILD_NUMBER, relativeTime, formatDeployDate } from './version.js';
 
 // Expose build info globally — handy for debugging and for the
 // nebulaDebug() helper. Now includes commit hash + build number so bug
@@ -463,7 +463,6 @@ async function initApp(user) {
   if(canModerate(data.rank)) setupAdmin();
   trackVisits();
   setupPresence();
-  setupOnlinePresence();
   initGoatCoin(user, data, _rtdb);
   initShop(user, data, _rtdb);
   window._onGCUpdate = () => {
@@ -769,15 +768,6 @@ function setupDeployInfo() {
   }
   if(plat) plat.textContent = _detectPlatform();
 
-  // Wire up the "What's New" button
-  const btn = document.getElementById('hd-whatsnew');
-  if(btn) {
-    const seenVer = localStorage.getItem('neb_seen_version');
-    if(seenVer !== APP_VERSION) btn.classList.add('has-update');
-    btn.addEventListener('click', () => showChangelogModal());
-  }
-  // Auto-show the changelog once per user after a version bump
-  maybeAutoShowChangelog();
 }
 
 /** Pick a random theme different from the current one and apply it. */
@@ -936,51 +926,6 @@ function setupConnectionIndicator() {
         setState(snap.val() === true ? 'online' : 'degraded');
       });
     } catch(e) { /* ignore */ }
-  }
-}
-
-// ══════════════════════════════════════════════════════════════════
-// Changelog / "What's New" modal
-// ══════════════════════════════════════════════════════════════════
-function showChangelogModal() {
-  const entries = CHANGELOG.map(e => `
-    <div class="changelog-entry">
-      <div class="cl-head">
-        <span class="cl-ver">v${e.version}</span>
-        <span class="cl-date">${e.date}</span>
-      </div>
-      <div class="cl-title">${_escapeHtml(e.title)}</div>
-      <ul>${e.items.map(i => `<li>${_escapeHtml(i)}</li>`).join('')}</ul>
-    </div>
-  `).join('');
-
-  showModal(`
-    <div class="changelog-modal">
-      <h2 style="margin-top:0;margin-bottom:.2rem;font-size:1.25rem;font-weight:800;">What's New</h2>
-      <div style="font-size:.72rem;color:var(--text-faint,rgba(255,255,255,.45));letter-spacing:1px;text-transform:uppercase;margin-bottom:1rem;">
-        Build v${APP_VERSION} · ${APP_CODENAME} · deployed ${relativeTime(BUILD_DATE)}${(BUILD_COMMIT && BUILD_COMMIT !== 'local') ? ` · ${BUILD_COMMIT}` : ''}${BUILD_NUMBER ? ` · #${BUILD_NUMBER}` : ''}
-      </div>
-      ${entries}
-      <div style="display:flex;justify-content:flex-end;margin-top:1rem;">
-        <button type="button" class="btn" data-modal-close style="padding:.5rem 1.2rem;">Got it</button>
-      </div>
-    </div>
-  `);
-  // Persist the seen-version so the red dot goes away.
-  localStorage.setItem('neb_seen_version', APP_VERSION);
-  document.getElementById('hd-whatsnew')?.classList.remove('has-update');
-}
-
-function maybeAutoShowChangelog() {
-  const seenVer = localStorage.getItem('neb_seen_version');
-  // Skip if it's the very first time (user just signed up)
-  if(!seenVer) {
-    localStorage.setItem('neb_seen_version', APP_VERSION);
-    return;
-  }
-  if(seenVer !== APP_VERSION) {
-    // Delay a bit so the home screen finishes animating in first.
-    setTimeout(showChangelogModal, 1800);
   }
 }
 
@@ -3955,12 +3900,6 @@ function setupCommandPalette() {
       cmds.push({ label: 'Admin', desc: 'Moderation & management', action: () => navigate('admin'), svgKey: 'admin' });
     }
     // ── v2.4 quick-action commands ──
-    cmds.push({
-      label: "What's New",
-      desc:  `v${APP_VERSION} · ${APP_CODENAME} — changelog`,
-      action: () => showChangelogModal(),
-      svgKey: 'settings',
-    });
     cmds.push({
       label: 'Keyboard Shortcuts',
       desc:  'View all hotkeys',

@@ -304,7 +304,6 @@ export function renderOwnProfile(user, userData, gcData) {
   const container = document.getElementById('section-profile');
   if(!container) return;
   const d = userData;
-  const gc = gcData || {};
   const color = d.color || avatarColor(user.uid);
   const joinedDate = d.createdAt?.toDate
     ? d.createdAt.toDate().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})
@@ -312,10 +311,6 @@ export function renderOwnProfile(user, userData, gcData) {
   const rawBadges = d.badges || [];
   const seen = new Set();
   const badges = rawBadges.filter(b => { if(seen.has(b)) return false; seen.add(b); return true; });
-  const coins = Math.floor(gc.coins||0);
-  const wCoins = Math.floor(gc.weekCoins||0);
-  const totalCoins = Math.floor(gc.totalCoins||0);
-  const bjWins = Math.floor(gc.totalBJWins||0);
 
   container.innerHTML = `
   <div class="prof-redesign-wrap">
@@ -339,25 +334,6 @@ export function renderOwnProfile(user, userData, gcData) {
           <div class="prof-banner-badges" id="prof-badges">
             ${renderBadgeRow(badges, true) || '<span style="font-size:.68rem;color:var(--text-faint);font-style:italic">No badges yet</span>'}
           </div>
-        </div>
-      </div>
-      <!-- Stats strip -->
-      <div class="prof-stats-strip">
-        <div class="prof-stat-cell">
-          <div class="prof-stat-cell-val">${coins.toLocaleString()}</div>
-          <div class="prof-stat-cell-key">Balance</div>
-        </div>
-        <div class="prof-stat-cell">
-          <div class="prof-stat-cell-val">${wCoins.toLocaleString()}</div>
-          <div class="prof-stat-cell-key">This Week</div>
-        </div>
-        <div class="prof-stat-cell">
-          <div class="prof-stat-cell-val">${totalCoins.toLocaleString()}</div>
-          <div class="prof-stat-cell-key">All-Time GC</div>
-        </div>
-        <div class="prof-stat-cell">
-          <div class="prof-stat-cell-val">${bjWins}</div>
-          <div class="prof-stat-cell-key">BJ Wins</div>
         </div>
       </div>
     </div>

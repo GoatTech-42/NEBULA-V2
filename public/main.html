@@ -286,11 +286,11 @@
             <div class="hcard-sub">Themes & alerts</div>
           </div>
         </div>
-        <!-- v2.4: decluttered stats — only the 3 that actually matter at a glance. -->
+        <!-- v2.4: decluttered stats — only the 3 that matter at a glance. -->
         <div class="home-stats">
           <div class="stat-item">
-            <div class="stat-value" id="online-count" style="color:var(--success)">--</div>
-            <div class="stat-label">Online Now</div>
+            <div class="stat-value" id="fps-val" style="color:var(--success)">--</div>
+            <div class="stat-label">FPS</div>
           </div>
           <div class="stat-item">
             <div class="stat-value" id="visits-count" style="color:var(--accent)">--</div>
@@ -302,14 +302,13 @@
           </div>
         </div>
 
-        <!-- v2.4: compact deploy strip — version + "what's new" button only.
-             Channel, commit, build number, ping & platform moved to the tooltip. -->
+           <!-- v2.4: compact deploy strip — channel, commit, build #, ping, and
+             platform are folded into tooltip/details. -->
         <div class="home-deploy" id="home-deploy" role="status" aria-live="polite">
           <span class="hd-dot" id="hd-conn-dot" title="Connection status"></span>
           <span class="hd-chip" id="hd-version" title="Current build">v—</span>
           <span class="hd-sep">·</span>
           <span class="hd-time" id="hd-deploy-time" title="">—</span>
-          <button class="hd-whatsnew" id="hd-whatsnew" type="button" title="What's new in this build">What's new</button>
         </div>
 
         <div class="home-copy">nebula v2 — beyond the stars</div>
