@@ -305,6 +305,10 @@ function _renderTab() {
               <div class="gc-hero-bal-label">GC</div>
             </div>
             <div class="gc-hero-alltime">All-Time: ${totalCoins.toLocaleString()} GC</div>
+            <button class="btn btn-sm gc-gift-btn" id="gc-gift-btn" title="Send GoatCoin to another player" style="margin-top:.55rem;display:inline-flex;align-items:center;gap:.35rem">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 100-5C13 2 12 7 12 7z"/></svg>
+              Gift GC
+            </button>
           </div>
         </div>
       </div>
@@ -364,6 +368,7 @@ function _renderTab() {
 
   _wireBJLobby();
   _renderLeaderboard();
+  document.getElementById('gc-gift-btn')?.addEventListener('click', _openGiftModal);
   if(_mpGameId && _mpGame) { _renderBJTable(); return; }
   if(_mpChallengeId && _mpChalOpp) _restoreWaitingState();
   if(_cachedIncoming.length) _renderPendingChallenges(_cachedIncoming);
@@ -1422,6 +1427,288 @@ function _fmtMins(mins) {
   if(mins<60) return `${mins}m`;
   const h=Math.floor(mins/60), m=mins%60;
   return m ? `${h}h ${m}m` : `${h}h`;
+}
+
+// --------------------------------------------------
+//  GIFT GOATCOIN
+//  Lets a user send GC to another approved player. Implemented as a small
+//  modal: search → pick recipient → pick amount → confirm.
+//  The transfer is two Firestore writes (sender decrement + recipient
+//  increment) using `increment()` so we get atomic-ish semantics without
+//  needing a Cloud Function. The receiver's balance updates live via
+//  their own onSnapshot listener.
+// --------------------------------------------------
+let _giftRecipient = null;     // { uid, username, color, icon }
+let _giftSendingNow = false;   // prevents double-clicks during the write
+
+function _openGiftModal() {
+  if (typeof window.showModal !== 'function') {
+    toast('UI not ready — try again in a moment', 'warning');
+    return;
+  }
+  _giftRecipient = null;
+
+  const myCoins = _gcData ? Math.floor(_gcData.coins || 0) : 0;
+  // Hard cap on a single gift — keeps a compromised account from draining
+  // its balance in one shot, and makes the limit easy to surface in the UI.
+  const maxGift = Math.min(myCoins, 1_000_000);
+
+  window.showModal(`
+    <div class="gc-gift-modal">
+      <h3 style="display:flex;align-items:center;gap:.45rem;margin-top:0;margin-bottom:.6rem;font-size:1rem;font-weight:900;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 100-5C13 2 12 7 12 7z"/></svg>
+        Gift GoatCoin
+      </h3>
+      <p class="modal-p" style="margin-bottom:.85rem;">
+        Send some of your GC to another approved player. Your balance:
+        <strong style="color:var(--accent)">${myCoins.toLocaleString()} GC</strong>
+      </p>
+
+      <div class="bj-form-section">
+        <div class="bj-form-label">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          Recipient
+        </div>
+        <div class="bj-opp-search-wrap">
+          <input class="bj-opp-inp" id="gc-gift-search" type="text" placeholder="Search for a player..." autocomplete="off">
+          <div class="bj-search-results hidden" id="gc-gift-results"></div>
+        </div>
+        <div class="bj-selected-pill hidden" id="gc-gift-selected"></div>
+      </div>
+
+      <div class="bj-form-section">
+        <div class="bj-form-label">${BJ_COIN_ICON_SVG} Amount (GC)</div>
+        <div class="bj-chips-row">
+          <button class="bj-chip gc-gift-chip" data-amt="10">10</button>
+          <button class="bj-chip gc-gift-chip" data-amt="50">50</button>
+          <button class="bj-chip gc-gift-chip" data-amt="100">100</button>
+          <button class="bj-chip gc-gift-chip" data-amt="500">500</button>
+          <button class="bj-chip gc-gift-chip" data-amt="1000">1,000</button>
+        </div>
+        <input id="gc-gift-amt" class="field-input" type="number" min="1" max="${maxGift}" placeholder="Custom amount..." style="margin-top:.5rem;max-width:200px">
+        <div style="font-size:.62rem;color:var(--text-faint);margin-top:.35rem">Max per gift: ${maxGift.toLocaleString()} GC</div>
+      </div>
+
+      <div class="bj-form-section">
+        <div class="bj-form-label">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+          Note (optional)
+        </div>
+        <input id="gc-gift-note" class="field-input" type="text" maxlength="80" placeholder="Say something nice..." style="max-width:100%">
+      </div>
+
+      <div class="merr" id="gc-gift-err"></div>
+
+      <div class="modal-actions">
+        <button class="btn btn-ghost btn-sm" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-sm" id="gc-gift-send">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          Send Gift
+        </button>
+      </div>
+    </div>
+  `, () => {
+    // Reset on close so a stale recipient doesn't persist into the next open.
+    _giftRecipient = null;
+  });
+
+  // Wire up search.
+  const searchEl = document.getElementById('gc-gift-search');
+  let searchTimer;
+  searchEl?.addEventListener('input', () => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => _searchGiftRecipients(searchEl.value.trim()), 220);
+  });
+
+  // Outside-click closes the search dropdown.
+  document.addEventListener('click', _giftOutsideClickHandler);
+
+  // Amount chips populate the input.
+  document.querySelectorAll('.gc-gift-chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.gc-gift-chip').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const inp = document.getElementById('gc-gift-amt');
+      if (inp) inp.value = btn.dataset.amt;
+    });
+  });
+
+  // Disable amount chips that would exceed the user's balance.
+  document.querySelectorAll('.gc-gift-chip').forEach(btn => {
+    const v = parseInt(btn.dataset.amt || '0', 10);
+    if (v > maxGift) {
+      btn.disabled = true;
+      btn.style.opacity = '.35';
+      btn.style.cursor = 'not-allowed';
+    }
+  });
+
+  document.getElementById('gc-gift-send')?.addEventListener('click', _confirmGift);
+}
+
+function _giftOutsideClickHandler(e) {
+  if (!document.getElementById('gc-gift-results')) {
+    // Modal closed — detach.
+    document.removeEventListener('click', _giftOutsideClickHandler);
+    return;
+  }
+  if (!e.target.closest('#gc-gift-results') && !e.target.closest('#gc-gift-search')) {
+    document.getElementById('gc-gift-results')?.classList.add('hidden');
+  }
+}
+
+async function _searchGiftRecipients(q) {
+  const resultsEl = document.getElementById('gc-gift-results');
+  if (!resultsEl) return;
+  if (!q) { resultsEl.innerHTML = ''; resultsEl.classList.add('hidden'); return; }
+  try {
+    const snap = await getDocs(query(collection(db, 'users'), where('status', '==', 'approved')));
+    const users = snap.docs.map(d => d.data())
+      .filter(u => u.uid !== _gcUser.uid && u.username?.toLowerCase().includes(q.toLowerCase()))
+      .slice(0, 8);
+    if (!users.length) {
+      resultsEl.innerHTML = '<div class="bj-sr-empty">No users found</div>';
+      resultsEl.classList.remove('hidden');
+      return;
+    }
+    resultsEl.innerHTML = users.map(u => `
+      <div class="bj-sr-item" data-uid="${u.uid}" data-username="${escHtml(u.username)}" data-color="${u.color || avatarColor(u.uid)}" data-icon="${u.icon || ''}">
+        <div class="bj-sr-ava" style="background:${u.color || avatarColor(u.uid)}">${avatarHtml(u.icon, u.username, '60%')}</div>
+        <span class="bj-sr-name">${escHtml(u.username)}</span>
+        <span class="rbadge ${u.rank}" style="font-size:.55rem">${u.rank}</span>
+      </div>`).join('');
+    resultsEl.classList.remove('hidden');
+    resultsEl.querySelectorAll('.bj-sr-item').forEach(item => {
+      item.addEventListener('click', () => {
+        _giftRecipient = {
+          uid: item.dataset.uid,
+          username: item.dataset.username,
+          color: item.dataset.color,
+          icon: item.dataset.icon || ''
+        };
+        const sEl = document.getElementById('gc-gift-search');
+        if (sEl) sEl.value = '';
+        resultsEl.innerHTML = '';
+        resultsEl.classList.add('hidden');
+
+        const pill = document.getElementById('gc-gift-selected');
+        if (pill) {
+          pill.innerHTML = `
+            <div class="bj-sr-ava" style="background:${_giftRecipient.color}">${avatarHtml(_giftRecipient.icon, _giftRecipient.username, '60%')}</div>
+            <span>${escHtml(_giftRecipient.username)}</span>
+            <button class="bj-clear-btn" id="gc-gift-clear">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>`;
+          pill.classList.remove('hidden');
+          document.getElementById('gc-gift-clear')?.addEventListener('click', () => {
+            _giftRecipient = null;
+            pill.classList.add('hidden');
+          });
+        }
+      });
+    });
+  } catch (e) {
+    console.error('Gift search error:', e);
+    resultsEl.innerHTML = '<div class="bj-sr-empty">Search failed — try again</div>';
+    resultsEl.classList.remove('hidden');
+  }
+}
+
+async function _confirmGift() {
+  if (_giftSendingNow) return;
+  const errEl = document.getElementById('gc-gift-err');
+  const setErr = (m) => { if (errEl) errEl.textContent = m; };
+  setErr('');
+
+  if (!_gcUser) { setErr('Not signed in.'); return; }
+  if (!_giftRecipient) { setErr('Pick a recipient first.'); return; }
+  if (_giftRecipient.uid === _gcUser.uid) { setErr("You can't gift yourself."); return; }
+
+  const amt = parseInt(document.getElementById('gc-gift-amt')?.value || '0', 10);
+  const note = (document.getElementById('gc-gift-note')?.value || '').trim().slice(0, 80);
+
+  if (!amt || amt < 1) { setErr('Enter an amount of at least 1 GC.'); return; }
+  if (amt > 1_000_000) { setErr('Max gift is 1,000,000 GC.'); return; }
+
+  // Re-read the live balance instead of relying on stale _gcData — the
+  // user might have lost coins to a BJ round between opening the modal
+  // and clicking Send.
+  let myCoinsLive = _gcData ? Math.floor(_gcData.coins || 0) : 0;
+  try {
+    const mySnap = await getDoc(doc(db, 'goatcoin', _gcUser.uid));
+    if (mySnap.exists()) myCoinsLive = Math.floor(mySnap.data().coins || 0);
+  } catch {}
+  if (amt > myCoinsLive) {
+    setErr(`Not enough GC — you only have ${myCoinsLive.toLocaleString()}.`);
+    return;
+  }
+
+  // Make sure the recipient still exists and is approved before transferring.
+  let recipientApproved = false;
+  try {
+    const usnap = await getDoc(doc(db, 'users', _giftRecipient.uid));
+    recipientApproved = usnap.exists() && usnap.data().status === 'approved';
+  } catch {}
+  if (!recipientApproved) {
+    setErr('That player is no longer accepting gifts.');
+    return;
+  }
+
+  const sendBtn = document.getElementById('gc-gift-send');
+  if (sendBtn) { sendBtn.disabled = true; sendBtn.style.opacity = '.7'; sendBtn.textContent = 'Sending…'; }
+  _giftSendingNow = true;
+
+  try {
+    // Ensure the recipient has a goatcoin doc so increment() doesn't fail.
+    const recipRef = doc(db, 'goatcoin', _giftRecipient.uid);
+    const recipSnap = await getDoc(recipRef);
+    if (!recipSnap.exists()) {
+      await setDoc(recipRef, _defaultCoins());
+    }
+
+    // Two-write transfer. We do the sender debit FIRST so a Firestore
+    // failure on the second write doesn't dupe coins. If the credit
+    // fails, we attempt a rollback before surfacing the error.
+    await updateDoc(doc(db, 'goatcoin', _gcUser.uid), {
+      coins: increment(-amt),
+    });
+    try {
+      await updateDoc(recipRef, {
+        coins: increment(amt),
+        totalCoins: increment(amt),
+      });
+    } catch (creditErr) {
+      // Roll back the debit so the gifter doesn't lose coins to a half-failed gift.
+      console.error('Gift credit failed, rolling back debit:', creditErr);
+      await updateDoc(doc(db, 'goatcoin', _gcUser.uid), { coins: increment(amt) }).catch(() => {});
+      throw creditErr;
+    }
+
+    // Best-effort: log the gift so the recipient can see who sent it. Failure
+    // here is not fatal — the coins have already moved.
+    try {
+      await addDoc(collection(db, 'gc_gifts'), {
+        fromUid: _gcUser.uid,
+        fromUsername: _gcUserData?.username || '',
+        toUid: _giftRecipient.uid,
+        toUsername: _giftRecipient.username,
+        amount: amt,
+        note: note || '',
+        createdAt: serverTimestamp(),
+      });
+    } catch (logErr) {
+      console.debug('Gift log skipped:', logErr?.code || logErr?.message);
+    }
+
+    toast(`Sent ${amt.toLocaleString()} GC to ${_giftRecipient.username}!`, 'success');
+    if (typeof window.closeModal === 'function') window.closeModal();
+  } catch (e) {
+    console.error('Gift send error:', e);
+    setErr('Gift failed: ' + _friendlyFirebaseError(e));
+    if (sendBtn) { sendBtn.disabled = false; sendBtn.style.opacity = ''; sendBtn.textContent = 'Send Gift'; }
+  } finally {
+    _giftSendingNow = false;
+  }
 }
 
 // --------------------------------------------------

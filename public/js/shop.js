@@ -5,7 +5,7 @@
 // back to the user's Firestore profile on equip.
 import {
   db, auth,
-  doc, getDoc, updateDoc, collection, getDocs, serverTimestamp
+  doc, getDoc, setDoc, updateDoc, collection, getDocs, serverTimestamp
 } from './firebase.js';
 import { getDatabase, ref as rtRef, set as rtSet, get as rtGet, update as rtUpdate } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 import { toast, avatarColor, escHtml, avatarHtml, SVG_ICONS, RANKS, rankOf } from './app.js';
@@ -439,9 +439,16 @@ async function _saveOwnedItems() {
   try {
     if (_rtdb) {
       await rtSet(rtRef(_rtdb, `shop_owned/${_shopUser.uid}`), _ownedItems);
+    } else {
+      // Firestore fallback — without this, users on the Firestore-only
+      // path would lose their purchases on every page reload (RTDB outage,
+      // rules block, etc.). This was contributing to the "shop didn't
+      // give me anything" reports.
+      await setDoc(doc(db, 'shop_owned', _shopUser.uid), _ownedItems, { merge: true });
     }
-    // Firestore fallback could go here if needed
-  } catch (e) {}
+  } catch (e) {
+    console.warn('shop_owned save failed:', e);
+  }
 }
 
 // Compute total GC spent from owned items
@@ -690,6 +697,30 @@ async function _purchaseItem(item, onDone) {
         const updated = [...flairs, item.flairKey];
         await updateDoc(userRef, { shopFlair: updated });
         _shopData = { ..._shopData, shopFlair: updated };
+      }
+    }
+
+    // If it's an icon, auto-equip it on purchase. Previously the user paid
+    // GC and the item showed as "Owned" but their avatar didn't change —
+    // they'd then have to click Equip a second time. This was the source
+    // of the "shop didn't give me anything" bug report. Auto-equipping
+    // closes the loop so the player sees the change immediately.
+    if (item.type === 'icon' && item.iconKey) {
+      try {
+        const userRef = doc(db, 'users', _shopUser.uid);
+        await updateDoc(userRef, { icon: item.iconKey });
+        _shopData = { ..._shopData, icon: item.iconKey };
+        // Update sidebar avatar live
+        const sp = document.getElementById('sp-ava');
+        if (sp) sp.innerHTML = avatarHtml(item.iconKey, _shopData.username, '60%');
+        // Propagate to chat messages so others see the new icon
+        if (window.propagateProfileToMessages) {
+          window.propagateProfileToMessages(_shopUser.uid, { icon: item.iconKey }).catch(() => {});
+        }
+      } catch (eqErr) {
+        // If auto-equip fails, the item is still owned — user can equip
+        // manually. Don't fail the whole purchase.
+        console.warn('Auto-equip icon failed:', eqErr);
       }
     }
 
