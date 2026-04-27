@@ -95,6 +95,25 @@ service cloud.firestore {
       allow read, write: if signedIn();
     }
 
+    // ── GoatCoin gifts (transfer log) ──
+    // Lightweight log of GC transfers between players. The actual coin
+    // movement happens in /goatcoin/{uid}; this collection is just an
+    // audit trail so the recipient can see who sent them what.
+    // Create: sender can write if `fromUid` matches their auth (prevents
+    //         spoofing "this gift came from X").
+    // Read/Delete: any authed user (so admins can audit).
+    match /gc_gifts/{id} {
+      allow read:   if signedIn();
+      allow create: if signedIn()
+        && request.resource.data.fromUid == request.auth.uid
+        && request.resource.data.amount is int
+        && request.resource.data.amount > 0
+        && request.resource.data.amount <= 1000000
+        && request.resource.data.toUid is string
+        && request.resource.data.fromUid != request.resource.data.toUid;
+      allow delete: if signedIn();
+    }
+
     // ── Shop owned items ──
     // Any authenticated user can read (for display purposes).
     // Only the owner can write their own purchase records.
