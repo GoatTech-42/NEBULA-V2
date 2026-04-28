@@ -29,17 +29,17 @@
 // ---------------------------------------------------------------------
 
 // @@deploy:APP_VERSION
-export const APP_VERSION   = '2.4.2';
+export const APP_VERSION   = '2.5.0';
 // @@deploy:APP_CODENAME
-export const APP_CODENAME  = 'Polish';
+export const APP_CODENAME  = 'Game Update';
 // @@deploy:BUILD_DATE
-export const BUILD_DATE    = '2026-04-20T00:45:54Z';
+export const BUILD_DATE    = '2026-04-28T01:01:43Z';
 // @@deploy:BUILD_CHANNEL
 export const BUILD_CHANNEL = 'production';
 // @@deploy:BUILD_COMMIT
-export const BUILD_COMMIT  = 'b630759';
+export const BUILD_COMMIT  = '3209684';
 // @@deploy:BUILD_NUMBER
-export const BUILD_NUMBER  = 11;
+export const BUILD_NUMBER  = 12;
 
 // Convenience object — some callers prefer a single import.
 export const BUILD_INFO = Object.freeze({
@@ -56,6 +56,14 @@ export const BUILD_INFO = Object.freeze({
 // Keep bullets short & punchy. The deploy script prepends new entries
 // right after the "CHANGELOG_BEGIN" marker above, so keep that line as-is.
 export const CHANGELOG = [
+  {
+    version: '2.5.0',
+    date: '2026-04-27',
+    title: 'Game Update - Release 2.5.0',
+    items: [
+      'hi',
+    ],
+  },
   {
     version: '2.4.2',
     date: '2026-04-19',
